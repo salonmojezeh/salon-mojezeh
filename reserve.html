@@ -4,51 +4,110 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>رزرو نوبت | سالن معجزه</title>
+
 <link rel="stylesheet" href="style.css">
+
 </head>
+
 
 <body>
 
+
 <header>
+
 <h1>رزرو نوبت سالن معجزه</h1>
+
 </header>
+
 
 
 <section>
 
+
 <h2>انتخاب ساعت</h2>
 
-<button>09:00 🟢</button>
-<button>10:00 🟢</button>
-<button>11:00 🔴</button>
-<button>12:00 🟢</button>
-<button>13:00 🔴</button>
-<button>14:00 🟢</button>
+
+<button onclick="selectTime('09:00')">
+09:00 🟢
+</button>
+
+
+<button onclick="selectTime('10:00')">
+10:00 🟢
+</button>
+
+
+<button onclick="selectTime('11:00')">
+11:00 🔴
+</button>
+
+
+<button onclick="selectTime('12:00')">
+12:00 🟢
+</button>
+
+
+<button onclick="selectTime('13:00')">
+13:00 🔴
+</button>
+
+
+<button onclick="selectTime('14:00')">
+14:00 🟢
+</button>
+
+
 
 
 <h2>اطلاعات شما</h2>
 
-<input type="text" placeholder="نام شما">
+
+<input 
+id="name"
+type="text"
+placeholder="نام شما">
+
+
 
 <br><br>
 
-<input type="tel" placeholder="شماره تماس">
+
+<input 
+id="phone"
+type="tel"
+placeholder="شماره تماس">
+
+
 
 <br><br>
 
-<button>
+
+
+<button onclick="reserve()">
+
 ثبت رزرو
+
 </button>
+
 
 
 </section>
 
 
+
 <footer>
+
 <p>سالن معجزه - مشهد</p>
+
 </footer>
 
 
+
+<script src="script.js"></script>
+
+
 </body>
+
 </html>
