@@ -2,7 +2,9 @@
 <html lang="fa" dir="rtl">
 
 <head>
+
 <meta charset="UTF-8">
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>رزرو نوبت | سالن معجزه</title>
@@ -19,73 +21,167 @@
 
 <h1>رزرو نوبت سالن معجزه</h1>
 
+<p>
+نوبت خود را آنلاین رزرو کنید
+</p>
+
 </header>
 
 
 
-<section>
+<section class="reserve-box">
 
 
-<h2>انتخاب ساعت</h2>
+<h2>انتخاب خدمت</h2>
 
 
-<button onclick="selectTime('09:00')">
-09:00 🟢
-</button>
+<select id="service">
+
+<option value="">
+انتخاب کنید
+</option>
 
 
-<button onclick="selectTime('10:00')">
-10:00 🟢
-</button>
+<option value="اصلاح مو">
+اصلاح مو
+</option>
 
 
-<button onclick="selectTime('11:00')">
-11:00 🔴
-</button>
+<option value="فید حرفه‌ای">
+فید حرفه‌ای
+</option>
 
 
-<button onclick="selectTime('12:00')">
-12:00 🟢
-</button>
+<option value="گریم داماد">
+گریم داماد
+</option>
 
 
-<button onclick="selectTime('13:00')">
-13:00 🔴
-</button>
+<option value="پاکسازی پوست">
+پاکسازی پوست
+</option>
 
 
-<button onclick="selectTime('14:00')">
-14:00 🟢
-</button>
+<option value="خدمات دیگر">
+خدمات دیگر
+</option>
+
+
+</select>
 
 
 
-
-<h2>اطلاعات شما</h2>
+<h2>
+انتخاب تاریخ
+</h2>
 
 
 <input 
+type="date"
+id="date">
+
+
+
+<h2>
+انتخاب ساعت
+</h2>
+
+
+<div id="times">
+
+
+<button class="time">
+09:00
+</button>
+
+
+<button class="time">
+10:00
+</button>
+
+
+<button class="time">
+11:00
+</button>
+
+
+<button class="time">
+12:00
+</button>
+
+
+<button class="time">
+13:00
+</button>
+
+
+<button class="time">
+14:00
+</button>
+
+
+<button class="time">
+15:00
+</button>
+
+
+<button class="time">
+16:00
+</button>
+
+
+<button class="time">
+17:00
+</button>
+
+
+<button class="time">
+18:00
+</button>
+
+
+<button class="time">
+19:00
+</button>
+
+
+<button class="time">
+20:00
+</button>
+
+
+<button class="time">
+21:00
+</button>
+
+
+</div>
+
+
+
+
+<h2>
+اطلاعات مشتری
+</h2>
+
+
+<input
 id="name"
 type="text"
-placeholder="نام شما">
+placeholder="نام و نام خانوادگی">
 
 
 
-<br><br>
-
-
-<input 
+<input
 id="phone"
 type="tel"
-placeholder="شماره تماس">
+placeholder="شماره موبایل">
 
 
 
-<br><br>
-
-
-
-<button onclick="reserve()">
+<button 
+class="reserve-btn"
+onclick="reserve()">
 
 ثبت رزرو
 
@@ -97,17 +193,21 @@ placeholder="شماره تماس">
 
 
 
+
 <footer>
 
-<p>سالن معجزه - مشهد</p>
+<p>
+سالن معجزه - مشهد
+</p>
 
 </footer>
 
 
 
-<script type="module" src="script.js"></script>
+<script src="script.js"></script>
 
 
 </body>
+
 
 </html>
