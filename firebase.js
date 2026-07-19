@@ -22,3 +22,6 @@ const db = getFirestore(app);
 
 
 console.log("Firebase و Firestore آماده اتصال هستند");
+
+
+export { db };
