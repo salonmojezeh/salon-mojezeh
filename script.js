@@ -1,80 +1,132 @@
+// اتصال به Firebase
+
 import { db } from "./firebase.js";
-import { collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+import {
+collection,
+addDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
 
 
 let selectedTime = "";
 
 
-function selectTime(time) {
 
-    selectedTime = time;
+// انتخاب ساعت
 
-    alert("ساعت انتخاب شد: " + time);
+document.querySelectorAll(".time").forEach(button => {
 
-}
-
+    button.addEventListener("click", () => {
 
 
-async function reserve() {
+        document.querySelectorAll(".time").forEach(btn => {
+
+            btn.classList.remove("selected");
+
+        });
 
 
-    if (selectedTime === "") {
 
-        alert("لطفاً ابتدا یک ساعت انتخاب کنید");
+        button.classList.add("selected");
+
+
+        selectedTime = button.innerText;
+
+
+
+    });
+
+});
+
+
+
+
+// ثبت رزرو
+
+window.reserve = async function(){
+
+
+
+    const service =
+    document.getElementById("service").value;
+
+
+
+    const date =
+    document.getElementById("date").value;
+
+
+
+    const name =
+    document.getElementById("name").value;
+
+
+
+    const phone =
+    document.getElementById("phone").value;
+
+
+
+
+    if(service === "" ||
+       date === "" ||
+       selectedTime === "" ||
+       name === "" ||
+       phone === ""){
+
+
+        alert("لطفاً همه اطلاعات را کامل کنید");
 
         return;
 
     }
 
 
-    const name = document.getElementById("name").value;
-
-    const phone = document.getElementById("phone").value;
-
-
-
-    if (name === "" || phone === "") {
-
-        alert("لطفاً نام و شماره تماس را وارد کنید");
-
-        return;
-
-    }
 
 
 
     try {
 
 
-        await addDoc(collection(db, "reservations"), {
+
+        await addDoc(
+            collection(db,"reservations"),
+            {
+
+                service: service,
+
+                date: date,
+
+                time: selectedTime,
+
+                name: name,
+
+                phone: phone,
+
+                status:"reserved"
 
 
-            name: name,
+            }
 
-            phone: phone,
-
-            time: selectedTime,
-
-            status: "reserved",
-
-            date: new Date().toLocaleDateString("fa-IR")
-
-
-        });
+        );
 
 
 
         alert("رزرو شما با موفقیت ثبت شد");
 
 
-    } catch(error) {
 
+    } catch(error){
 
-        alert("خطا در ثبت رزرو");
 
         console.log(error);
 
 
+        alert("خطا در ثبت رزرو");
+
+
     }
+
 
 }
