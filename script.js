@@ -1,10 +1,8 @@
-// اتصال به Firebase
-
 import { db } from "./firebase.js";
 
 import {
-collection,
-addDoc
+    collection,
+    addDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 
@@ -15,9 +13,13 @@ let selectedTime = "";
 
 // انتخاب ساعت
 
-document.querySelectorAll(".time").forEach(button => {
+const timeButtons = document.querySelectorAll(".time");
 
-    button.addEventListener("click", () => {
+
+timeButtons.forEach(button => {
+
+
+    button.addEventListener("click", function(){
 
 
         document.querySelectorAll(".time").forEach(btn => {
@@ -28,16 +30,18 @@ document.querySelectorAll(".time").forEach(button => {
 
 
 
-        button.classList.add("selected");
+        this.classList.add("selected");
 
 
-        selectedTime = button.innerText;
+        selectedTime = this.innerText;
 
 
 
     });
 
+
 });
+
 
 
 
@@ -48,37 +52,35 @@ window.reserve = async function(){
 
 
 
-    const service =
-    document.getElementById("service").value;
+    const service = document.getElementById("service").value;
 
 
-
-    const date =
-    document.getElementById("date").value;
+    const date = document.getElementById("date").value;
 
 
-
-    const name =
-    document.getElementById("name").value;
+    const name = document.getElementById("name").value;
 
 
-
-    const phone =
-    document.getElementById("phone").value;
+    const phone = document.getElementById("phone").value;
 
 
 
 
-    if(service === "" ||
-       date === "" ||
-       selectedTime === "" ||
-       name === "" ||
-       phone === ""){
+
+    if(
+        service === "" ||
+        date === "" ||
+        selectedTime === "" ||
+        name === "" ||
+        phone === ""
+    ){
 
 
         alert("لطفاً همه اطلاعات را کامل کنید");
 
+
         return;
+
 
     }
 
@@ -91,24 +93,33 @@ window.reserve = async function(){
 
 
         await addDoc(
-            collection(db,"reservations"),
+            collection(db, "reservations"),
             {
+
 
                 service: service,
 
+
                 date: date,
+
 
                 time: selectedTime,
 
+
                 name: name,
+
 
                 phone: phone,
 
-                status:"reserved"
+
+                status: "reserved",
+
+
+                createdAt: new Date()
+
 
 
             }
-
         );
 
 
@@ -117,7 +128,16 @@ window.reserve = async function(){
 
 
 
-    } catch(error){
+        document.getElementById("name").value = "";
+
+        document.getElementById("phone").value = "";
+
+
+
+    }
+
+
+    catch(error){
 
 
         console.log(error);
@@ -129,4 +149,5 @@ window.reserve = async function(){
     }
 
 
-}
+
+};
