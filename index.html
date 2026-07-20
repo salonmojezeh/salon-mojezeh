@@ -5,55 +5,133 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>سالن معجزه | آرایش و زیبایی</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 
 <body>
 
-<header>
-    <h1>سالن معجزه</h1>
-    <p> استایل شما ، معجزه ماست</p>
-    <a href="reserve.html">رزرو نوبت</a>
+<!-- منوی کشویی -->
+<div class="sidebar" id="sidebar">
+    <button class="close-btn" onclick="closeSidebar()">✕</button>
+    <nav class="sidebar-nav">
+        <a href="index.html" class="nav-link">
+            <i class="fas fa-home"></i> صفحه اصلی
+        </a>
+        <a href="reserve.html" class="nav-link">
+            <i class="fas fa-calendar-alt"></i> رزرو نوبت
+        </a>
+        <a href="#" class="nav-link">
+            <i class="fas fa-gift"></i> باشگاه مشتریان
+        </a>
+        <a href="#" class="nav-link">
+            <i class="fas fa-images"></i> گالری نمونه کار
+        </a>
+        <a href="#" class="nav-link">
+            <i class="fas fa-map-marker-alt"></i> مسیر در گوگل مپ
+        </a>
+        <a href="#" class="nav-link">
+            <i class="fas fa-map-marker-alt"></i> مسیر در نشان
+        </a>
+        <a href="#" class="nav-link">
+            <i class="fas fa-map-marker-alt"></i> مسیر در بلد
+        </a>
+        <a href="#" class="nav-link">
+            <i class="fas fa-phone"></i> تماس با ما
+        </a>
+        <a href="#" class="nav-link">
+            <i class="fas fa-newspaper"></i> اخبار سالن
+        </a>
+    </nav>
+</div>
+
+<!-- overlay برای بستن منو -->
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<!-- هدر -->
+<header class="header">
+    <button class="menu-btn" onclick="openSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+    <div class="logo-container">
+        <img src="images/logo.png" alt="لوگو سالن معجزة" class="logo">
+    </div>
 </header>
 
-
-<section class="services">
-    <h2>خدمات سالن</h2>
-
-    <div class="service-box">
-        <p>✂️ اصلاح مو</p>
-        <p>✨ پاکسازی و مراقبت‌های پوستی</p>
-        <p>🔥 فر تخصصی</p>
-        <p>🤵 گریم داماد</p>
-        <p>⭐ خدمات دیگر</p>
+<!-- بخش هیرو -->
+<section class="hero">
+    <div class="hero-content">
+        <h1 class="hero-title">سالن معجزه</h1>
+        <p class="hero-subtitle">استایل شما ، معجزه ماست</p>
+        <a href="reserve.html" class="cta-button">
+            <i class="fas fa-calendar-check"></i> رزرو نوبت
+        </a>
     </div>
 </section>
 
+<!-- بخش خدمات -->
+<section class="services">
+    <h2 class="section-title">خدمات سالن</h2>
+    <div class="services-grid">
+        <div class="service-card">
+            <div class="service-icon">✂️</div>
+            <h3>اصلاح سر و صورت</h3>
+            <p>اصلاح حرفه‌ای با جدیدترین تکنیک‌ها</p>
+        </div>
+        <div class="service-card">
+            <div class="service-icon">💇</div>
+            <h3>حالت مو</h3>
+            <p>مدل‌های روز جهان با متخصصین</p>
+        </div>
+        <div class="service-card">
+            <div class="service-icon">✨</div>
+            <h3>خط و سایه</h3>
+            <p>خط‌کشی دقیق و سایه چشم حرفه‌ای</p>
+        </div>
+        <div class="service-card">
+            <div class="service-icon">🧔</div>
+            <h3>سایه ریش</h3>
+            <p>نرمایش و تمیز‌کاری دقیق ریش</p>
+        </div>
+    </div>
+</section>
 
+<!-- بخش درباره -->
 <section class="about">
-    <h2>درباره سالن معجزه</h2>
-    <p>
-        ارائه خدمات تخصصی آرایش و زیبایی با جدیدترین تکنیک‌ها
-        و توجه ویژه به رضایت مشتریان.
-    </p>
+    <h2 class="section-title">درباره سالن معجزه</h2>
+    <div class="about-content">
+        <p>
+            ما در سالن معجزه با تجربه‌ای بیش از سال‌ها در زمینه آرایش و زیبایی،
+            خدمات تخصصی را با جدیدترین تکنیک‌ها و ابزارهای حرفه‌ای ارائه می‌دهیم.
+            رضایت مشتری برای ما اولویت اول است.
+        </p>
+    </div>
 </section>
 
-
+<!-- بخش تماس -->
 <section class="contact">
-    <h2>آدرس</h2>
-    <p>
-        مشهد، کوی امیرالمومنین،
-        خیابان ولیعصر، ولیعصر ۱۶
-    </p>
+    <h2 class="section-title">تماس با ما</h2>
+    <div class="contact-info">
+        <div class="contact-item">
+            <i class="fas fa-map-marker-alt"></i>
+            <p>مشهد، کوی امیرالمومنین، خیابان ولیعصر، ولیعصر ۱۶</p>
+        </div>
+        <div class="contact-item">
+            <i class="fas fa-phone"></i>
+            <a href="tel:+989123456789">۰۹۱۲۳۴۵۶۷۸۹</a>
+        </div>
+        <div class="contact-item">
+            <i class="fab fa-whatsapp"></i>
+            <a href="https://wa.me/989123456789">واتساپ</a>
+        </div>
+    </div>
 </section>
 
-
-<footer>
-    <p>© سالن معجزه</p>
+<!-- فوتر -->
+<footer class="footer">
+    <p>© تمام حقوق محفوظ است - سالن معجزه</p>
 </footer>
 
-
-<!-- اتصال به Firebase -->
-<script src="firebase.js"></script>
+<script src="script.js"></script>
 
 </body>
 </html>
