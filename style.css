@@ -1,112 +1,510 @@
-body {
-    background-color: #080808;
-    color: white;
-    font-family: Tahoma, sans-serif;
+* {
     margin: 0;
-    text-align: center;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-
-/* هدر سایت */
-header {
-    padding: 50px 20px;
-    background: #111;
-    border-bottom: 2px solid #d4af37;
+body {
+    background-color: #0a0a0a;
+    color: #ffffff;
+    font-family: 'Tahoma', 'Segoe UI', sans-serif;
+    line-height: 1.6;
+    overflow-x: hidden;
 }
 
+/* ==================== منوی کشویی ==================== */
 
-h1 {
+.sidebar {
+    position: fixed;
+    top: 0;
+    right: -300px;
+    width: 280px;
+    height: 100vh;
+    background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
+    z-index: 1000;
+    transition: right 0.3s ease;
+    border-left: 2px solid #d4af37;
+    overflow-y: auto;
+    padding-top: 60px;
+}
+
+.sidebar.active {
+    right: 0;
+}
+
+.close-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: none;
+    border: none;
     color: #d4af37;
-    font-size: 38px;
+    font-size: 28px;
+    cursor: pointer;
+    transition: transform 0.2s ease;
 }
 
-
-h2 {
-    color: #d4af37;
-    font-size: 26px;
+.close-btn:hover {
+    transform: rotate(90deg);
 }
 
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
 
-/* دکمه رزرو */
-header a {
-    display: inline-block;
-    margin-top: 25px;
-    padding: 15px 45px;
-    background: #d4af37;
-    color: black;
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 18px 25px;
+    color: #ffffff;
     text-decoration: none;
-    border-radius: 30px;
-    font-size: 18px;
-    font-weight: bold;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    border-right: 3px solid transparent;
 }
 
-
-/* بخش خدمات */
-.services {
-    padding: 20px;
-}
-
-
-.service-box p {
-    background: #151515;
-    margin: 8px auto;
-    padding: 10px;
-    max-width: 280px;
-    border: 1px solid #d4af37;
-    border-radius: 8px;
-    font-size: 15px;
-}
-
-
-/* بخش رزرو */
-.reserve {
-    margin: 40px 15px;
-    padding: 70px 20px;
-    background: linear-gradient(
-        rgba(0,0,0,0.7),
-        rgba(0,0,0,0.7)
-    ),
-    #d4af37;
-
-    border-radius: 20px;
-    border: 2px solid #d4af37;
-}
-
-
-.reserve h2 {
-    font-size: 35px;
-}
-
-
-.reserve a {
-    display: inline-block;
-    margin-top: 20px;
-    padding: 18px 50px;
-    background: black;
+.nav-link:hover {
+    background: rgba(212, 175, 55, 0.1);
     color: #d4af37;
-    border-radius: 35px;
-    text-decoration: none;
+    border-right-color: #d4af37;
+    padding-right: 20px;
+}
+
+.nav-link i {
     font-size: 20px;
 }
 
-
-/* آدرس */
-.contact {
-    padding: 30px;
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: none;
+    z-index: 999;
+    opacity: 0;
+    transition: opacity 0.3s ease;
 }
 
+.overlay.active {
+    display: block;
+    opacity: 1;
+}
 
-.contact a {
+/* ==================== هدر ==================== */
+
+.header {
+    position: sticky;
+    top: 0;
+    background: rgba(15, 15, 15, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 100;
+    border-bottom: 2px solid #d4af37;
+}
+
+.menu-btn {
+    background: none;
+    border: none;
     color: #d4af37;
-    font-size: 18px;
+    font-size: 24px;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+    padding: 8px;
+}
+
+.menu-btn:hover {
+    transform: scale(1.1);
+}
+
+.logo-container {
+    flex: 1;
+    text-align: center;
+}
+
+.logo {
+    height: 45px;
+    object-fit: contain;
+}
+
+/* ==================== بخش هیرو ==================== */
+
+.hero {
+    background: linear-gradient(
+        135deg,
+        rgba(0, 0, 0, 0.6) 0%,
+        rgba(0, 0, 0, 0.7) 50%,
+        rgba(0, 0, 0, 0.6) 100%
+    ),
+    url('images/hero.jpg') center/cover no-repeat;
+    background-attachment: fixed;
+    min-height: 70vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at center, transparent 0%, rgba(0, 0, 0, 0.4) 100%);
+    pointer-events: none;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+    animation: fadeInUp 1s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.hero-title {
+    font-size: 48px;
+    color: #d4af37;
+    margin-bottom: 15px;
+    font-weight: bold;
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+    letter-spacing: 2px;
+}
+
+.hero-subtitle {
+    font-size: 24px;
+    color: #ffffff;
+    margin-bottom: 35px;
+    text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.8);
+    font-weight: 300;
+}
+
+.cta-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: linear-gradient(135deg, #d4af37 0%, #e8c547 100%);
+    color: #000000;
+    padding: 18px 50px;
+    border-radius: 50px;
     text-decoration: none;
+    font-size: 18px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 25px rgba(212, 175, 55, 0.3);
+    cursor: pointer;
+    border: none;
 }
 
+.cta-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 35px rgba(212, 175, 55, 0.5);
+    background: linear-gradient(135deg, #e8c547 0%, #d4af37 100%);
+}
 
-/* پایین سایت */
-footer {
-    margin-top: 40px;
-    padding: 20px;
-    background: #111;
+.cta-button:active {
+    transform: translateY(-1px);
+}
+
+/* ==================== عنوان بخش‌ها ==================== */
+
+.section-title {
+    font-size: 36px;
     color: #d4af37;
+    text-align: center;
+    margin-bottom: 40px;
+    position: relative;
+    display: inline-block;
+    width: 100%;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
+
+.section-title::after {
+    content: '';
+    position: absolute;
+    bottom: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, #d4af37, transparent);
+    border-radius: 2px;
+}
+
+/* ==================== بخش خدمات ==================== */
+
+.services {
+    padding: 60px 20px;
+    background: linear-gradient(
+        135deg,
+        rgba(15, 15, 15, 0.9) 0%,
+        rgba(20, 20, 20, 0.9) 100%
+    );
+    border-top: 1px solid rgba(212, 175, 55, 0.2);
+    border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+.services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 25px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.service-card {
+    background: linear-gradient(
+        135deg,
+        rgba(212, 175, 55, 0.08) 0%,
+        rgba(212, 175, 55, 0.03) 100%
+    );
+    border: 2px solid rgba(212, 175, 55, 0.3);
+    border-radius: 15px;
+    padding: 30px 20px;
+    text-align: center;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.service-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: rgba(212, 175, 55, 0.1);
+    transition: left 0.3s ease;
+    z-index: 0;
+}
+
+.service-card:hover::before {
+    left: 100%;
+}
+
+.service-card:hover {
+    border-color: #d4af37;
+    transform: translateY(-8px);
+    box-shadow: 0 15px 40px rgba(212, 175, 55, 0.2);
+}
+
+.service-icon {
+    font-size: 48px;
+    margin-bottom: 15px;
+    animation: bounce 2s infinite;
+}
+
+.service-card:nth-child(2) .service-icon {
+    animation-delay: 0.2s;
+}
+
+.service-card:nth-child(3) .service-icon {
+    animation-delay: 0.4s;
+}
+
+.service-card:nth-child(4) .service-icon {
+    animation-delay: 0.6s;
+}
+
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+.service-card h3 {
+    color: #d4af37;
+    font-size: 20px;
+    margin-bottom: 10px;
+    position: relative;
+    z-index: 1;
+}
+
+.service-card p {
+    color: #cccccc;
+    font-size: 14px;
+    position: relative;
+    z-index: 1;
+}
+
+/* ==================== بخش درباره ==================== */
+
+.about {
+    padding: 60px 20px;
+    background: #0a0a0a;
+}
+
+.about-content {
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.about-content p {
+    font-size: 16px;
+    color: #dddddd;
+    line-height: 2;
+    letter-spacing: 0.5px;
+}
+
+/* ==================== بخش تماس ==================== */
+
+.contact {
+    padding: 60px 20px;
+    background: linear-gradient(
+        135deg,
+        rgba(15, 15, 15, 0.9) 0%,
+        rgba(20, 20, 20, 0.9) 100%
+    );
+    border-top: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+.contact-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.contact-item {
+    background: rgba(212, 175, 55, 0.05);
+    border: 2px solid rgba(212, 175, 55, 0.2);
+    border-radius: 12px;
+    padding: 25px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.contact-item:hover {
+    border-color: #d4af37;
+    background: rgba(212, 175, 55, 0.1);
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(212, 175, 55, 0.15);
+}
+
+.contact-item i {
+    font-size: 32px;
+    color: #d4af37;
+    margin-bottom: 15px;
+    display: block;
+}
+
+.contact-item p {
+    color: #dddddd;
+    font-size: 15px;
+    line-height: 1.8;
+}
+
+.contact-item a {
+    color: #d4af37;
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.3s ease;
+}
+
+.contact-item a:hover {
+    color: #e8c547;
+    text-decoration: underline;
+}
+
+/* ==================== فوتر ==================== */
+
+.footer {
+    background: rgba(15, 15, 15, 0.95);
+    border-top: 2px solid #d4af37;
+    padding: 30px 20px;
+    text-align: center;
+    color: #d4af37;
+    font-size: 14px;
+    margin-top: 40px;
+}
+
+.footer p {
+    margin: 0;
+}
+
+/* ==================== Responsive ==================== */
+
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 36px;
+    }
+
+    .hero-subtitle {
+        font-size: 18px;
+    }
+
+    .cta-button {
+        padding: 15px 35px;
+        font-size: 16px;
+    }
+
+    .section-title {
+        font-size: 28px;
+    }
+
+    .services-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .contact-info {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero {
+        min-height: 50vh;
+    }
+
+    .hero-title {
+        font-size: 28px;
+    }
+
+    .hero-subtitle {
+        font-size: 16px;
+        margin-bottom: 25px;
+    }
+
+    .cta-button {
+        padding: 12px 25px;
+        font-size: 14px;
+    }
+
+    .section-title {
+        font-size: 24px;
+    }
+
+    .services {
+        padding: 40px 15px;
+    }
+
+    .contact {
+        padding: 40px 15px;
+    }
+        }
