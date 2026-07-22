@@ -2,43 +2,75 @@
 <html lang="fa" dir="rtl">
 
 <head>
+
 <meta charset="UTF-8">
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>پنل مدیریت سالن معجزه</title>
+
 <link rel="stylesheet" href="style.css">
+
 </head>
 
 <body>
 
 <header>
+
 <h1>پنل مدیریت سالن معجزه</h1>
+
 </header>
 
+<main class="admin-panel">
 
-<section>
+<h2>داشبورد مدیریت</h2>
 
-<h2>مدیریت ساعت‌ها</h2>
+<div class="cards">
 
-<p>09:00 - آزاد 🟢</p>
-<button>بستن ساعت</button>
+<div class="card">
 
-<p>10:00 - آزاد 🟢</p>
-<button>بستن ساعت</button>
+<h3>رزروهای امروز</h3>
 
-<p>11:00 - رزرو شده 🔴</p>
-<button>باز کردن ساعت</button>
+<p id="todayBookings">0</p>
 
-<p>12:00 - آزاد 🟢</p>
-<button>بستن ساعت</button>
+</div>
 
+<div class="card">
 
-</section>
+<h3>رزروهای ۳۰ روز اخیر</h3>
 
+<p id="monthBookings">0</p>
+
+</div>
+
+<div class="card">
+
+<h3>اعضای باشگاه مشتریان</h3>
+
+<p id="customers">0</p>
+
+</div>
+
+</div>
+
+<h2>آخرین رزروها</h2>
+
+<div id="bookingList">
+
+در حال بارگذاری...
+
+</div>
+
+</main>
 
 <footer>
-<p>مدیریت سالن معجزه</p>
+
+<p>پنل مدیریت سالن معجزه</p>
+
 </footer>
 
+<script type="module" src="admin.js"></script>
 
 </body>
+
 </html>
