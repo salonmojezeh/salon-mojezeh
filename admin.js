@@ -1,90 +1,110 @@
 import { db } from "./firebase.js";
 
 import {
-
 collection,
 getDocs,
+doc,
 updateDoc,
-doc
-
+query,
+orderBy
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-const tbody=document.getElementById("todayBookings");
+const reservationList = document.getElementById("reservationList");
+const totalReservations = document.getElementById("totalReservations");
+const todayReservations = document.getElementById("todayReservations");
+const monthReservations = document.getElementById("monthReservations");
 
-const todayCount=document.getElementById("todayCount");
+async function loadReservations() {
 
-const monthCount=document.getElementById("monthCount");
+reservationList.innerHTML = "";
 
-const customerCount=document.getElementById("customerCount");
+const q = query(
+collection(db, "reservations"),
+orderBy("createdAt", "desc")
+);
 
-async function loadBookings(){
+const snapshot = await getDocs(q);
 
-const snapshot=await getDocs(collection(db,"bookings"));
+let total = 0;
+let today = 0;
+let month = 0;
 
-tbody.innerHTML="";
+const now = new Date();
 
-let today=0;
+snapshot.forEach(async (item) => {
 
-let month=0;
+const data = item.data();
 
-snapshot.forEach((booking)=>{
+total++;
 
-const data=booking.data();
+if (data.date) {
 
-const tr=document.createElement("tr");
+const reserveDate = new Date(data.date);
 
-tr.innerHTML=`
+if (
+reserveDate.toDateString() === now.toDateString()
+) {
+today++;
+}
 
-<td>${data.name}</td>
+if (
+reserveDate.getMonth() === now.getMonth() &&
+reserveDate.getFullYear() === now.getFullYear()
+) {
+month++;
+}
 
-<td>${data.phone}</td>
+}
 
-<td>${data.date}</td>
+const card = document.createElement("div");
 
-<td>${data.time}</td>
+card.className = "card";
 
-<td>
+card.innerHTML = `
+<h3>${data.name}</h3>
 
-<button class="done"
+<p>📞 ${data.phone}</p>
 
-onclick="finishBooking('${booking.id}')">
+<p>📅 ${data.date}</p>
 
+<p>🕒 ${data.time}</p>
+
+<p>💇 ${data.service}</p>
+
+<p>
+وضعیت:
+<b>${data.status || "در انتظار"}</b>
+</p>
+
+<button class="done">
 انجام شد
-
 </button>
 
-</td>
-
+<hr>
 `;
 
-tbody.appendChild(tr);
+reservationList.appendChild(card);
 
-today++;
+card.querySelector(".done").onclick = async () => {
 
-month++;
+await updateDoc(doc(db,"reservations",item.id),{
 
-});
-
-todayCount.innerText=today;
-
-monthCount.innerText=month;
-
-customerCount.innerText=snapshot.size;
-
-}
-
-window.finishBooking=async(id)=>{
-
-await updateDoc(doc(db,"bookings",id),{
-
-status:"done"
+status:"انجام شد"
 
 });
 
-alert("رزرو انجام شد");
+loadReservations();
 
-loadBookings();
+};
+
+});
+
+totalReservations.innerText = total;
+
+todayReservations.innerText = today;
+
+monthReservations.innerText = month;
 
 }
 
-loadBookings();
+loadReservations();
