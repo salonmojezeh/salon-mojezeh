@@ -1,365 +1,667 @@
-// ==================== متغیرهای سراسری ====================
+// ==========================================
+// سالن معجزه
+// نسخه 2.0
+// برنامه نویس: ChatGPT
+// ==========================================
+
+
+// ================= Firebase =================
+
+import { db } from "./firebase.js";
+
+import {
+    collection,
+    addDoc,
+    getDocs,
+    query,
+    where,
+    Timestamp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+
+
+// ================= متغیرهای اصلی =================
 
 let currentStep = 1;
+
 const totalSteps = 4;
-let reserveData = {
-    firstName: '',
-    lastName: '',
-    phone: '',
-    service: '',
-    date: '',
-    time: ''
+
+const reserveData = {
+
+    firstName: "",
+
+    lastName: "",
+
+    phone: "",
+
+    service: "",
+
+    date: "",
+
+    time: "",
+
+    status: "pending",
+
+    customerId: "",
+
+    createdAt: null
+
 };
 
-// ==================== تابع تغییر مرحله ====================
+
+
+// ================= شروع برنامه =================
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    generateCalendar();
+
+    generateTimes();
+
+    updateStep(1);
+
+    setupServiceSelection();
+
+    setupButtons();
+
+});
+
+
+
+// ================= دکمه ها =================
+
+function setupButtons() {
+
+    document
+        .getElementById("nextBtn")
+        .addEventListener("click", nextStep);
+
+    document
+        .getElementById("prevBtn")
+        .addEventListener("click", prevStep);
+
+    document
+        .getElementById("reserveForm")
+        .addEventListener("submit", submitReserve);
+
+}
+
+
+
+// ================= مراحل =================
 
 function updateStep(step) {
-    // مخفی کردن تمام مراحل
-    document.querySelectorAll('.steps').forEach(s => s.classList.remove('active'));
-    
-    // نمایش مرحله جدید
-    document.getElementById(`step${step}`).classList.add('active');
-    
-    // آپدیت Progress Bar
-    const progress = (step / totalSteps) * 100;
-    document.getElementById('progressFill').style.width = progress + '%';
-    
-    // آپدیت دکمه‌ها
-    document.getElementById('prevBtn').disabled = step === 1;
-    document.getElementById('nextBtn').style.display = step === totalSteps ? 'none' : 'flex';
-    document.getElementById('submitBtn').style.display = step === totalSteps ? 'block' : 'none';
-    
-    // اسکرول به بالا
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    document.querySelectorAll(".steps").forEach(item => {
+
+        item.classList.remove("active");
+
+    });
+
+    document
+        .getElementById("step" + step)
+        .classList.add("active");
+
+
+
+    const percent = (step / totalSteps) * 100;
+
+    document
+        .getElementById("progressFill")
+        .style.width = percent + "%";
+
+
+
+    document
+        .getElementById("prevBtn")
+        .disabled = step === 1;
+
+
+
+    if (step === totalSteps) {
+
+        document.getElementById("nextBtn").style.display = "none";
+
+        document.getElementById("submitBtn").style.display = "block";
+
+    } else {
+
+        document.getElementById("nextBtn").style.display = "flex";
+
+        document.getElementById("submitBtn").style.display = "none";
+
+    }
+
+
+
+    window.scrollTo({
+
+        top: 0,
+
+        behavior: "smooth"
+
+    });
+
 }
+
+
+
+// ================= مرحله بعد =================
 
 function nextStep() {
-    // چک کردن مرحله فعلی
-    if (!validateStep(currentStep)) {
-        return;
-    }
-    
-    // ذخیره داده‌ها
+
+    if (!validateStep(currentStep)) return;
+
     saveStepData(currentStep);
-    
-    if (currentStep < totalSteps) {
-        currentStep++;
-        updateStep(currentStep);
-    }
+
+    currentStep++;
+
+    updateStep(currentStep);
+
 }
+
+
+
+// ================= مرحله قبل =================
 
 function prevStep() {
-    if (currentStep > 1) {
-        currentStep--;
-        updateStep(currentStep);
-    }
+
+    if (currentStep === 1) return;
+
+    currentStep--;
+
+    updateStep(currentStep);
+
 }
 
-// ==================== تابع چک کردن داده‌ها ====================
+
+
+// ================= اعتبارسنجی =================
 
 function validateStep(step) {
-    switch(step) {
+
+    switch (step) {
+
         case 1:
-            const firstName = document.getElementById('firstName').value.trim();
-            const lastName = document.getElementById('lastName').value.trim();
-            const phone = document.getElementById('phone').value.trim();
-            
-            if (!firstName) {
-                alert('لطفاً نام را وارد کنید');
+
+            const firstName = document
+                .getElementById("firstName")
+                .value
+                .trim();
+
+            const lastName = document
+                .getElementById("lastName")
+                .value
+                .trim();
+
+            const phone = document
+                .getElementById("phone")
+                .value
+                .trim();
+
+
+
+            if (firstName.length < 2) {
+
+                alert("نام را وارد کنید.");
+
                 return false;
+
             }
-            if (!lastName) {
-                alert('لطفاً نام خانوادگی را وارد کنید');
+
+
+
+            if (lastName.length < 2) {
+
+                alert("نام خانوادگی را وارد کنید.");
+
                 return false;
+
             }
-            if (!phone) {
-                alert('لطفاً شماره موبایل را وارد کنید');
+
+
+
+            if (!/^09\d{9}$/.test(phone)) {
+
+                alert("شماره موبایل صحیح نیست.");
+
                 return false;
+
             }
-            if (!phone.match(/^09\d{9}$/)) {
-                alert('لطفاً شماره موبایل درست را وارد کنید');
-                return false;
-            }
+
+
+
             return true;
-            
+
+
+
         case 2:
-            const service = document.querySelector('input[name="service"]:checked');
-            if (!service) {
-                alert('لطفاً یک خدمت را انتخاب کنید');
+
+            if (!document.querySelector('input[name="service"]:checked')) {
+
+                alert("لطفاً خدمت را انتخاب کنید.");
+
                 return false;
+
             }
+
             return true;
-            
+
+
+
         case 3:
-            const date = document.querySelector('input[name="date"]:checked');
-            if (!date) {
-                alert('لطفاً یک روز را انتخاب کنید');
+
+            if (!document.querySelector('input[name="date"]:checked')) {
+
+                alert("لطفاً روز را انتخاب کنید.");
+
                 return false;
+
             }
+
             return true;
-            
+
+
+
         case 4:
-            const time = document.querySelector('input[name="time"]:checked');
-            if (!time) {
-                alert('لطفاً یک ساعت را انتخاب کنید');
+
+            if (!document.querySelector('input[name="time"]:checked')) {
+
+                alert("لطفاً ساعت را انتخاب کنید.");
+
                 return false;
+
             }
+
             return true;
+
     }
+
     return true;
-}
 
-// ==================== تابع ذخیره داده‌ها ====================
+}// ===============================
+// ساخت روزهای ۳۰ روز آینده
+// ===============================
 
-function saveStepData(step) {
-    switch(step) {
-        case 1:
-            reserveData.firstName = document.getElementById('firstName').value;
-            reserveData.lastName = document.getElementById('lastName').value;
-            reserveData.phone = document.getElementById('phone').value;
-            break;
-            
-        case 2:
-            reserveData.service = document.querySelector('input[name="service"]:checked').value;
-            break;
-            
-        case 3:
-            reserveData.date = document.querySelector('input[name="date"]:checked').value;
-            break;
-            
-        case 4:
-            reserveData.time = document.querySelector('input[name="time"]:checked').value;
-            break;
-    }
-}
+async function loadDays() {
 
-// ==================== تابع تولید تقویم شمسی ====================
+    const calendar = document.getElementById("calendar");
+    calendar.innerHTML = "";
 
-function generateCalendar() {
-    const calendarDiv = document.getElementById('calendar');
-    calendarDiv.innerHTML = '';
-    
-    // تاریخ امروز
     const today = new Date();
-    
-    // ۳۰ روز آینده
+
     for (let i = 0; i < 30; i++) {
-        const date = new Date(today);
-        date.setDate(date.getDate() + i);
-        
-        // تبدیل به تقویم شمسی (تقریبی)
-        const jalali = gregorianToJalali(date);
-        const dayName = getDayName(date.getDay());
-        
-        const label = `${dayName}\n${jalali.day} ${jalali.month}`;
-        
-        const dayDiv = document.createElement('label');
-        dayDiv.className = 'day-option';
-        dayDiv.innerHTML = `
-            <input type="radio" name="date" value="${date.toISOString().split('T')[0]}">
-            <span>${dayName}<br>${jalali.day}</span>
-        `;
-        
-        dayDiv.addEventListener('click', function() {
-            document.querySelectorAll('.day-option').forEach(d => d.classList.remove('selected'));
-            this.classList.add('selected');
-        });
-        
-        calendarDiv.appendChild(dayDiv);
-    }
-}
 
-// ==================== تابع تبدیل تقویم ====================
+        const date = new Date();
+        date.setDate(today.getDate() + i);
 
-function gregorianToJalali(d) {
-    const gy = d.getFullYear();
-    const gm = d.getMonth() + 1;
-    const gd = d.getDate();
+        const value = date.toISOString().split("T")[0];
 
-    let jy, jm, jd;
-    const g_d_n = 365 * gy + Math.floor((gy + 3) / 4) - Math.floor((gy + 99) / 100) + Math.floor((gy + 399) / 400);
+        const btn = document.createElement("button");
 
-    for (jy = 0; jy <= gy; jy++) {
-        if (jy > 0) {
-            var j_d_n = 365 * jy + Math.floor(jy / 33) * 8 + Math.floor((jy % 33 + 3) / 4);
-            if (g_d_n < j_d_n) {
-                jy--;
-                break;
-            }
-        }
-    }
+        btn.className = "dayBtn";
 
-    const j_day_no = g_d_n - (365 * jy + Math.floor(jy / 33) * 8 + Math.floor((jy % 33 + 3) / 4));
-
-    if (j_day_no < 186) {
-        jm = 1 + Math.floor(j_day_no / 31);
-        jd = 1 + (j_day_no % 31);
-    } else {
-        jm = 7 + Math.floor((j_day_no - 186) / 30);
-        jd = 1 + ((j_day_no - 186) % 30);
-    }
-
-    const months = ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'];
-
-    return {
-        year: jy,
-        month: months[jm - 1],
-        day: jd
-    };
-}
-
-function getDayName(day) {
-    const days = ['یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنج‌شنبه', 'جمعه', 'شنبه'];
-    return days[day];
-}
-
-// ==================== تابع تولید ساعت‌ها ====================
-
-function generateTimes() {
-    const timesGrid = document.getElementById('timesGrid');
-    timesGrid.innerHTML = '';
-    
-    // ساعت‌های ۹ صبح تا ۲۱ شب
-    for (let hour = 9; hour <= 21; hour++) {
-        const timeStr = String(hour).padStart(2, '0') + ':00';
-        
-        // تصادفی: ۳۰% ساعت‌ها رزرو شده
-        const isBooked = Math.random() < 0.3;
-        
-        const timeDiv = document.createElement('label');
-        timeDiv.className = `time-option ${isBooked ? 'booked' : 'available'}`;
-        timeDiv.innerHTML = `
-            <input type="radio" name="time" value="${timeStr}" ${isBooked ? 'disabled' : ''}>
-            <span>${timeStr}</span>
-        `;
-        
-        if (!isBooked) {
-            timeDiv.addEventListener('click', function() {
-                document.querySelectorAll('.time-option').forEach(t => t.classList.remove('selected'));
-                this.classList.add('selected');
+        btn.innerText =
+            date.toLocaleDateString("fa-IR", {
+                weekday: "long",
+                day: "numeric",
+                month: "long"
             });
-        }
-        
-        timesGrid.appendChild(timeDiv);
+
+        btn.onclick = () => {
+
+            document.querySelectorAll(".dayBtn")
+                .forEach(x => x.classList.remove("selected"));
+
+            btn.classList.add("selected");
+
+            reserve.date = value;
+
+            loadTimes(value);
+
+        };
+
+        calendar.appendChild(btn);
+
     }
+
 }
 
-// ==================== تابع ثبت رزرو ====================
 
-function submitReserve(e) {
-    e.preventDefault();
-    
-    // چک کردن مرحله آخر
-    if (!validateStep(4)) {
+
+
+
+
+// ===============================
+// خواندن ساعت‌های بسته
+// ===============================
+
+async function loadTimes(selectedDate) {
+
+    const grid = document.getElementById("timesGrid");
+
+    grid.innerHTML = "";
+
+    const hours = [
+        "09:00",
+        "10:00",
+        "11:00",
+        "12:00",
+        "13:00",
+        "14:00",
+        "15:00",
+        "16:00",
+        "17:00",
+        "18:00",
+        "19:00",
+        "20:00",
+        "21:00"
+    ];
+
+    // خواندن ساعت‌های بسته از Firebase
+
+    const snapshot = await getDocs(collection(db, "closedTimes"));
+
+    let closed = [];
+
+    snapshot.forEach(doc => {
+
+        const data = doc.data();
+
+        if (data.date == selectedDate) {
+
+            closed.push(data.time);
+
+        }
+
+    });
+
+    // خواندن رزروهای ثبت شده
+
+    const reserveSnap = await getDocs(collection(db, "reservations"));
+
+    let booked = [];
+
+    reserveSnap.forEach(doc => {
+
+        const data = doc.data();
+
+        if (data.date == selectedDate) {
+
+            booked.push(data.time);
+
+        }
+
+    });
+
+    hours.forEach(hour => {
+
+        const btn = document.createElement("button");
+
+        btn.innerText = hour;
+
+        if (closed.includes(hour) || booked.includes(hour)) {
+
+            btn.disabled = true;
+
+            btn.className = "timeClosed";
+
+        } else {
+
+            btn.className = "timeOpen";
+
+            btn.onclick = () => {
+
+                document.querySelectorAll(".timeOpen")
+                    .forEach(x => x.classList.remove("selected"));
+
+                btn.classList.add("selected");
+
+                reserve.time = hour;
+
+            };
+
+        }
+
+        grid.appendChild(btn);
+
+    });
+
+}// ===============================
+// ثبت رزرو در Firebase
+// ===============================
+
+async function submitReserve(event) {
+
+    event.preventDefault();
+
+    // بررسی انتخاب ساعت
+    if (!reserve.time) {
+        alert("لطفاً ساعت رزرو را انتخاب کنید.");
         return;
     }
-    
-    // ذخیره داده آخری
-    saveStepData(4);
-    
-    // نمایش پیام موفقیت
-    showSuccessMessage();
-    
-    // ذخیره در Firebase (اگر متصل باشد)
-    if (typeof db !== 'undefined') {
-        saveToFirebase();
+
+    try {
+
+        // ثبت رزرو
+        await addDoc(collection(db, "reservations"), {
+
+            firstName: reserve.firstName,
+
+            lastName: reserve.lastName,
+
+            phone: reserve.phone,
+
+            service: reserve.service,
+
+            date: reserve.date,
+
+            time: reserve.time,
+
+            status: "pending",
+
+            createdAt: serverTimestamp()
+
+        });
+
+
+        // بررسی وجود مشتری
+
+        const customerQuery = query(
+            collection(db, "customers"),
+            where("phone", "==", reserve.phone)
+        );
+
+        const customerSnapshot = await getDocs(customerQuery);
+
+
+        // اگر مشتری وجود نداشت
+
+        if (customerSnapshot.empty) {
+
+            await addDoc(collection(db, "customers"), {
+
+                firstName: reserve.firstName,
+
+                lastName: reserve.lastName,
+
+                phone: reserve.phone,
+
+                birthday: "",
+
+                visits: 0,
+
+                freeHaircut: false,
+
+                favoriteStyle: "",
+
+                createdAt: serverTimestamp()
+
+            });
+
+        }
+
+
+        // نمایش پنجره موفقیت
+
+        const successDetails = document.getElementById("successDetails");
+
+        if (successDetails) {
+
+            successDetails.innerHTML = `
+                <strong>نام:</strong> ${reserve.firstName} ${reserve.lastName}<br>
+                <strong>خدمت:</strong> ${reserve.service}<br>
+                <strong>تاریخ:</strong> ${reserve.date}<br>
+                <strong>ساعت:</strong> ${reserve.time}
+            `;
+
+        }
+
+        document
+            .getElementById("successModal")
+            .classList.add("show");
+
     }
+
+    catch (error) {
+
+        console.error(error);
+
+        alert("ثبت رزرو با خطا مواجه شد.");
+
+    }
+
 }
 
-// ==================== تابع نمایش پیام موفقیت ====================
 
-function showSuccessMessage() {
-    const successDetails = document.getElementById('successDetails');
-    successDetails.innerHTML = `
-        <strong>نام:</strong> ${reserveData.firstName} ${reserveData.lastName}<br>
-        <strong>موبایل:</strong> ${reserveData.phone}<br>
-        <strong>خدمت:</strong> ${reserveData.service}<br>
-        <strong>روز:</strong> ${reserveData.date}<br>
-        <strong>ساعت:</strong> ${reserveData.time}
-    `;
-    
-    document.getElementById('successModal').classList.add('show');
-}
 
-// ==================== توابع کمکی ====================
+// ===============================
+// بازگشت به صفحه اصلی
+// ===============================
 
 function goHome() {
-    window.location.href = 'index.html';
+
+    window.location.href = "index.html";
+
 }
+
+
+
+// ===============================
+// تماس با سالن
+// ===============================
 
 function contactSalon() {
-    window.location.href = 'tel:+989123456789';
-}
 
-// ==================== تابع ذخیره در Firebase ====================
+    window.location.href = "tel:+989123456789";
 
-function saveToFirebase() {
-    try {
-        db.collection('reserves').add({
-            firstName: reserveData.firstName,
-            lastName: reserveData.lastName,
-            phone: reserveData.phone,
-            service: reserveData.service,
-            date: reserveData.date,
-            time: reserveData.time,
-            createdAt: new Date(),
-            status: 'pending'
-        }).then(() => {
-            console.log('رزرو ثبت شد ✅');
-        }).catch(error => {
-            console.error('خطا در ثبت رزرو:', error);
-        });
-    } catch (error) {
-        console.log('Firebase متصل نیست');
+}// ===============================
+// راه‌اندازی اولیه صفحه
+// ===============================
+
+document.addEventListener("DOMContentLoaded", async () => {
+
+    // ساخت روزهای ۳۰ روز آینده
+    await loadDays();
+
+    // دکمه مرحله بعد
+    const nextBtn = document.getElementById("nextBtn");
+
+    if (nextBtn) {
+        nextBtn.addEventListener("click", nextStep);
     }
-}
 
-// ==================== Event Listeners ====================
+    // دکمه مرحله قبل
+    const prevBtn = document.getElementById("prevBtn");
 
-document.addEventListener('DOMContentLoaded', () => {
-    // تولید تقویم
-    generateCalendar();
-    
-    // تولید ساعت‌ها
-    generateTimes();
-    
-    // Radio buttons برای خدمات
-    document.querySelectorAll('.service-option input').forEach(radio => {
-        radio.addEventListener('change', function() {
-            document.querySelectorAll('.service-option').forEach(opt => opt.classList.remove('selected'));
-            this.closest('.service-option').classList.add('selected');
-        });
-    });
-    
-    // ثبت فرم
-    document.getElementById('reserveForm').addEventListener('submit', submitReserve);
-    
-    // مرحله اولیه
+    if (prevBtn) {
+        prevBtn.addEventListener("click", prevStep);
+    }
+
+    // فرم رزرو
+    const reserveForm = document.getElementById("reserveForm");
+
+    if (reserveForm) {
+        reserveForm.addEventListener("submit", submitReserve);
+    }
+
+    // مرحله اول
     updateStep(1);
+
 });
 
-// ==================== منوی کشویی (مثل صفحه اصلی) ====================
+
+
+// ===============================
+// منوی کناری
+// ===============================
 
 function openSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('overlay');
-    
-    sidebar.classList.add('active');
-    overlay.classList.add('active');
-    document.body.style.overflow = 'hidden';
+
+    const sidebar = document.getElementById("sidebar");
+    const overlay = document.getElementById("overlay");
+
+    if (sidebar) sidebar.classList.add("active");
+
+    if (overlay) overlay.classList.add("active");
+
+    document.body.style.overflow = "hidden";
+
 }
+
+
 
 function closeSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('overlay');
-    
-    sidebar.classList.remove('active');
-    overlay.classList.remove('active');
-    document.body.style.overflow = 'auto';
+
+    const sidebar = document.getElementById("sidebar");
+    const overlay = document.getElementById("overlay");
+
+    if (sidebar) sidebar.classList.remove("active");
+
+    if (overlay) overlay.classList.remove("active");
+
+    document.body.style.overflow = "auto";
+
 }
 
-document.querySelectorAll('.nav-link').forEach(link => {
-    link.addEventListener('click', () => {
+
+
+// ===============================
+// بستن منو با کلیک روی لینک‌ها
+// ===============================
+
+document.querySelectorAll(".nav-link").forEach(link => {
+
+    link.addEventListener("click", () => {
+
         closeSidebar();
+
     });
+
 });
+
+
+
+// ===============================
+// بستن پنجره موفقیت
+// ===============================
+
+function closeSuccessModal() {
+
+    document
+        .getElementById("successModal")
+        .classList.remove("show");
+
+}
+
+
+
+// ===============================
+// شروع رزرو جدید
+// ===============================
+
+function newReservation() {
+
+    window.location.reload();
+
+}
