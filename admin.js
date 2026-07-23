@@ -1,110 +1,118 @@
 import { db } from "./firebase.js";
 
 import {
-collection,
-getDocs,
-doc,
-updateDoc,
-query,
-orderBy
+    collection,
+    getDocs,
+    query,
+    orderBy,
+    doc,
+    updateDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-const reservationList = document.getElementById("reservationList");
-const totalReservations = document.getElementById("totalReservations");
-const todayReservations = document.getElementById("todayReservations");
-const monthReservations = document.getElementById("monthReservations");
+const bookingList = document.getElementById("bookingList");
 
-async function loadReservations() {
+const todayBookings = document.getElementById("todayBookings");
+const monthBookings = document.getElementById("monthBookings");
+const customers = document.getElementById("customers");
 
-reservationList.innerHTML = "";
+async function loadDashboard() {
 
-const q = query(
-collection(db, "reservations"),
-orderBy("createdAt", "desc")
-);
+    bookingList.innerHTML = "در حال بارگذاری...";
 
-const snapshot = await getDocs(q);
+    const q = query(
+        collection(db, "reservations"),
+        orderBy("createdAt", "desc")
+    );
 
-let total = 0;
-let today = 0;
-let month = 0;
+    const snapshot = await getDocs(q);
 
-const now = new Date();
+    bookingList.innerHTML = "";
 
-snapshot.forEach(async (item) => {
+    let todayCount = 0;
+    let monthCount = 0;
 
-const data = item.data();
+    const phones = new Set();
 
-total++;
+    const today = new Date();
 
-if (data.date) {
+    snapshot.forEach((item) => {
 
-const reserveDate = new Date(data.date);
+        const data = item.data();
 
-if (
-reserveDate.toDateString() === now.toDateString()
-) {
-today++;
-}
+        // ثبت شماره مشتری
+        if (data.phone) {
+            phones.add(data.phone);
+        }
 
-if (
-reserveDate.getMonth() === now.getMonth() &&
-reserveDate.getFullYear() === now.getFullYear()
-) {
-month++;
-}
+        // شمارش رزروها
+        if (data.date) {
 
-}
+            const reserveDate = new Date(data.date);
 
-const card = document.createElement("div");
+            if (reserveDate.toDateString() === today.toDateString()) {
+                todayCount++;
+            }
 
-card.className = "card";
+            const diff =
+                (today - reserveDate) /
+                (1000 * 60 * 60 * 24);
 
-card.innerHTML = `
-<h3>${data.name}</h3>
+            if (diff <= 30 && diff >= 0) {
+                monthCount++;
+            }
+        }
+
+        const card = document.createElement("div");
+        card.className = "booking-card";
+
+        card.innerHTML = `
+
+<h3>${data.firstName} ${data.lastName}</h3>
 
 <p>📞 ${data.phone}</p>
+
+<p>💇 ${data.service}</p>
 
 <p>📅 ${data.date}</p>
 
 <p>🕒 ${data.time}</p>
 
-<p>💇 ${data.service}</p>
-
 <p>
-وضعیت:
+وضعیت :
 <b>${data.status || "در انتظار"}</b>
 </p>
 
-<button class="done">
+<button class="doneBtn">
 انجام شد
 </button>
 
 <hr>
+
 `;
 
-reservationList.appendChild(card);
+        bookingList.appendChild(card);
 
-card.querySelector(".done").onclick = async () => {
+        card.querySelector(".doneBtn").onclick = async () => {
 
-await updateDoc(doc(db,"reservations",item.id),{
+            await updateDoc(
+                doc(db, "reservations", item.id),
+                {
+                    status: "انجام شد"
+                }
+            );
 
-status:"انجام شد"
+            loadDashboard();
 
-});
+        };
 
-loadReservations();
+    });
 
-};
+    todayBookings.innerText = todayCount;
 
-});
+    monthBookings.innerText = monthCount;
 
-totalReservations.innerText = total;
-
-todayReservations.innerText = today;
-
-monthReservations.innerText = month;
+    customers.innerText = phones.size;
 
 }
 
-loadReservations();
+loadDashboard();
