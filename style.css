@@ -1,510 +1,1204 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+/* ===================================================
+   سالن معجزه
+   Version 3.0
+   Global Style Sheet
+=================================================== */
+
+
+/*=====================
+        Font
+======================*/
+
+@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;900&display=swap');
+
+
+/*=====================
+      Variables
+======================*/
+
+:root{
+
+--gold:#D4AF37;
+--gold-light:#E6C766;
+
+--black:#0D0D0D;
+--black2:#171717;
+
+--white:#ffffff;
+
+--gray:#CFCFCF;
+
+--green:#27AE60;
+
+--red:#E53935;
+
+--border:rgba(212,175,55,.25);
+
+--shadow:0 15px 45px rgba(0,0,0,.35);
+
+--radius:18px;
+
+--transition:.35s;
+
 }
 
-body {
-    background-color: #0a0a0a;
-    color: #ffffff;
-    font-family: 'Tahoma', 'Segoe UI', sans-serif;
-    line-height: 1.6;
-    overflow-x: hidden;
+
+
+/*=====================
+     Reset
+======================*/
+
+*{
+
+margin:0;
+
+padding:0;
+
+box-sizing:border-box;
+
+scroll-behavior:smooth;
+
 }
 
-/* ==================== منوی کشویی ==================== */
 
-.sidebar {
-    position: fixed;
-    top: 0;
-    right: -300px;
-    width: 280px;
-    height: 100vh;
-    background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
-    z-index: 1000;
-    transition: right 0.3s ease;
-    border-left: 2px solid #d4af37;
-    overflow-y: auto;
-    padding-top: 60px;
+html{
+
+scroll-behavior:smooth;
+
 }
 
-.sidebar.active {
-    right: 0;
+
+body{
+
+font-family:'Vazirmatn',sans-serif;
+
+background:var(--black);
+
+color:var(--white);
+
+overflow-x:hidden;
+
+line-height:1.8;
+
 }
 
-.close-btn {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    background: none;
-    border: none;
-    color: #d4af37;
-    font-size: 28px;
-    cursor: pointer;
-    transition: transform 0.2s ease;
+
+img{
+
+display:block;
+
+max-width:100%;
+
 }
 
-.close-btn:hover {
-    transform: rotate(90deg);
+
+a{
+
+text-decoration:none;
+
+color:inherit;
+
 }
 
-.sidebar-nav {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
+
+button{
+
+font-family:'Vazirmatn';
+
+cursor:pointer;
+
 }
 
-.nav-link {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    padding: 18px 25px;
-    color: #ffffff;
-    text-decoration: none;
-    font-size: 16px;
-    transition: all 0.3s ease;
-    border-right: 3px solid transparent;
+
+ul{
+
+list-style:none;
+
 }
 
-.nav-link:hover {
-    background: rgba(212, 175, 55, 0.1);
-    color: #d4af37;
-    border-right-color: #d4af37;
-    padding-right: 20px;
+
+
+/*=====================
+ Scrollbar
+======================*/
+
+::-webkit-scrollbar{
+
+width:10px;
+
 }
 
-.nav-link i {
-    font-size: 20px;
+::-webkit-scrollbar-track{
+
+background:#111;
+
 }
 
-.overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.7);
-    display: none;
-    z-index: 999;
-    opacity: 0;
-    transition: opacity 0.3s ease;
+::-webkit-scrollbar-thumb{
+
+background:var(--gold);
+
+border-radius:30px;
+
 }
 
-.overlay.active {
-    display: block;
-    opacity: 1;
+
+
+/*=====================
+ Loader
+======================*/
+
+.loader{
+
+position:fixed;
+
+inset:0;
+
+background:#000;
+
+display:flex;
+
+justify-content:center;
+
+align-items:center;
+
+z-index:99999;
+
+transition:.5s;
+
 }
 
-/* ==================== هدر ==================== */
 
-.header {
-    position: sticky;
-    top: 0;
-    background: rgba(15, 15, 15, 0.95);
-    backdrop-filter: blur(10px);
-    padding: 15px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    z-index: 100;
-    border-bottom: 2px solid #d4af37;
+.loader.hide{
+
+opacity:0;
+
+visibility:hidden;
+
 }
 
-.menu-btn {
-    background: none;
-    border: none;
-    color: #d4af37;
-    font-size: 24px;
-    cursor: pointer;
-    transition: transform 0.3s ease;
-    padding: 8px;
+
+.loader-circle{
+
+width:70px;
+
+height:70px;
+
+border-radius:50%;
+
+border:4px solid rgba(255,255,255,.15);
+
+border-top:4px solid var(--gold);
+
+animation:spin 1s linear infinite;
+
 }
 
-.menu-btn:hover {
-    transform: scale(1.1);
+
+@keyframes spin{
+
+100%{
+
+transform:rotate(360deg);
+
 }
 
-.logo-container {
-    flex: 1;
-    text-align: center;
 }
 
-.logo {
-    height: 45px;
-    object-fit: contain;
+
+
+/*=====================
+ Header
+======================*/
+
+header{
+
+position:fixed;
+
+top:0;
+
+right:0;
+
+left:0;
+
+height:72px;
+
+display:flex;
+
+justify-content:space-between;
+
+align-items:center;
+
+padding:0 22px;
+
+z-index:2000;
+
+background:rgba(0,0,0,.35);
+
+backdrop-filter:blur(18px);
+
+border-bottom:1px solid rgba(255,255,255,.05);
+
 }
 
-/* ==================== بخش هیرو ==================== */
 
-.hero {
-    background: linear-gradient(
-        135deg,
-        rgba(0, 0, 0, 0.6) 0%,
-        rgba(0, 0, 0, 0.7) 50%,
-        rgba(0, 0, 0, 0.6) 100%
-    ),
-    url('images/hero.jpg') center/cover no-repeat;
-    background-attachment: fixed;
-    min-height: 70vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
+.logo{
+
+height:52px;
+
 }
 
-.hero::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: radial-gradient(circle at center, transparent 0%, rgba(0, 0, 0, 0.4) 100%);
-    pointer-events: none;
+
+.menu-btn{
+
+width:46px;
+
+height:46px;
+
+border:none;
+
+background:rgba(255,255,255,.05);
+
+color:var(--gold);
+
+border-radius:50%;
+
+font-size:21px;
+
+transition:.3s;
+
 }
 
-.hero-content {
-    position: relative;
-    z-index: 2;
-    animation: fadeInUp 1s ease-out;
+
+.menu-btn:hover{
+
+background:var(--gold);
+
+color:#000;
+
 }
 
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+
+
+/*=====================
+ Sidebar
+======================*/
+
+.sidebar{
+
+position:fixed;
+
+top:0;
+
+right:-320px;
+
+width:300px;
+
+height:100vh;
+
+background:#121212;
+
+transition:.4s;
+
+z-index:3000;
+
+padding:30px;
+
+overflow:auto;
+
+border-left:1px solid var(--border);
+
 }
 
-.hero-title {
-    font-size: 48px;
-    color: #d4af37;
-    margin-bottom: 15px;
-    font-weight: bold;
-    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
-    letter-spacing: 2px;
+
+.sidebar.active{
+
+right:0;
+
 }
 
-.hero-subtitle {
-    font-size: 24px;
-    color: #ffffff;
-    margin-bottom: 35px;
-    text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.8);
-    font-weight: 300;
+
+.overlay{
+
+position:fixed;
+
+inset:0;
+
+background:rgba(0,0,0,.65);
+
+display:none;
+
+z-index:2500;
+
 }
 
-.cta-button {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    background: linear-gradient(135deg, #d4af37 0%, #e8c547 100%);
-    color: #000000;
-    padding: 18px 50px;
-    border-radius: 50px;
-    text-decoration: none;
-    font-size: 18px;
-    font-weight: bold;
-    transition: all 0.3s ease;
-    box-shadow: 0 8px 25px rgba(212, 175, 55, 0.3);
-    cursor: pointer;
-    border: none;
+
+.overlay.active{
+
+display:block;
+
 }
 
-.cta-button:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 12px 35px rgba(212, 175, 55, 0.5);
-    background: linear-gradient(135deg, #e8c547 0%, #d4af37 100%);
+
+.close-btn{
+
+background:none;
+
+border:none;
+
+color:white;
+
+font-size:28px;
+
+margin-bottom:25px;
+
 }
 
-.cta-button:active {
-    transform: translateY(-1px);
+
+.sidebar nav{
+
+display:flex;
+
+flex-direction:column;
+
+gap:18px;
+
 }
 
-/* ==================== عنوان بخش‌ها ==================== */
 
-.section-title {
-    font-size: 36px;
-    color: #d4af37;
-    text-align: center;
-    margin-bottom: 40px;
-    position: relative;
-    display: inline-block;
-    width: 100%;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+.sidebar nav a{
+
+padding:15px;
+
+border-radius:12px;
+
+transition:.3s;
+
+font-size:16px;
+
 }
 
-.section-title::after {
-    content: '';
-    position: absolute;
-    bottom: -15px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 80px;
-    height: 3px;
-    background: linear-gradient(90deg, transparent, #d4af37, transparent);
-    border-radius: 2px;
+
+.sidebar nav a:hover{
+
+background:rgba(212,175,55,.15);
+
+color:var(--gold);
+
+padding-right:22px;
+
+}
+/*==================================================
+                    HERO
+==================================================*/
+
+.hero{
+
+position:relative;
+
+width:100%;
+
+min-height:100vh;
+
+overflow:hidden;
+
 }
 
-/* ==================== بخش خدمات ==================== */
 
-.services {
-    padding: 60px 20px;
-    background: linear-gradient(
-        135deg,
-        rgba(15, 15, 15, 0.9) 0%,
-        rgba(20, 20, 20, 0.9) 100%
-    );
-    border-top: 1px solid rgba(212, 175, 55, 0.2);
-    border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+.hero-image{
+
+width:100%;
+
+display:block;
+
 }
 
-.services-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 25px;
-    max-width: 1200px;
-    margin: 0 auto;
+
+.hero-overlay{
+
+position:absolute;
+
+inset:0;
+
+background:linear-gradient(
+
+180deg,
+
+rgba(0,0,0,.20) 0%,
+
+rgba(0,0,0,.40) 40%,
+
+rgba(0,0,0,.65) 100%
+
+);
+
+display:flex;
+
+justify-content:center;
+
+align-items:center;
+
+text-align:center;
+
+padding:30px;
+
 }
 
-.service-card {
-    background: linear-gradient(
-        135deg,
-        rgba(212, 175, 55, 0.08) 0%,
-        rgba(212, 175, 55, 0.03) 100%
-    );
-    border: 2px solid rgba(212, 175, 55, 0.3);
-    border-radius: 15px;
-    padding: 30px 20px;
-    text-align: center;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
+
+.hero-content{
+
+max-width:650px;
+
+animation:heroFade 1.2s ease;
+
 }
 
-.service-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: rgba(212, 175, 55, 0.1);
-    transition: left 0.3s ease;
-    z-index: 0;
+
+@keyframes heroFade{
+
+from{
+
+opacity:0;
+
+transform:translateY(50px);
+
 }
 
-.service-card:hover::before {
-    left: 100%;
+to{
+
+opacity:1;
+
+transform:translateY(0);
+
 }
 
-.service-card:hover {
-    border-color: #d4af37;
-    transform: translateY(-8px);
-    box-shadow: 0 15px 40px rgba(212, 175, 55, 0.2);
 }
 
-.service-icon {
-    font-size: 48px;
-    margin-bottom: 15px;
-    animation: bounce 2s infinite;
+
+.hero-logo{
+
+width:170px;
+
+margin:auto;
+
+margin-bottom:25px;
+
+filter:drop-shadow(0 0 18px rgba(212,175,55,.45));
+
 }
 
-.service-card:nth-child(2) .service-icon {
-    animation-delay: 0.2s;
+
+.hero-title{
+
+font-size:48px;
+
+font-weight:900;
+
+color:var(--gold);
+
+margin-bottom:18px;
+
+text-shadow:0 0 18px rgba(0,0,0,.7);
+
 }
 
-.service-card:nth-child(3) .service-icon {
-    animation-delay: 0.4s;
+
+.hero-subtitle{
+
+font-size:22px;
+
+color:white;
+
+margin-bottom:45px;
+
+line-height:2;
+
 }
 
-.service-card:nth-child(4) .service-icon {
-    animation-delay: 0.6s;
+
+.reserve-button{
+
+display:inline-flex;
+
+align-items:center;
+
+justify-content:center;
+
+gap:12px;
+
+width:230px;
+
+height:230px;
+
+border-radius:50%;
+
+background:rgba(212,175,55,.10);
+
+border:3px solid var(--gold);
+
+backdrop-filter:blur(10px);
+
+color:white;
+
+font-size:28px;
+
+font-weight:700;
+
+transition:var(--transition);
+
+box-shadow:0 0 35px rgba(212,175,55,.25);
+
 }
 
-@keyframes bounce {
-    0%, 100% {
-        transform: translateY(0);
-    }
-    50% {
-        transform: translateY(-10px);
-    }
+
+.reserve-button:hover{
+
+background:var(--gold);
+
+color:black;
+
+transform:scale(1.07);
+
+box-shadow:0 0 50px rgba(212,175,55,.55);
+
 }
 
-.service-card h3 {
-    color: #d4af37;
-    font-size: 20px;
-    margin-bottom: 10px;
-    position: relative;
-    z-index: 1;
+
+.reserve-button i{
+
+font-size:34px;
+
 }
 
-.service-card p {
-    color: #cccccc;
-    font-size: 14px;
-    position: relative;
-    z-index: 1;
+
+
+/*==================================================
+                HERO SCROLL
+==================================================*/
+
+.hero-scroll{
+
+position:absolute;
+
+bottom:30px;
+
+left:50%;
+
+transform:translateX(-50%);
+
+color:white;
+
+font-size:14px;
+
+display:flex;
+
+flex-direction:column;
+
+align-items:center;
+
+gap:10px;
+
+animation:scrollMove 2s infinite;
+
 }
 
-/* ==================== بخش درباره ==================== */
 
-.about {
-    padding: 60px 20px;
-    background: #0a0a0a;
+.hero-scroll i{
+
+font-size:24px;
+
+color:var(--gold);
+
 }
 
-.about-content {
-    max-width: 800px;
-    margin: 0 auto;
-    text-align: center;
+
+@keyframes scrollMove{
+
+0%{
+
+transform:translate(-50%,0);
+
+opacity:1;
+
 }
 
-.about-content p {
-    font-size: 16px;
-    color: #dddddd;
-    line-height: 2;
-    letter-spacing: 0.5px;
+50%{
+
+transform:translate(-50%,10px);
+
+opacity:.5;
+
 }
 
-/* ==================== بخش تماس ==================== */
+100%{
 
-.contact {
-    padding: 60px 20px;
-    background: linear-gradient(
-        135deg,
-        rgba(15, 15, 15, 0.9) 0%,
-        rgba(20, 20, 20, 0.9) 100%
-    );
-    border-top: 1px solid rgba(212, 175, 55, 0.2);
+transform:translate(-50%,0);
+
+opacity:1;
+
 }
 
-.contact-info {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 25px;
-    max-width: 1000px;
-    margin: 0 auto;
 }
 
-.contact-item {
-    background: rgba(212, 175, 55, 0.05);
-    border: 2px solid rgba(212, 175, 55, 0.2);
-    border-radius: 12px;
-    padding: 25px;
-    text-align: center;
-    transition: all 0.3s ease;
+
+
+/*==================================================
+               MAIN SECTIONS
+==================================================*/
+
+section{
+
+padding:90px 25px;
+
 }
 
-.contact-item:hover {
-    border-color: #d4af37;
-    background: rgba(212, 175, 55, 0.1);
-    transform: translateY(-5px);
-    box-shadow: 0 10px 30px rgba(212, 175, 55, 0.15);
+
+.section-title{
+
+text-align:center;
+
+font-size:36px;
+
+font-weight:900;
+
+color:var(--gold);
+
+margin-bottom:20px;
+
 }
 
-.contact-item i {
-    font-size: 32px;
-    color: #d4af37;
-    margin-bottom: 15px;
-    display: block;
+
+.section-subtitle{
+
+text-align:center;
+
+color:var(--gray);
+
+font-size:17px;
+
+max-width:700px;
+
+margin:auto;
+
+margin-bottom:55px;
+
+line-height:2;
+
 }
 
-.contact-item p {
-    color: #dddddd;
-    font-size: 15px;
-    line-height: 1.8;
+
+
+/*==================================================
+             GLASS CARD
+==================================================*/
+
+.glass-card{
+
+background:rgba(255,255,255,.03);
+
+border:1px solid var(--border);
+
+border-radius:var(--radius);
+
+backdrop-filter:blur(15px);
+
+box-shadow:var(--shadow);
+
+transition:var(--transition);
+
 }
 
-.contact-item a {
-    color: #d4af37;
-    text-decoration: none;
-    font-weight: bold;
-    transition: color 0.3s ease;
+
+.glass-card:hover{
+
+transform:translateY(-8px);
+
+border-color:var(--gold);
+
 }
 
-.contact-item a:hover {
-    color: #e8c547;
-    text-decoration: underline;
+
+
+/*==================================================
+              SERVICE CARDS
+==================================================*/
+
+.services{
+
+display:grid;
+
+grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+
+gap:25px;
+
 }
 
-/* ==================== فوتر ==================== */
 
-.footer {
-    background: rgba(15, 15, 15, 0.95);
-    border-top: 2px solid #d4af37;
-    padding: 30px 20px;
-    text-align: center;
-    color: #d4af37;
-    font-size: 14px;
-    margin-top: 40px;
+.service-card{
+
+padding:35px;
+
+text-align:center;
+
 }
 
-.footer p {
-    margin: 0;
+
+.service-card i{
+
+font-size:55px;
+
+color:var(--gold);
+
+margin-bottom:25px;
+
 }
 
-/* ==================== Responsive ==================== */
 
-@media (max-width: 768px) {
-    .hero-title {
-        font-size: 36px;
-    }
+.service-card h3{
 
-    .hero-subtitle {
-        font-size: 18px;
-    }
+font-size:24px;
 
-    .cta-button {
-        padding: 15px 35px;
-        font-size: 16px;
-    }
+margin-bottom:15px;
 
-    .section-title {
-        font-size: 28px;
-    }
-
-    .services-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .contact-info {
-        grid-template-columns: 1fr;
-    }
 }
 
-@media (max-width: 480px) {
-    .hero {
-        min-height: 50vh;
-    }
 
-    .hero-title {
-        font-size: 28px;
-    }
+.service-card p{
 
-    .hero-subtitle {
-        font-size: 16px;
-        margin-bottom: 25px;
-    }
+color:var(--gray);
 
-    .cta-button {
-        padding: 12px 25px;
-        font-size: 14px;
-    }
+line-height:2;
 
-    .section-title {
-        font-size: 24px;
-    }
+}
 
-    .services {
-        padding: 40px 15px;
-    }
 
-    .contact {
-        padding: 40px 15px;
-    }
-        }
+
+/*==================================================
+                ABOUT
+==================================================*/
+
+.about{
+
+display:grid;
+
+grid-template-columns:1fr 1fr;
+
+gap:45px;
+
+align-items:center;
+
+}
+
+
+.about img{
+
+border-radius:18px;
+
+}
+
+
+.about-text h2{
+
+font-size:36px;
+
+color:var(--gold);
+
+margin-bottom:20px;
+
+}
+
+
+.about-text p{
+
+color:var(--gray);
+
+line-height:2.2;
+
+font-size:17px;
+
+}
+/*==================================================
+                CONTACT SECTION
+==================================================*/
+
+.contact-container{
+
+max-width:1200px;
+
+margin:auto;
+
+}
+
+.contact-grid{
+
+display:grid;
+
+grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+
+gap:25px;
+
+margin-top:40px;
+
+}
+
+.contact-card{
+
+background:rgba(255,255,255,.03);
+
+border:1px solid var(--border);
+
+border-radius:18px;
+
+padding:35px 20px;
+
+text-align:center;
+
+transition:.35s;
+
+backdrop-filter:blur(12px);
+
+box-shadow:var(--shadow);
+
+}
+
+.contact-card:hover{
+
+transform:translateY(-10px);
+
+border-color:var(--gold);
+
+background:rgba(212,175,55,.08);
+
+}
+
+.contact-card i{
+
+font-size:45px;
+
+color:var(--gold);
+
+margin-bottom:20px;
+
+}
+
+.contact-card h3{
+
+font-size:22px;
+
+margin-bottom:12px;
+
+}
+
+.contact-card span{
+
+font-size:15px;
+
+color:var(--gray);
+
+}
+
+
+
+/*==================================================
+                    FOOTER
+==================================================*/
+
+footer{
+
+margin-top:80px;
+
+padding:60px 20px 40px;
+
+background:#080808;
+
+border-top:1px solid rgba(255,255,255,.06);
+
+text-align:center;
+
+}
+
+.footer-logo img{
+
+width:95px;
+
+margin:auto;
+
+margin-bottom:15px;
+
+}
+
+.footer-logo h2{
+
+color:var(--gold);
+
+margin-bottom:15px;
+
+}
+
+footer p{
+
+color:var(--gray);
+
+line-height:2;
+
+}
+
+.footer-links{
+
+display:flex;
+
+justify-content:center;
+
+flex-wrap:wrap;
+
+gap:18px;
+
+margin:35px 0;
+
+}
+
+.footer-links a{
+
+padding:12px 18px;
+
+border-radius:12px;
+
+transition:.3s;
+
+}
+
+.footer-links a:hover{
+
+background:rgba(212,175,55,.12);
+
+color:var(--gold);
+
+}
+
+.copyright{
+
+margin-top:25px;
+
+font-size:14px;
+
+opacity:.7;
+
+}
+
+
+
+/*==================================================
+             BACK TO TOP BUTTON
+==================================================*/
+
+#backToTop{
+
+position:fixed;
+
+left:25px;
+
+bottom:25px;
+
+width:52px;
+
+height:52px;
+
+border:none;
+
+border-radius:50%;
+
+background:var(--gold);
+
+color:#000;
+
+font-size:22px;
+
+cursor:pointer;
+
+display:none;
+
+z-index:5000;
+
+transition:.35s;
+
+box-shadow:0 12px 30px rgba(0,0,0,.35);
+
+}
+
+#backToTop:hover{
+
+transform:translateY(-5px);
+
+}
+
+#backToTop.show{
+
+display:block;
+
+}
+
+
+
+/*==================================================
+               FADE ANIMATION
+==================================================*/
+
+.fade-up{
+
+opacity:0;
+
+transform:translateY(40px);
+
+transition:.8s;
+
+}
+
+.fade-up.show{
+
+opacity:1;
+
+transform:none;
+
+}
+
+
+
+/*==================================================
+                 MOBILE
+==================================================*/
+
+@media(max-width:992px){
+
+.hero-title{
+
+font-size:38px;
+
+}
+
+.hero-subtitle{
+
+font-size:18px;
+
+}
+
+.about{
+
+grid-template-columns:1fr;
+
+}
+
+}
+
+
+
+@media(max-width:768px){
+
+header{
+
+height:65px;
+
+padding:0 15px;
+
+}
+
+.logo{
+
+height:46px;
+
+}
+
+.hero-logo{
+
+width:130px;
+
+}
+
+.hero-title{
+
+font-size:30px;
+
+}
+
+.hero-subtitle{
+
+font-size:16px;
+
+}
+
+.reserve-button{
+
+width:170px;
+
+height:170px;
+
+font-size:22px;
+
+}
+
+.section-title{
+
+font-size:28px;
+
+}
+
+.services{
+
+grid-template-columns:1fr;
+
+}
+
+.contact-grid{
+
+grid-template-columns:1fr;
+
+}
+
+.footer-links{
+
+flex-direction:column;
+
+}
+
+}
+
+
+
+@media(max-width:480px){
+
+.hero-title{
+
+font-size:26px;
+
+}
+
+.hero-subtitle{
+
+font-size:15px;
+
+line-height:2;
+
+}
+
+.reserve-button{
+
+width:145px;
+
+height:145px;
+
+font-size:19px;
+
+}
+
+section{
+
+padding:70px 18px;
+
+}
+
+}
+
+
+
+/*==================================================
+               END STYLE
+==================================================*/
