@@ -1,118 +1,538 @@
+// ==========================================
+// پنل مدیریت سالن معجزه
+// admin.js
+// Version 3.0
+// ==========================================
+
+
+
+// ================= Firebase =================
+
 import { db } from "./firebase.js";
 
 import {
-    collection,
-    getDocs,
-    query,
-    orderBy,
-    doc,
-    updateDoc
+
+collection,
+
+getDocs,
+
+query,
+
+orderBy,
+
+doc,
+
+updateDoc,
+
+deleteDoc
+
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-const bookingList = document.getElementById("bookingList");
 
-const todayBookings = document.getElementById("todayBookings");
-const monthBookings = document.getElementById("monthBookings");
-const customers = document.getElementById("customers");
 
-async function loadDashboard() {
+// ================= عناصر صفحه =================
 
-    bookingList.innerHTML = "در حال بارگذاری...";
+const reservationList =
+document.getElementById("reservationList");
 
-    const q = query(
-        collection(db, "reservations"),
-        orderBy("createdAt", "desc")
-    );
+const customerDetails =
+document.getElementById("customerDetails");
 
-    const snapshot = await getDocs(q);
+const historyList =
+document.getElementById("historyList");
 
-    bookingList.innerHTML = "";
 
-    let todayCount = 0;
-    let monthCount = 0;
 
-    const phones = new Set();
+const todayReservations =
+document.getElementById("todayReservations");
 
-    const today = new Date();
+const tomorrowReservations =
+document.getElementById("tomorrowReservations");
 
-    snapshot.forEach((item) => {
+const monthReservations =
+document.getElementById("monthReservations");
 
-        const data = item.data();
+const totalCustomers =
+document.getElementById("totalCustomers");
 
-        // ثبت شماره مشتری
-        if (data.phone) {
-            phones.add(data.phone);
-        }
+const giftCustomers =
+document.getElementById("giftCustomers");
 
-        // شمارش رزروها
-        if (data.date) {
+const todayBirthdays =
+document.getElementById("todayBirthdays");
 
-            const reserveDate = new Date(data.date);
+const tomorrowBirthdays =
+document.getElementById("tomorrowBirthdays");
 
-            if (reserveDate.toDateString() === today.toDateString()) {
-                todayCount++;
-            }
 
-            const diff =
-                (today - reserveDate) /
-                (1000 * 60 * 60 * 24);
 
-            if (diff <= 30 && diff >= 0) {
-                monthCount++;
-            }
-        }
+let reservations = [];
 
-        const card = document.createElement("div");
-        card.className = "booking-card";
+let selectedReservation = null;
 
-        card.innerHTML = `
 
-<h3>${data.firstName} ${data.lastName}</h3>
 
-<p>📞 ${data.phone}</p>
+// ================= تاریخ امروز =================
 
-<p>💇 ${data.service}</p>
+const todayElement =
+document.getElementById("todayDate");
 
-<p>📅 ${data.date}</p>
+todayElement.innerHTML =
+new Date().toLocaleDateString("fa-IR",{
 
-<p>🕒 ${data.time}</p>
+weekday:"long",
 
-<p>
-وضعیت :
-<b>${data.status || "در انتظار"}</b>
-</p>
+year:"numeric",
 
-<button class="doneBtn">
-انجام شد
-</button>
+month:"long",
 
-<hr>
+day:"numeric"
 
-`;
+});
 
-        bookingList.appendChild(card);
 
-        card.querySelector(".doneBtn").onclick = async () => {
 
-            await updateDoc(
-                doc(db, "reservations", item.id),
-                {
-                    status: "انجام شد"
-                }
-            );
+// ================= وضعیت =================
 
-            loadDashboard();
+const STATUS = {
 
-        };
+WAIT:"در انتظار",
 
-    });
+DONE:"انجام شد",
 
-    todayBookings.innerText = todayCount;
+CANCEL:"لغو شده"
 
-    monthBookings.innerText = monthCount;
+};
+// ==========================================
+// دریافت رزروها از Firebase
+// ==========================================
 
-    customers.innerText = phones.size;
+async function loadReservations() {
+
+    reservationList.innerHTML = "در حال بارگذاری...";
+
+    reservations = [];
+
+    try {
+
+        const q = query(
+            collection(db, "reservations"),
+            orderBy("createdAt", "desc")
+        );
+
+        const snapshot = await getDocs(q);
+
+        reservationList.innerHTML = "";
+
+        snapshot.forEach((document) => {
+
+            const data = document.data();
+
+            reservations.push({
+                id: document.id,
+                ...data
+            });
+
+        });
+
+        calculateDashboard();
+
+        renderReservations();
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        reservationList.innerHTML =
+            "خطا در دریافت اطلاعات";
+
+    }
 
 }
 
-loadDashboard();
+
+
+// ==========================================
+// محاسبه آمار داشبورد
+// ==========================================
+
+function calculateDashboard() {
+
+    const today =
+        new Date().toISOString().split("T")[0];
+
+    const tomorrowDate = new Date();
+
+    tomorrowDate.setDate(
+        tomorrowDate.getDate() + 1
+    );
+
+    const tomorrow =
+        tomorrowDate.toISOString().split("T")[0];
+
+
+
+    let todayCount = 0;
+
+    let tomorrowCount = 0;
+
+    let monthCount = reservations.length;
+
+
+
+    reservations.forEach(item => {
+
+        if (item.date === today)
+            todayCount++;
+
+        if (item.date === tomorrow)
+            tomorrowCount++;
+
+    });
+
+
+
+    todayReservations.innerText =
+        todayCount;
+
+    tomorrowReservations.innerText =
+        tomorrowCount;
+
+    monthReservations.innerText =
+        monthCount;
+
+
+
+    // فعلاً مقدار آزمایشی
+    totalCustomers.innerText =
+        reservations.length;
+
+    giftCustomers.innerText = 0;
+
+    todayBirthdays.innerText = 0;
+
+    tomorrowBirthdays.innerText = 0;
+
+}
+
+
+
+// ==========================================
+// نمایش رزروها
+// ==========================================
+
+function renderReservations() {
+
+    reservationList.innerHTML = "";
+
+    reservations.forEach(item => {
+
+        const card =
+            document.createElement("div");
+
+        card.className =
+            "reservation-item";
+
+
+
+        let statusClass =
+            "status-wait";
+
+        if (item.status === STATUS.DONE)
+            statusClass = "status-done";
+
+        if (item.status === STATUS.CANCEL)
+            statusClass = "status-cancel";
+
+
+
+        card.innerHTML = `
+
+            <div class="reservation-info">
+
+                <h3>
+
+                    ${item.firstName}
+                    ${item.lastName}
+
+                </h3>
+
+                <p>
+
+                    📞 ${item.phone}
+
+                </p>
+
+                <p>
+
+                    ✂ ${item.service}
+
+                </p>
+
+                <p>
+
+                    📅 ${item.date}
+
+                </p>
+
+                <p>
+
+                    🕒 ${item.time}
+
+                </p>
+
+            </div>
+
+            <div>
+
+                <span class="reservation-status ${statusClass}">
+
+                    ${item.status}
+
+                </span>
+
+            </div>
+
+        `;
+
+
+
+        card.onclick = () => {
+
+            selectedReservation = item;
+
+            showCustomer(item);
+
+        };
+
+
+
+        reservationList.appendChild(card);
+
+    });
+
+}
+// ==========================================
+// نمایش اطلاعات کامل مشتری
+// ==========================================
+
+function showCustomer(customer) {
+
+    customerDetails.innerHTML = `
+
+    <div class="customer-profile">
+
+        <div class="profile-item">
+            <h4>نام و نام خانوادگی</h4>
+            <p>${customer.firstName} ${customer.lastName}</p>
+        </div>
+
+        <div class="profile-item">
+            <h4>شماره موبایل</h4>
+            <p>${customer.phone}</p>
+        </div>
+
+        <div class="profile-item">
+            <h4>آخرین مراجعه</h4>
+            <p>${customer.date}</p>
+        </div>
+
+        <div class="profile-item">
+            <h4>ساعت</h4>
+            <p>${customer.time}</p>
+        </div>
+
+        <div class="profile-item">
+            <h4>خدمت</h4>
+            <p>${customer.service}</p>
+        </div>
+
+        <div class="profile-item">
+            <h4>وضعیت</h4>
+            <p>${customer.status}</p>
+        </div>
+
+        <div class="profile-item">
+            <h4>تعداد مراجعات</h4>
+            <p>${customer.visitCount || 1}</p>
+        </div>
+
+        <div class="profile-item">
+            <h4>هدیه رایگان</h4>
+            <p>${customer.freeGift ? "🎁 آماده" : "❌ ندارد"}</p>
+        </div>
+
+        <div class="profile-item">
+            <h4>تاریخ تولد</h4>
+            <p>${customer.birthDate || "ثبت نشده"}</p>
+        </div>
+
+        <div class="profile-item">
+            <h4>مدل موی همیشگی</h4>
+            <p>${customer.favoriteModel || "ثبت نشده"}</p>
+        </div>
+
+        <div class="profile-item">
+            <h4>یادداشت آرایشگر</h4>
+            <p>${customer.note || "-"}</p>
+        </div>
+
+    </div>
+
+    `;
+
+    historyList.innerHTML = `
+
+        <div class="history-item">
+
+            <h4>${customer.date}</h4>
+
+            <p>
+
+                ${customer.service}
+
+                |
+
+                ${customer.time}
+
+            </p>
+
+        </div>
+
+    `;
+
+}
+
+
+
+// ==========================================
+// انجام شدن رزرو
+// ==========================================
+
+document
+.getElementById("btnDone")
+.onclick = async () => {
+
+    if(!selectedReservation){
+
+        alert("ابتدا یک رزرو را انتخاب کنید.");
+
+        return;
+
+    }
+
+    await updateDoc(
+
+        doc(
+            db,
+            "reservations",
+            selectedReservation.id
+        ),
+
+        {
+            status:STATUS.DONE
+        }
+
+    );
+
+    loadReservations();
+
+};
+
+
+
+// ==========================================
+// حذف رزرو
+// ==========================================
+
+document
+.getElementById("btnDelete")
+.onclick = async ()=>{
+
+    if(!selectedReservation){
+
+        alert("ابتدا یک رزرو را انتخاب کنید.");
+
+        return;
+
+    }
+
+    if(!confirm("رزرو حذف شود؟"))
+
+        return;
+
+    await deleteDoc(
+
+        doc(
+            db,
+            "reservations",
+            selectedReservation.id
+        )
+
+    );
+
+    customerDetails.innerHTML="";
+
+    historyList.innerHTML="";
+
+    loadReservations();
+
+};
+
+
+
+// ==========================================
+// ثبت هدیه
+// ==========================================
+
+document
+.getElementById("btnGift")
+.onclick=()=>{
+
+    if(!selectedReservation){
+
+        alert("ابتدا مشتری را انتخاب کنید.");
+
+        return;
+
+    }
+
+    alert(
+        "در نسخه بعدی باشگاه مشتریان فعال خواهد شد."
+    );
+
+};
+
+
+
+// ==========================================
+// ویرایش رزرو
+// ==========================================
+
+document
+.getElementById("btnEdit")
+.onclick=()=>{
+
+    if(!selectedReservation){
+
+        alert("ابتدا یک رزرو را انتخاب کنید.");
+
+        return;
+
+    }
+
+    alert(
+        "بخش ویرایش در نسخه بعدی فعال می‌شود."
+    );
+
+};
+
+
+
+// ==========================================
+// شروع برنامه
+// ==========================================
+
+loadReservations();
