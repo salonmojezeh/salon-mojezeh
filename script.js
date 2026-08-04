@@ -1,129 +1,157 @@
-// ======================================================
-// سالن معجزه
-// Main Script
-// Version 3.0
-// ======================================================
+/*======================================
+ Salon Mojezeh
+ script.js
+======================================*/
 
 "use strict";
 
-// ======================
-// عناصر اصلی
-// ======================
+/*======================================
+Elements
+======================================*/
 
 const body = document.body;
 
 const sidebar = document.getElementById("sidebar");
+
 const overlay = document.getElementById("overlay");
 
-const menuBtn = document.querySelector(".menu-btn");
-const closeBtn = document.querySelector(".close-btn");
+const menuBtn = document.getElementById("menuBtn");
 
-const backToTop = document.getElementById("backToTop");
+const closeSidebar = document.getElementById("closeSidebar");
 
+const themeToggle = document.getElementById("themeToggle");
 
-// ======================
-// شروع سایت
-// ======================
+const loader = document.getElementById("loader");
+
+/*======================================
+Loader
+======================================*/
 
 window.addEventListener("load", () => {
 
-    body.classList.add("loaded");
+    setTimeout(() => {
 
-    window.scrollTo({
-        top: 0,
-        behavior: "instant"
-    });
+        loader.style.opacity = "0";
+
+        loader.style.pointerEvents = "none";
+
+        setTimeout(() => {
+
+            loader.remove();
+
+        }, 500);
+
+    }, 700);
 
 });
 
-
-// ======================
-// باز کردن منو
-// ======================
+/*======================================
+Sidebar
+======================================*/
 
 function openSidebar() {
 
-    if (!sidebar) return;
-
     sidebar.classList.add("active");
+
     overlay.classList.add("active");
 
     body.style.overflow = "hidden";
 
 }
 
-
-// ======================
-// بستن منو
-// ======================
-
-function closeSidebar() {
-
-    if (!sidebar) return;
+function hideSidebar() {
 
     sidebar.classList.remove("active");
+
     overlay.classList.remove("active");
 
     body.style.overflow = "";
 
 }
 
+menuBtn.addEventListener("click", openSidebar);
 
-// ======================
-// رویدادهای منو
-// ======================
+closeSidebar.addEventListener("click", hideSidebar);
 
-if (menuBtn) {
+overlay.addEventListener("click", hideSidebar);
 
-    menuBtn.addEventListener("click", openSidebar);
+/*======================================
+Close Sidebar After Click Link
+======================================*/
 
-}
-
-if (closeBtn) {
-
-    closeBtn.addEventListener("click", closeSidebar);
-
-}
-
-if (overlay) {
-
-    overlay.addEventListener("click", closeSidebar);
-
-}
-
-
-// ======================
-// بستن منو بعد از کلیک روی لینک
-// ======================
-
-document.querySelectorAll(".nav-link").forEach(link => {
+document.querySelectorAll("#sidebar a").forEach(link => {
 
     link.addEventListener("click", () => {
 
-        closeSidebar();
+        hideSidebar();
 
     });
 
 });
+/*======================================
+Theme (Dark / Light)
+======================================*/
 
+const savedTheme = localStorage.getItem("theme");
 
-// ======================
-// اسکرول نرم
-// ======================
+if (savedTheme === "dark") {
 
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    body.classList.add("dark");
 
-    anchor.addEventListener("click", function (e) {
+    themeToggle.innerHTML = '<i class="fa-solid fa-sun"></i>';
 
-        const target = document.querySelector(this.getAttribute("href"));
+} else {
 
-        if (!target) return;
+    body.classList.remove("dark");
+
+    themeToggle.innerHTML = '<i class="fa-solid fa-moon"></i>';
+
+}
+
+themeToggle.addEventListener("click", () => {
+
+    body.classList.toggle("dark");
+
+    const darkMode = body.classList.contains("dark");
+
+    if (darkMode) {
+
+        localStorage.setItem("theme", "dark");
+
+        themeToggle.innerHTML = '<i class="fa-solid fa-sun"></i>';
+
+    } else {
+
+        localStorage.setItem("theme", "light");
+
+        themeToggle.innerHTML = '<i class="fa-solid fa-moon"></i>';
+
+    }
+
+});
+
+/*======================================
+Smooth Scroll
+======================================*/
+
+document.querySelectorAll('a[href^="#"]').forEach(link => {
+
+    link.addEventListener("click", function (e) {
+
+        const target = this.getAttribute("href");
+
+        if (target === "#") return;
+
+        const section = document.querySelector(target);
+
+        if (!section) return;
 
         e.preventDefault();
 
-        target.scrollIntoView({
+        section.scrollIntoView({
 
             behavior: "smooth",
+
             block: "start"
 
         });
@@ -131,213 +159,200 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     });
 
 });
-// ======================================================
-// دکمه بازگشت به بالا
-// ======================================================
+
+/*======================================
+Header Shadow
+======================================*/
 
 window.addEventListener("scroll", () => {
 
-    if (!backToTop) return;
+    const header = document.getElementById("header");
 
-    if (window.scrollY > 500) {
+    if (window.scrollY > 40) {
 
-        backToTop.classList.add("show");
+        header.style.boxShadow = "0 8px 25px rgba(0,0,0,.12)";
 
     } else {
 
-        backToTop.classList.remove("show");
+        header.style.boxShadow = "none";
 
     }
 
 });
+/*======================================
+ Scroll Animation
+======================================*/
 
-if (backToTop) {
+const animatedItems = document.querySelectorAll(
 
-    backToTop.addEventListener("click", () => {
+`
+.hero,
+.quick-card,
+.service-card,
+.about-card,
+.stat-card,
+.club-preview,
+.gallery-item,
+.product-card,
+.contact-card
+`
 
-        window.scrollTo({
+);
 
-            top: 0,
-            behavior: "smooth"
+const observer = new IntersectionObserver(
 
-        });
+(entries)=>{
 
-    });
+entries.forEach(entry=>{
+
+if(entry.isIntersecting){
+
+entry.target.style.opacity="1";
+
+entry.target.style.transform="translateY(0)";
 
 }
-
-
-// ======================================================
-// انیمیشن ظاهر شدن بخش‌ها
-// ======================================================
-
-const observer = new IntersectionObserver((entries) => {
-
-    entries.forEach(entry => {
-
-        if (entry.isIntersecting) {
-
-            entry.target.classList.add("show");
-
-        }
-
-    });
-
-}, {
-
-    threshold: 0.15
 
 });
 
-document.querySelectorAll(".fade-section").forEach(section => {
+},
 
-    observer.observe(section);
+{
+
+threshold:.15
+
+}
+
+);
+
+animatedItems.forEach(item=>{
+
+item.style.opacity="0";
+
+item.style.transform="translateY(40px)";
+
+item.style.transition="all .7s ease";
+
+observer.observe(item);
 
 });
 
+/*======================================
+ Google Map
+======================================*/
 
-// ======================================================
-// فعال شدن لینک منو هنگام اسکرول
-// ======================================================
+const googleMapBtn=document.getElementById("googleMapBtn");
+const googleMap=document.getElementById("googleMap");
 
-const sections = document.querySelectorAll("section[id]");
+const googleURL="https://maps.google.com/";
 
-window.addEventListener("scroll", () => {
+if(googleMapBtn){
 
-    let currentSection = "";
+googleMapBtn.addEventListener("click",(e)=>{
 
-    sections.forEach(section => {
+e.preventDefault();
 
-        const sectionTop = section.offsetTop - 120;
-
-        if (window.scrollY >= sectionTop) {
-
-            currentSection = section.getAttribute("id");
-
-        }
-
-    });
-
-    document.querySelectorAll(".nav-link").forEach(link => {
-
-        link.classList.remove("active");
-
-        const href = link.getAttribute("href");
-
-        if (href === "#" + currentSection) {
-
-            link.classList.add("active");
-
-        }
-
-    });
+window.open(googleURL,"_blank");
 
 });
 
+}
 
-// ======================================================
-// آماده برای توسعه‌های بعدی
-// ======================================================
+if(googleMap){
 
-const SalonMojezeh = {
+googleMap.addEventListener("click",(e)=>{
 
-    customer: null,
+e.preventDefault();
 
-    reservation: null,
+window.open(googleURL,"_blank");
 
-    settings: {},
-
-    version: "3.0"
-
-};
-
-window.SalonMojezeh = SalonMojezeh;
-// ======================================================
-// مسیرهای سالن
-// ======================================================
-
-// آدرس‌ها را بعداً فقط اینجا تغییر می‌دهیم.
-const SalonLinks = {
-
-    googleMap: "#",
-
-    neshan: "#",
-
-    balad: "#",
-
-    instagram: "#",
-
-    phone: "tel:+989123456789"
-
-};
-
-window.SalonLinks = SalonLinks;
-
-
-// ======================================================
-// باز کردن لینک‌ها
-// ======================================================
-
-function openGoogleMap() {
-
-    window.open(SalonLinks.googleMap, "_blank");
+});
 
 }
 
-function openNeshan() {
+/*======================================
+ Neshan
+======================================*/
 
-    window.open(SalonLinks.neshan, "_blank");
+const neshanBtn=document.getElementById("neshanBtn");
+const neshanMap=document.getElementById("neshanMap");
 
-}
+const neshanURL="https://neshan.org/maps";
 
-function openBalad() {
+if(neshanBtn){
 
-    window.open(SalonLinks.balad, "_blank");
+neshanBtn.addEventListener("click",(e)=>{
 
-}
+e.preventDefault();
 
-function openInstagram() {
+window.open(neshanURL,"_blank");
 
-    window.open(SalonLinks.instagram, "_blank");
-
-}
-
-function callSalon() {
-
-    window.location.href = SalonLinks.phone;
+});
 
 }
 
+if(neshanMap){
 
-// ======================================================
-// آماده برای QR Code
-// ======================================================
+neshanMap.addEventListener("click",(e)=>{
 
-function openReservationPage() {
+e.preventDefault();
 
-    window.location.href = "reserve.html";
+window.open(neshanURL,"_blank");
+
+});
 
 }
 
+/*======================================
+ Balad
+======================================*/
 
-// ======================================================
-// ثبت Service Worker (PWA)
-// ======================================================
+const baladBtn=document.getElementById("baladBtn");
+const baladMap=document.getElementById("baladMap");
+
+const baladURL="https://balad.ir/";
+
+if(baladBtn){
+
+baladBtn.addEventListener("click",(e)=>{
+
+e.preventDefault();
+
+window.open(baladURL,"_blank");
+
+});
+
+}
+
+if(baladMap){
+
+baladMap.addEventListener("click",(e)=>{
+
+e.preventDefault();
+
+window.open(baladURL,"_blank");
+
+});
+
+}
+/*======================================
+ Service Worker
+======================================*/
 
 if ("serviceWorker" in navigator) {
 
     window.addEventListener("load", () => {
 
         navigator.serviceWorker
-            .register("./service-worker.js")
+            .register("service-worker.js")
             .then(() => {
 
-                console.log("Service Worker فعال شد.");
+                console.log("Service Worker Registered");
 
             })
-            .catch(error => {
+            .catch((error) => {
 
-                console.log("خطا در Service Worker", error);
+                console.error(error);
 
             });
 
@@ -345,30 +360,53 @@ if ("serviceWorker" in navigator) {
 
 }
 
+/*======================================
+ Active Menu
+======================================*/
 
-// ======================================================
-// بررسی وضعیت اینترنت
-// ======================================================
+const currentPage = window.location.pathname.split("/").pop();
 
-window.addEventListener("offline", () => {
+document.querySelectorAll("#sidebar a").forEach(link => {
 
-    console.log("اینترنت قطع شد.");
+    const href = link.getAttribute("href");
+
+    if (href === currentPage) {
+
+        link.classList.add("active");
+
+    }
+
+});
+
+/*======================================
+ Disable Empty Links
+======================================*/
+
+document.querySelectorAll('a[href="#"]').forEach(link => {
+
+    link.addEventListener("click", e => {
+
+        e.preventDefault();
+
+    });
 
 });
 
-window.addEventListener("online", () => {
+/*======================================
+ Future Modules
+======================================*/
 
-    console.log("اینترنت وصل شد.");
+// Firebase
+// Club
+// Reservation
+// Gallery
+// Products
+// Admin
+// Customer Profile
+// Notifications
 
-});
+console.log("Salon Mojezeh Loaded Successfully");
 
-
-// ======================================================
-// پایان بارگذاری سایت
-// ======================================================
-
-document.addEventListener("DOMContentLoaded", () => {
-
-    console.log("Salon Mojezeh Ready");
-
-});
+/*======================================
+ End Of File
+======================================*/
