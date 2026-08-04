@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="fa" dir="rtl">
 
 <head>
@@ -7,7 +6,7 @@
 <meta charset="UTF-8">
 
 <meta name="viewport"
-content="width=device-width, initial-scale=1.0">
+content="width=device-width,initial-scale=1.0">
 
 <title>
 
@@ -15,36 +14,27 @@ content="width=device-width, initial-scale=1.0">
 
 </title>
 
-<link rel="stylesheet"
-href="style.css">
+<link rel="stylesheet" href="style.css">
+
+<link rel="stylesheet" href="booking.css">
 
 <link rel="stylesheet"
-href="booking.css">
-
-<link rel="preconnect"
-href="https://fonts.googleapis.com">
-
-<link rel="preconnect"
-href="https://fonts.gstatic.com"
-crossorigin>
-
-<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap"
-rel="stylesheet">
-
-<link rel="stylesheet"
-href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 </head>
 
 <body>
 
-<!--==========================
+<!--==============================
 Sidebar
-===========================-->
+==============================-->
 
-<div class="sidebar" id="sidebar">
+<div
+class="sidebar"
+id="sidebar">
 
-<button class="close-btn"
+<button
+class="close-btn"
 onclick="closeSidebar()">
 
 ✕
@@ -53,24 +43,28 @@ onclick="closeSidebar()">
 
 <nav class="sidebar-nav">
 
-<a href="index.html" class="nav-link">
+<a
+href="index.html"
+class="nav-link">
 
-<i class="fas fa-home"></i>
+<i class="fas fa-house"></i>
 
 صفحه اصلی
 
 </a>
 
-<a href="reserve.html"
+<a
+href="reserve.html"
 class="nav-link active">
 
-<i class="fas fa-calendar-check"></i>
+<i class="fas fa-calendar-days"></i>
 
 رزرو نوبت
 
 </a>
 
-<a href="club.html"
+<a
+href="club.html"
 class="nav-link">
 
 <i class="fas fa-gift"></i>
@@ -79,7 +73,8 @@ class="nav-link">
 
 </a>
 
-<a href="gallery.html"
+<a
+href="gallery.html"
 class="nav-link">
 
 <i class="fas fa-images"></i>
@@ -88,25 +83,51 @@ class="nav-link">
 
 </a>
 
-<a href="news.html"
+<a
+href="#"
+id="googleMapBtn"
+class="nav-link">
+
+<i class="fas fa-location-dot"></i>
+
+گوگل مپ
+
+</a>
+
+<a
+href="#"
+id="neshanBtn"
+class="nav-link">
+
+<i class="fas fa-map"></i>
+
+نشان
+
+</a>
+
+<a
+href="#"
+id="baladBtn"
+class="nav-link">
+
+<i class="fas fa-map-location-dot"></i>
+
+بلد
+
+</a>
+
+<a
+href="news.html"
 class="nav-link">
 
 <i class="fas fa-newspaper"></i>
 
-اخبار
+اخبار سالن
 
 </a>
 
-<a href="#"
-class="nav-link">
-
-<i class="fas fa-map-marker-alt"></i>
-
-مسیریابی
-
-</a>
-
-<a href="tel:09380449987"
+<a
+href="tel:09380449987"
 class="nav-link">
 
 <i class="fas fa-phone"></i>
@@ -126,9 +147,9 @@ onclick="closeSidebar()">
 
 </div>
 
-<!--==========================
+<!--==============================
 Header
-===========================-->
+==============================-->
 
 <header class="header">
 
@@ -145,23 +166,23 @@ onclick="openSidebar()">
 <img
 src="images/logo.png"
 class="logo"
-alt="Salon Mojezeh">
+alt="Salon">
 
 </div>
 
 <button
 id="themeToggle"
-class="theme-toggle">
+class="theme-btn">
 
-<i class="fa-solid fa-moon"></i>
+<i class="fas fa-moon"></i>
 
 </button>
 
 </header>
 
-<!--==========================
+<!--==============================
 Reserve
-===========================-->
+==============================-->
 
 <section class="reserve-container">
 
@@ -169,35 +190,36 @@ Reserve
 
 <h1 class="reserve-title">
 
-رزرو آنلاین نوبت
+رزرو نوبت
 
 </h1>
 
 <p class="reserve-subtitle">
 
-فقط در چند مرحله نوبت خود را ثبت کنید.
+لطفاً مراحل زیر را تکمیل کنید
 
 </p>
 
 <div class="progress-bar">
 
 <div
-id="progressFill"
-class="progress-fill">
+class="progress-fill"
+id="progressFill">
 
 </div>
 
 </div>
 
-<form id="reserveForm">
-
-<!--==========================
-مرحله اول
-===========================-->
+<form
+id="reserveForm">
+<!--==============================
+مرحله ۱
+اطلاعات مشتری
+===============================-->
 
 <div
-id="step1"
-class="steps active">
+class="steps active"
+id="step1">
 
 <div class="step-title">
 
@@ -209,24 +231,27 @@ class="steps active">
 
 <span>
 
-اطلاعات مشتری
+اطلاعات شخصی
 
 </span>
 
 </div>
+
 <div class="form-group">
 
 <label for="firstName">
 
 نام
 
+<span>*</span>
+
 </label>
 
 <input
 type="text"
 id="firstName"
-name="firstName"
-placeholder="مثلاً سبحان"
+placeholder="نام خود را وارد کنید"
+autocomplete="given-name"
 required>
 
 </div>
@@ -237,13 +262,15 @@ required>
 
 نام خانوادگی
 
+<span>*</span>
+
 </label>
 
 <input
 type="text"
 id="lastName"
-name="lastName"
-placeholder="مثلاً برومند"
+placeholder="نام خانوادگی خود را وارد کنید"
+autocomplete="family-name"
 required>
 
 </div>
@@ -254,15 +281,32 @@ required>
 
 شماره موبایل
 
+<span>*</span>
+
 </label>
 
 <input
 type="tel"
 id="phone"
-name="phone"
 placeholder="09xxxxxxxxx"
 maxlength="11"
+inputmode="numeric"
 required>
+
+</div>
+
+<div class="form-group">
+
+<label for="birthDate">
+
+تاریخ تولد
+
+</label>
+
+<input
+type="text"
+id="birthDate"
+placeholder="1382/05/17">
 
 </div>
 
@@ -271,7 +315,7 @@ required>
 <button
 type="button"
 class="btn btn-next"
-id="goStep2">
+id="nextStep1">
 
 مرحله بعد
 
@@ -283,13 +327,14 @@ id="goStep2">
 
 </div>
 
-<!--==========================
-مرحله دوم
-===========================-->
+<!--==============================
+مرحله ۲
+انتخاب خدمت
+===============================-->
 
 <div
-id="step2"
-class="steps">
+class="steps"
+id="step2">
 
 <div class="step-title">
 
@@ -327,7 +372,6 @@ data-duration="60">
 
 <p>
 
-مدت زمان:
 ۶۰ دقیقه
 
 </p>
@@ -354,7 +398,6 @@ data-duration="60">
 
 <p>
 
-مدت زمان:
 ۶۰ دقیقه
 
 </p>
@@ -381,7 +424,6 @@ data-duration="30">
 
 <p>
 
-مدت زمان:
 ۳۰ دقیقه
 
 </p>
@@ -408,7 +450,6 @@ data-duration="30">
 
 <p>
 
-مدت زمان:
 ۳۰ دقیقه
 
 </p>
@@ -428,14 +469,14 @@ id="backStep1">
 
 <i class="fas fa-arrow-right"></i>
 
-مرحله قبل
+قبلی
 
 </button>
 
 <button
 type="button"
 class="btn btn-next"
-id="goStep3">
+id="nextStep2">
 
 مرحله بعد
 
@@ -445,14 +486,15 @@ id="goStep3">
 
 </div>
 
-</div>
-<!--==========================
-مرحله سوم
-===========================-->
+</div>    
+<!--==============================
+مرحله ۳
+انتخاب روز
+===============================-->
 
 <div
-id="step3"
-class="steps">
+class="steps"
+id="step3">
 
     <div class="step-title">
 
@@ -483,7 +525,7 @@ class="steps">
         <!--
         روزها توسط
         reserve-script.js
-        ساخته می‌شوند
+        ساخته می‌شوند.
         -->
 
     </div>
@@ -497,14 +539,14 @@ class="steps">
 
             <i class="fas fa-arrow-right"></i>
 
-            مرحله قبل
+            قبلی
 
         </button>
 
         <button
             type="button"
             class="btn btn-next"
-            id="goStep4">
+            id="nextStep3">
 
             مرحله بعد
 
@@ -516,13 +558,14 @@ class="steps">
 
 </div>
 
-<!--==========================
-مرحله چهارم
-===========================-->
+<!--==============================
+مرحله ۴
+انتخاب ساعت
+===============================-->
 
 <div
-id="step4"
-class="steps">
+class="steps"
+id="step4">
 
     <div class="step-title">
 
@@ -560,7 +603,7 @@ class="steps">
 
         reserve-script.js
 
-        ساخته می‌شوند
+        ساخته می‌شوند.
 
         -->
 
@@ -575,7 +618,7 @@ class="steps">
 
             <i class="fas fa-arrow-right"></i>
 
-            مرحله قبل
+            قبلی
 
         </button>
 
@@ -592,110 +635,30 @@ class="steps">
 
     </div>
 
-</div>
-<!--==========================
-Success Modal
-===========================-->
-
+</div>    
 </form>
 
-<div
-id="successModal"
-class="success-modal">
+<!--==============================
+Footer
+===============================-->
 
-<div class="success-content">
+<div class="reserve-footer">
 
-<div class="success-icon">
+<a href="index.html">
 
-<i class="fas fa-circle-check"></i>
-
-</div>
-
-<h2 class="success-title">
-
-رزرو شما با موفقیت ثبت شد
-
-</h2>
-
-<p class="success-message">
-
-از اعتماد شما سپاسگزاریم.
-
-<br>
-
-نوبت شما با موفقیت ثبت شد.
-
-</p>
-
-<div
-id="successDetails"
-class="success-details">
-
-<div>
-
-<strong>
-
-نام:
-
-</strong>
-
-<span id="successName"></span>
-
-</div>
-
-<div>
-
-<strong>
-
-خدمت:
-
-</strong>
-
-<span id="successService"></span>
-
-</div>
-
-<div>
-
-<strong>
-
-تاریخ:
-
-</strong>
-
-<span id="successDate"></span>
-
-</div>
-
-<div>
-
-<strong>
-
-ساعت:
-
-</strong>
-
-<span id="successTime"></span>
-
-</div>
-
-</div>
-
-<div class="success-buttons">
-
-<a
-href="index.html"
-class="success-btn-home">
-
-<i class="fas fa-home"></i>
+<i class="fas fa-house"></i>
 
 بازگشت به صفحه اصلی
 
 </a>
 
-<a
-href="tel:09380449987"
-class="success-btn-contact">
+<span>
+
+|
+
+</span>
+
+<a href="tel:09380449987">
 
 <i class="fas fa-phone"></i>
 
@@ -707,15 +670,11 @@ class="success-btn-contact">
 
 </div>
 
-</div>
-
-</div>
-
 </section>
 
-<!--==========================
+<!--==============================
 Loading
-===========================-->
+===============================-->
 
 <div
 id="loadingOverlay"
@@ -731,16 +690,76 @@ class="loading-overlay">
 
 </div>
 
-<!--==========================
-Scripts
-===========================-->
+<!--==============================
+Success Modal
+===============================-->
 
-<script type="module" src="firebase.js"></script>
+<div
+id="successModal"
+class="success-modal">
+
+<div class="success-content">
+
+<div class="success-icon">
+
+<i class="fas fa-circle-check"></i>
+
+</div>
+
+<h2>
+
+رزرو شما با موفقیت ثبت شد
+
+</h2>
+
+<p>
+
+از اعتماد شما سپاسگزاریم.
+
+</p>
+
+<div
+id="successDetails"
+class="success-details">
+
+</div>
+
+<div class="success-buttons">
+
+<button
+type="button"
+class="success-btn-home"
+onclick="location.href='index.html'">
+
+بازگشت به صفحه اصلی
+
+</button>
+
+<button
+type="button"
+class="success-btn-contact"
+onclick="window.location.href='tel:09380449987'">
+
+تماس با سالن
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+<!--==============================
+Scripts
+===============================-->
+
+<script src="firebase.js"></script>
 
 <script src="script.js"></script>
 
-<script type="module" src="reserve-script.js"></script>
+<script src="reserve-script.js"></script>
 
 </body>
 
-</html>
+</html>    
