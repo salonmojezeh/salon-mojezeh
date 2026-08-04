@@ -3,545 +3,686 @@
 
 <head>
 
-<meta charset="UTF-8">
+    <meta charset="UTF-8">
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
 
-<meta name="description" content="رزرو آنلاین سالن معجزه">
+    <meta name="theme-color"
+          content="#0f0f0f">
 
-<meta name="theme-color" content="#0f172a">
+    <meta name="description"
+          content="سالن معجزه | رزرو آنلاین، باشگاه مشتریان، خدمات آرایش و زیبایی">
 
-<title>سالن معجزه | رزرو آنلاین</title>
+    <meta name="keywords"
+          content="سالن معجزه, آرایشگاه, رزرو آنلاین, اصلاح مو, باشگاه مشتریان">
 
-<link rel="manifest" href="manifest.json">
+    <meta name="author"
+          content="Salon Mojezeh">
 
-<link rel="icon" href="images/logo.png">
+    <title>سالن معجزه | آرایش و زیبایی</title>
 
-<link rel="stylesheet" href="style.css">
+    <link rel="manifest"
+          href="manifest.json">
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet"
+          href="style.css">
 
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect"
+          href="https://fonts.googleapis.com">
 
-<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossorigin>
 
-<link rel="stylesheet"
-href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"/>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap"
+          rel="stylesheet">
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
 </head>
 
-<body class="dark">
+<body>
 
-<!--=========================
-      صفحه لودینگ
-==========================-->
+<!--============================-->
+<!-- Loader -->
+<!--============================-->
 
 <div id="loader">
 
-<div class="loader-logo">
+    <div class="loader-circle"></div>
 
-<img src="images/logo.png" alt="Salon Mojezeh">
-
-<h2>سالن معجزه</h2>
-
-<span>در حال بارگذاری...</span>
+    <h2>سالن معجزه</h2>
 
 </div>
 
-</div>
-
-<!--=========================
-        منوی کناری
-==========================-->
-
-<div class="sidebar" id="sidebar">
-
-<div class="sidebar-header">
-
-<img src="images/logo.png">
-
-<h2>سالن معجزه</h2>
-
-<button id="closeMenu">
-
-<i class="fa-solid fa-xmark"></i>
-
-</button>
-
-</div>
-
-<nav>
-
-<a href="index.html">
-
-<i class="fa-solid fa-house"></i>
-
-<span>صفحه اصلی</span>
-
-</a>
-
-<a href="reserve.html">
-
-<i class="fa-solid fa-calendar-days"></i>
-
-<span>رزرو نوبت</span>
-
-</a>
-
-<a href="club.html">
-
-<i class="fa-solid fa-gift"></i>
-
-<span>باشگاه مشتریان</span>
-
-</a>
-
-<a href="gallery.html">
-
-<i class="fa-solid fa-images"></i>
-
-<span>گالری نمونه کار</span>
-
-</a>
-
-<a href="news.html">
-
-<i class="fa-solid fa-newspaper"></i>
-
-<span>اخبار سالن</span>
-
-</a>
-
-<a href="#">
-
-<i class="fa-brands fa-instagram"></i>
-
-<span>اینستاگرام</span>
-
-</a>
-
-<a href="#">
-
-<i class="fa-solid fa-location-dot"></i>
-
-<span>گوگل مپ</span>
-
-</a>
-
-<a href="#">
-
-<i class="fa-solid fa-map-location-dot"></i>
-
-<span>نشان</span>
-
-</a>
-
-<a href="#">
-
-<i class="fa-solid fa-route"></i>
-
-<span>بلد</span>
-
-</a>
-
-<a href="#contact">
-
-<i class="fa-solid fa-phone"></i>
-
-<span>تماس با ما</span>
-
-</a>
-
-</nav>
-
-</div>
+<!--============================-->
+<!-- Overlay -->
+<!--============================-->
 
 <div id="overlay"></div>
 
-<!--=========================
-          هدر
-==========================-->
+<!--============================-->
+<!-- Sidebar -->
+<!--============================-->
 
-<header class="header glass">
+<aside id="sidebar">
 
-<button id="menuBtn">
+    <div class="sidebar-header">
 
-<i class="fa-solid fa-bars"></i>
+        <img src="images/logo.png"
+             alt="Salon Mojezeh">
 
-</button>
+        <h2>سالن معجزه</h2>
 
-<div class="header-logo">
+        <button id="closeSidebar">
 
-<img src="images/logo.png">
+            <i class="fa-solid fa-xmark"></i>
 
-<div>
+        </button>
 
-<h2>سالن معجزه</h2>
+    </div>
 
-<p>Salon Mojezeh</p>
+    <nav>
 
-</div>
+        <a href="index.html">
 
-</div>
+            <i class="fa-solid fa-house"></i>
 
-<button id="themeBtn">
+            <span>صفحه اصلی</span>
 
-<i class="fa-solid fa-moon"></i>
+        </a>
 
-</button>
+        <a href="reserve.html">
+
+            <i class="fa-solid fa-calendar-days"></i>
+
+            <span>رزرو نوبت</span>
+
+        </a>
+
+        <a href="club.html">
+
+            <i class="fa-solid fa-gift"></i>
+
+            <span>باشگاه مشتریان</span>
+
+        </a>
+
+        <a href="gallery.html">
+
+            <i class="fa-solid fa-images"></i>
+
+            <span>گالری</span>
+
+        </a>
+
+        <a href="news.html">
+
+            <i class="fa-solid fa-newspaper"></i>
+
+            <span>اخبار سالن</span>
+
+        </a>
+
+        <a href="#services">
+
+            <i class="fa-solid fa-scissors"></i>
+
+            <span>خدمات</span>
+
+        </a>
+
+        <a href="#about">
+
+            <i class="fa-solid fa-user-group"></i>
+
+            <span>درباره ما</span>
+
+        </a>
+
+        <a href="#contact">
+
+            <i class="fa-solid fa-phone"></i>
+
+            <span>تماس با ما</span>
+
+        </a>
+
+        <a id="googleMap"
+           href="#">
+
+            <i class="fa-solid fa-location-dot"></i>
+
+            <span>مسیر در گوگل مپ</span>
+
+        </a>
+
+        <a id="neshanMap"
+           href="#">
+
+            <i class="fa-solid fa-map-location-dot"></i>
+
+            <span>مسیر در نشان</span>
+
+        </a>
+
+        <a id="baladMap"
+           href="#">
+
+            <i class="fa-solid fa-map-pin"></i>
+
+            <span>مسیر در بلد</span>
+
+        </a>
+
+    </nav>
+
+</aside>
+
+<!--============================-->
+<!-- Header -->
+<!--============================-->
+
+<header id="header">
+
+    <button id="menuBtn">
+
+        <i class="fa-solid fa-bars"></i>
+
+    </button>
+
+    <div class="logo-box">
+
+        <img src="images/logo.png"
+             alt="Salon">
+
+        <div>
+
+            <h2>سالن معجزه</h2>
+
+            <small>استایل شما، معجزه ماست</small>
+
+        </div>
+
+    </div>
+
+    <button id="themeToggle">
+
+        <i class="fa-solid fa-moon"></i>
+
+    </button>
 
 </header>
-
-<!--=========================
-         Hero
-==========================-->
+<!--============================-->
+<!-- Hero -->
+<!--============================-->
 
 <section class="hero">
 
-<div class="hero-content">
+    <div class="hero-content">
 
-<div class="hero-badge">
+        <span class="hero-badge">
+            <i class="fa-solid fa-crown"></i>
+            سالن آرایش و زیبایی معجزه
+        </span>
 
-<i class="fa-solid fa-crown"></i>
+        <h1>
+            استایل شما،
+            <span>معجزه ماست</span>
+        </h1>
 
-<span>رزرو آنلاین ۲۴ ساعته</span>
+        <p>
 
-</div>
+            رزرو آنلاین، باشگاه مشتریان، خدمات حرفه‌ای،
+            جدیدترین مدل‌های روز دنیا و تجربه‌ای متفاوت از
+            آرایش و زیبایی.
 
-<h1>
+        </p>
 
-استایل شما،
+        <div class="hero-buttons">
 
-<span>معجزه ماست</span>
+            <a href="reserve.html"
+               class="primary-btn">
 
-</h1>
+                <i class="fa-solid fa-calendar-check"></i>
 
-<p>
+                رزرو آنلاین
 
-با چند لمس ساده، نوبت خود را رزرو کنید و بدون انتظار، در زمان دلخواه به سالن مراجعه کنید.
+            </a>
 
-</p>
+            <a href="#services"
+               class="secondary-btn">
 
-<div class="hero-buttons">
+                <i class="fa-solid fa-scissors"></i>
 
-<a href="reserve.html" class="primary-btn">
+                مشاهده خدمات
 
-<i class="fa-solid fa-calendar-check"></i>
+            </a>
 
-رزرو نوبت
+        </div>
 
-</a>
-
-<a href="#services" class="secondary-btn">
-
-مشاهده خدمات
-
-</a>
-
-</div>
-
-</div>
-
-</section>
-<!--=========================
-        خدمات سالن
-==========================-->
-
-<section class="services" id="services">
-
-<div class="section-header">
-
-<span>خدمات ما</span>
-
-<h2>خدمات تخصصی سالن معجزه</h2>
-
-<p>بهترین خدمات آرایش و پیرایش با جدیدترین متدهای روز دنیا</p>
-
-</div>
-
-<div class="services-grid">
-
-<div class="service-card">
-
-<div class="service-icon">
-<i class="fa-solid fa-scissors"></i>
-</div>
-
-<h3>اصلاح سر و صورت</h3>
-
-<p>
-اصلاح حرفه‌ای همراه با فرم‌دهی صورت
-</p>
-
-<span>۶۰ دقیقه</span>
-
-</div>
-
-<div class="service-card">
-
-<div class="service-icon">
-<i class="fa-solid fa-wind"></i>
-</div>
-
-<h3>حالت مو</h3>
-
-<p>
-براشینگ و فرم‌دهی مو
-</p>
-
-<span>۳۰ دقیقه</span>
-
-</div>
-
-<div class="service-card">
-
-<div class="service-icon">
-<i class="fa-solid fa-pen-ruler"></i>
-</div>
-
-<h3>خط</h3>
-
-<p>
-خط ریش و دور مو
-</p>
-
-<span>۳۰ دقیقه</span>
-
-</div>
-
-<div class="service-card">
-
-<div class="service-icon">
-<i class="fa-solid fa-user"></i>
-</div>
-
-<h3>سایه ریش</h3>
-
-<p>
-اصلاح حرفه‌ای ریش
-</p>
-
-<span>۳۰ دقیقه</span>
-
-</div>
-
-</div>
+    </div>
 
 </section>
 
-<!--=========================
-      چرا سالن معجزه
-==========================-->
+<!--============================-->
+<!-- Quick Access -->
+<!--============================-->
 
-<section class="features">
+<section class="quick-access">
 
-<div class="section-header">
+    <div class="quick-card">
 
-<span>چرا ما؟</span>
+        <i class="fa-solid fa-calendar-check"></i>
 
-<h2>چرا سالن معجزه را انتخاب کنید؟</h2>
+        <h3>رزرو نوبت</h3>
 
-</div>
+        <p>در کمتر از یک دقیقه نوبت خود را رزرو کنید.</p>
 
-<div class="features-grid">
+    </div>
 
-<div class="feature-box">
+    <div class="quick-card">
 
-<i class="fa-solid fa-award"></i>
+        <i class="fa-solid fa-gift"></i>
 
-<h3>کیفیت بالا</h3>
+        <h3>باشگاه مشتریان</h3>
 
-<p>
+        <p>هدیه، امتیاز و سوابق مراجعه شما.</p>
 
-استفاده از بهترین تجهیزات و جدیدترین متدها
+    </div>
 
-</p>
+    <div class="quick-card">
 
-</div>
+        <i class="fa-solid fa-images"></i>
 
-<div class="feature-box">
+        <h3>نمونه کارها</h3>
 
-<i class="fa-solid fa-clock"></i>
+        <p>مشاهده جدیدترین مدل‌های انجام شده.</p>
 
-<h3>رزرو آنلاین</h3>
+    </div>
 
-<p>
+    <div class="quick-card">
 
-بدون تماس تلفنی و تنها در چند ثانیه
+        <i class="fa-solid fa-store"></i>
 
-</p>
+        <h3>محصولات</h3>
 
-</div>
+        <p>محصولات حرفه‌ای مراقبت از مو.</p>
 
-<div class="feature-box">
-
-<i class="fa-solid fa-star"></i>
-
-<h3>باشگاه مشتریان</h3>
-
-<p>
-
-هدیه، امتیاز و اصلاح رایگان
-
-</p>
-
-</div>
-
-<div class="feature-box">
-
-<i class="fa-solid fa-user-check"></i>
-
-<h3>پرونده مشتری</h3>
-
-<p>
-
-مدل مو، سوابق و یادداشت آرایشگر
-
-</p>
-
-</div>
-
-</div>
+    </div>
 
 </section>
 
-<!--=========================
-        آمار سالن
-==========================-->
+<!--============================-->
+<!-- Services -->
+<!--============================-->
 
-<section class="statistics">
-
-<div class="stat-card">
-
-<h2>۵۰۰+</h2>
-
-<p>مشتری ثابت</p>
-
-</div>
-
-<div class="stat-card">
-
-<h2>۵</h2>
-
-<p>سال تجربه</p>
-
-</div>
-
-<div class="stat-card">
-
-<h2>۴.۹</h2>
-
-<p>امتیاز کاربران</p>
-
-</div>
-
-<div class="stat-card">
-
-<h2>۲۴/۷</h2>
-
-<p>رزرو آنلاین</p>
-
-</div>
-
-</section>
-
-<!--=========================
-     باشگاه مشتریان
-==========================-->
-
-<section class="club-preview">
-
-<div class="club-content">
-
-<span>باشگاه مشتریان</span>
-
-<h2>
-
-با هر مراجعه امتیاز بگیرید
-
-</h2>
-
-<p>
-
-بعد از هر مراجعه امتیاز دریافت کنید،
-هدیه تولد بگیرید،
-و پس از ۸ مراجعه
-یک اصلاح رایگان هدیه بگیرید.
-
-</p>
-
-<a href="club.html" class="primary-btn">
-
-مشاهده باشگاه مشتریان
-
-</a>
-
-</div>
-
-</section>
-<!--=========================
-        گالری نمونه کار
-==========================-->
-
-<section class="gallery-preview" id="gallery">
+<section id="services"
+         class="services">
 
     <div class="section-header">
 
-        <span>نمونه کارها</span>
+        <span>Services</span>
 
-        <h2>نمونه‌ای از استایل‌های اجرا شده</h2>
+        <h2>خدمات سالن معجزه</h2>
 
-        <p>به زودی گالری کامل سالن در این بخش قرار خواهد گرفت.</p>
+        <p>
+
+            خدمات حرفه‌ای با استفاده از تجهیزات مدرن
+            و متناسب با استایل شما.
+
+        </p>
+
+    </div>
+
+    <div class="services-grid">
+
+        <div class="service-card">
+
+            <div class="service-icon">
+
+                <i class="fa-solid fa-scissors"></i>
+
+            </div>
+
+            <h3>اصلاح سر و صورت</h3>
+
+            <span>۶۰ دقیقه</span>
+
+            <p>
+
+                اصلاح حرفه‌ای با جدیدترین متدهای روز.
+
+            </p>
+
+        </div>
+
+        <div class="service-card">
+
+            <div class="service-icon">
+
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+
+            </div>
+
+            <h3>حالت مو</h3>
+
+            <span>۳۰ دقیقه</span>
+
+            <p>
+
+                اجرای جدیدترین مدل‌های روز.
+
+            </p>
+
+        </div>
+
+        <div class="service-card">
+
+            <div class="service-icon">
+
+                <i class="fa-solid fa-pen-ruler"></i>
+
+            </div>
+
+            <h3>خط</h3>
+
+            <span>۳۰ دقیقه</span>
+
+            <p>
+
+                خط ریش و دورگیری دقیق.
+
+            </p>
+
+        </div>
+
+        <div class="service-card">
+
+            <div class="service-icon">
+
+                <i class="fa-solid fa-user"></i>
+
+            </div>
+
+            <h3>سایه ریش</h3>
+
+            <span>۳۰ دقیقه</span>
+
+            <p>
+
+                سایه حرفه‌ای و طبیعی ریش.
+
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
+<!--============================-->
+<!-- About -->
+<!--============================-->
+
+<section id="about" class="about">
+
+    <div class="section-header">
+
+        <span>About</span>
+
+        <h2>درباره سالن معجزه</h2>
+
+        <p>
+            تجربه، کیفیت، احترام به مشتری و استفاده از جدیدترین
+            متدهای آرایشگری، شعار همیشگی ماست.
+        </p>
+
+    </div>
+
+    <div class="about-grid">
+
+        <div class="about-card">
+
+            <i class="fa-solid fa-award"></i>
+
+            <h3>کیفیت بالا</h3>
+
+            <p>
+                استفاده از تجهیزات حرفه‌ای و محصولات باکیفیت.
+            </p>
+
+        </div>
+
+        <div class="about-card">
+
+            <i class="fa-solid fa-user-check"></i>
+
+            <h3>رضایت مشتری</h3>
+
+            <p>
+                اولویت ما رضایت کامل مشتری و ارائه بهترین خدمات است.
+            </p>
+
+        </div>
+
+        <div class="about-card">
+
+            <i class="fa-solid fa-clock"></i>
+
+            <h3>رزرو آنلاین</h3>
+
+            <p>
+                بدون تماس تلفنی، نوبت خود را به راحتی رزرو کنید.
+            </p>
+
+        </div>
+
+        <div class="about-card">
+
+            <i class="fa-solid fa-star"></i>
+
+            <h3>باشگاه مشتریان</h3>
+
+            <p>
+                امتیاز، هدیه، تاریخچه مراجعه و مدل موی همیشگی.
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!--============================-->
+<!-- Statistics -->
+<!--============================-->
+
+<section class="statistics">
+
+    <div class="stat-card">
+
+        <h2>+۵۰۰</h2>
+
+        <span>مشتری فعال</span>
+
+    </div>
+
+    <div class="stat-card">
+
+        <h2>+۳۰۰۰</h2>
+
+        <span>اصلاح انجام شده</span>
+
+    </div>
+
+    <div class="stat-card">
+
+        <h2>۵★</h2>
+
+        <span>رضایت مشتریان</span>
+
+    </div>
+
+    <div class="stat-card">
+
+        <h2>۷ روز</h2>
+
+        <span>فعال در هفته</span>
+
+    </div>
+
+</section>
+
+<!--============================-->
+<!-- Customer Club -->
+<!--============================-->
+
+<section class="club-preview">
+
+    <div class="club-text">
+
+        <span>Customer Club</span>
+
+        <h2>باشگاه مشتریان سالن معجزه</h2>
+
+        <p>
+
+            با عضویت در باشگاه مشتریان، تمامی مراجعات، هدایا،
+            مدل موی همیشگی، تاریخچه خدمات و امتیازات شما
+            به صورت خودکار ثبت خواهد شد.
+
+        </p>
+
+        <a href="club.html" class="primary-btn">
+
+            <i class="fa-solid fa-gift"></i>
+
+            ورود به باشگاه مشتریان
+
+        </a>
+
+    </div>
+
+</section>
+
+<!--============================-->
+<!-- Gallery -->
+<!--============================-->
+
+<section class="gallery-preview">
+
+    <div class="section-header">
+
+        <span>Gallery</span>
+
+        <h2>نمونه کارها</h2>
+
+        <p>
+
+            جدیدترین مدل‌های انجام شده در سالن معجزه
+
+        </p>
 
     </div>
 
     <div class="gallery-grid">
 
         <div class="gallery-item">
-            <i class="fa-solid fa-camera"></i>
+
+            <i class="fa-solid fa-image"></i>
+
         </div>
 
         <div class="gallery-item">
-            <i class="fa-solid fa-camera"></i>
+
+            <i class="fa-solid fa-image"></i>
+
         </div>
 
         <div class="gallery-item">
-            <i class="fa-solid fa-camera"></i>
+
+            <i class="fa-solid fa-image"></i>
+
         </div>
 
         <div class="gallery-item">
-            <i class="fa-solid fa-camera"></i>
-        </div>
 
-        <div class="gallery-item">
-            <i class="fa-solid fa-camera"></i>
-        </div>
+            <i class="fa-solid fa-image"></i>
 
-        <div class="gallery-item">
-            <i class="fa-solid fa-camera"></i>
         </div>
 
     </div>
 
     <a href="gallery.html" class="secondary-btn">
 
-        مشاهده همه نمونه کارها
+        مشاهده همه تصاویر
 
     </a>
 
 </section>
 
-<!--=========================
-          تماس
-==========================-->
+<!--============================-->
+<!-- Products -->
+<!--============================-->
 
-<section class="contact-section" id="contact">
+<section class="products-preview">
 
     <div class="section-header">
 
-        <span>تماس با ما</span>
+        <span>Products</span>
 
-        <h2>راه‌های ارتباطی</h2>
+        <h2>محصولات پیشنهادی</h2>
+
+    </div>
+
+    <div class="products-grid">
+
+        <div class="product-card">
+
+            <i class="fa-solid fa-pump-soap"></i>
+
+            <h3>واکس مو</h3>
+
+        </div>
+
+        <div class="product-card">
+
+            <i class="fa-solid fa-spray-can-sparkles"></i>
+
+            <h3>اسپری حالت دهنده</h3>
+
+        </div>
+
+        <div class="product-card">
+
+            <i class="fa-solid fa-bottle-droplet"></i>
+
+            <h3>روغن مو</h3>
+
+        </div>
+
+    </div>
+
+</section>
+<!--============================-->
+<!-- Contact -->
+<!--============================-->
+
+<section id="contact" class="contact">
+
+    <div class="section-header">
+
+        <span>Contact</span>
+
+        <h2>تماس با ما</h2>
+
+        <p>
+
+            برای رزرو یا دریافت اطلاعات بیشتر با ما در ارتباط باشید.
+
+        </p>
 
     </div>
 
@@ -565,11 +706,11 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
 
             <i class="fa-solid fa-phone"></i>
 
-            <h3>تلفن</h3>
+            <h3>شماره تماس</h3>
 
             <a href="tel:09380449987">
 
-                09380449987
+                ۰۹۳۸۰۴۴۹۹۸۷
 
             </a>
 
@@ -591,49 +732,49 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
 
     </div>
 
-</section>
+    <div class="maps-buttons">
 
-<!--=========================
-          مسیرها
-==========================-->
+        <a id="googleMapBtn" href="#" class="map-btn">
 
-<section class="maps-section">
+            <i class="fa-brands fa-google"></i>
 
-    <a href="#" class="map-btn">
+            گوگل مپ
 
-        <i class="fa-solid fa-map-location-dot"></i>
+        </a>
 
-        گوگل مپ
+        <a id="neshanBtn" href="#" class="map-btn">
 
-    </a>
+            <i class="fa-solid fa-map-location-dot"></i>
 
-    <a href="#" class="map-btn">
+            نشان
 
-        <i class="fa-solid fa-location-crosshairs"></i>
+        </a>
 
-        نشان
+        <a id="baladBtn" href="#" class="map-btn">
 
-    </a>
+            <i class="fa-solid fa-location-arrow"></i>
 
-    <a href="#" class="map-btn">
+            بلد
 
-        <i class="fa-solid fa-route"></i>
+        </a>
 
-        بلد
-
-    </a>
+    </div>
 
 </section>
 
-<!--=========================
-          فوتر
-==========================-->
+<!--============================-->
+<!-- Footer -->
+<!--============================-->
 
 <footer class="footer">
 
-    <img src="images/logo.png" class="footer-logo">
+    <div class="footer-logo">
 
-    <h3>سالن معجزه</h3>
+        <img src="images/logo.png" alt="Salon Mojezeh">
+
+        <h2>سالن معجزه</h2>
+
+    </div>
 
     <p>
 
@@ -641,7 +782,35 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
 
     </p>
 
-    <div class="footer-social">
+    <div class="footer-links">
+
+        <a href="index.html">
+
+            صفحه اصلی
+
+        </a>
+
+        <a href="reserve.html">
+
+            رزرو نوبت
+
+        </a>
+
+        <a href="club.html">
+
+            باشگاه مشتریان
+
+        </a>
+
+        <a href="gallery.html">
+
+            گالری
+
+        </a>
+
+    </div>
+
+    <div class="social-links">
 
         <a href="#">
 
@@ -649,13 +818,13 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
 
         </a>
 
-        <a href="#">
+        <a href="https://wa.me/989380449987">
 
             <i class="fa-brands fa-whatsapp"></i>
 
         </a>
 
-        <a href="#">
+        <a href="tel:09380449987">
 
             <i class="fa-solid fa-phone"></i>
 
@@ -663,25 +832,13 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
 
     </div>
 
-    <p class="copyright">
+    <small>
 
-        © 2026 Salon Mojezeh
+        © 2026 Salon Mojezeh | تمامی حقوق محفوظ است.
 
-        تمامی حقوق محفوظ است.
-
-    </p>
+    </small>
 
 </footer>
-
-<!--=========================
-      دکمه بازگشت بالا
-==========================-->
-
-<button id="backToTop">
-
-    <i class="fa-solid fa-chevron-up"></i>
-
-</button>
 
 <script src="script.js"></script>
 
