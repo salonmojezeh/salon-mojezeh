@@ -6,169 +6,157 @@
 <meta charset="UTF-8">
 
 <meta name="viewport"
-content="width=device-width, initial-scale=1.0">
+      content="width=device-width,initial-scale=1">
 
-<title>
+<meta name="theme-color"
+      content="#0f0f0f">
 
-رزرو نوبت | سالن معجزه
-
-</title>
-
-<link rel="stylesheet"
-href="style.css">
+<title>رزرو نوبت | سالن معجزه</title>
 
 <link rel="stylesheet"
-href="booking.css">
+      href="style.css">
+
+<link rel="stylesheet"
+      href="booking.css">
+
+<link rel="preconnect"
+      href="https://fonts.googleapis.com">
+
+<link rel="preconnect"
+      href="https://fonts.gstatic.com"
+      crossorigin>
+
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet">
 
 <link rel="stylesheet"
 href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
 </head>
 
-<body class="reserve-page">
+<body>
 
+<!--============================-->
+<!-- Loader -->
+<!--============================-->
 
-<!--=========================
-منوی کشویی
-==========================-->
+<div id="loader">
 
-<div class="sidebar" id="sidebar">
+<div class="loader-circle"></div>
 
-<button
-class="close-btn"
-onclick="closeSidebar()">
+<h2>سالن معجزه</h2>
+
+</div>
+
+<!--============================-->
+<!-- Overlay -->
+<!--============================-->
+
+<div id="overlay"></div>
+
+<!--============================-->
+<!-- Sidebar -->
+<!--============================-->
+
+<aside id="sidebar">
+
+<div class="sidebar-header">
+
+<img src="images/logo.png"
+alt="Salon">
+
+<h2>سالن معجزه</h2>
+
+<button id="closeSidebar">
 
 <i class="fa-solid fa-xmark"></i>
 
 </button>
 
-<nav class="sidebar-nav">
+</div>
 
-<a href="index.html" class="nav-link">
+<nav>
+
+<a href="index.html">
 
 <i class="fa-solid fa-house"></i>
 
-صفحه اصلی
+<span>صفحه اصلی</span>
 
 </a>
 
-<a href="reserve.html"
-class="nav-link active">
+<a href="reserve.html">
 
 <i class="fa-solid fa-calendar-days"></i>
 
-رزرو نوبت
+<span>رزرو نوبت</span>
 
 </a>
 
-<a href="club.html"
-class="nav-link">
+<a href="club.html">
 
 <i class="fa-solid fa-gift"></i>
 
-باشگاه مشتریان
+<span>باشگاه مشتریان</span>
 
 </a>
 
-<a href="gallery.html"
-class="nav-link">
+<a href="gallery.html">
 
 <i class="fa-solid fa-images"></i>
 
-گالری
+<span>گالری</span>
 
 </a>
 
-<a href="news.html"
-class="nav-link">
+<a href="news.html">
 
 <i class="fa-solid fa-newspaper"></i>
 
-اخبار
+<span>اخبار</span>
 
 </a>
 
-<a href="#"
-id="googleMapBtn"
-class="nav-link">
-
-<i class="fa-solid fa-location-dot"></i>
-
-مسیریابی گوگل
-
-</a>
-
-<a href="#"
-id="neshanBtn"
-class="nav-link">
-
-<i class="fa-solid fa-location-dot"></i>
-
-مسیریابی نشان
-
-</a>
-
-<a href="#"
-id="baladBtn"
-class="nav-link">
-
-<i class="fa-solid fa-location-dot"></i>
-
-مسیریابی بلد
-
-</a>
-
-<a href="tel:09380449987"
-class="nav-link">
+<a href="index.html#contact">
 
 <i class="fa-solid fa-phone"></i>
 
-تماس با سالن
+<span>تماس با ما</span>
 
 </a>
 
 </nav>
 
-</div>
+</aside>
 
+<!--============================-->
+<!-- Header -->
+<!--============================-->
 
-<div
-id="overlay"
-class="overlay"
-onclick="closeSidebar()">
+<header id="header">
 
-</div>
-
-
-
-<!--=========================
-هدر
-==========================-->
-
-<header class="header">
-
-<button
-class="menu-btn"
-onclick="openSidebar()">
+<button id="menuBtn">
 
 <i class="fa-solid fa-bars"></i>
 
 </button>
 
+<div class="logo-box">
 
-<div class="logo-container">
+<img src="images/logo.png"
+alt="Salon">
 
-<img
-src="images/logo.png"
-class="logo"
-alt="Salon Mojeze">
+<div>
+
+<h2>سالن معجزه</h2>
+
+<small>رزرو آنلاین</small>
 
 </div>
 
+</div>
 
-<button
-id="themeToggle"
-class="theme-btn">
+<button id="themeToggle">
 
 <i class="fa-solid fa-moon"></i>
 
@@ -176,67 +164,52 @@ class="theme-btn">
 
 </header>
 
+<!--============================-->
+<!-- Reserve -->
+<!--============================-->
 
+<section class="reserve-page">
 
-<!--=========================
-صفحه رزرو
-==========================-->
+<div class="reserve-box">
 
-<section class="reserve-container">
+<div class="reserve-header">
 
-<div class="reserve-wrapper">
+<h1>
 
-<h1 class="reserve-title">
-
-رزرو نوبت
+رزرو آنلاین نوبت
 
 </h1>
 
-<p class="reserve-subtitle">
+<p>
 
-لطفاً مراحل را به ترتیب تکمیل کنید
+لطفاً مراحل زیر را به ترتیب تکمیل کنید.
 
 </p>
 
+</div>
 
+<div class="progress">
 
-<div class="progress-bar">
-
-<div
-id="progressFill"
-class="progress-fill">
+<div id="progressBar"></div>
 
 </div>
 
-</div>
+<form id="reserveForm">
 
+<!--============================-->
+<!-- مرحله اول -->
+<!--============================-->
 
+<div class="step active"
+id="step1">
 
-<form
-id="reserveForm"
-autocomplete="off">
-<!--==================================
-مرحله اول
+<h3>
+
+<i class="fa-solid fa-user"></i>
+
 اطلاعات مشتری
-===================================-->
 
-<div
-id="step1"
-class="steps active">
-
-<div class="step-title">
-
-<span class="step-number">
-
-1
-
-</span>
-
-اطلاعات شخصی
-
-</div>
-
-
+</h3>
 
 <div class="form-group">
 
@@ -244,23 +217,14 @@ class="steps active">
 
 نام
 
-<span class="required">*</span>
-
 </label>
 
 <input
-
 type="text"
-
 id="firstName"
-
-placeholder="نام خود را وارد کنید"
-
 required>
 
 </div>
-
-
 
 <div class="form-group">
 
@@ -268,23 +232,14 @@ required>
 
 نام خانوادگی
 
-<span class="required">*</span>
-
 </label>
 
 <input
-
 type="text"
-
 id="lastName"
-
-placeholder="نام خانوادگی خود را وارد کنید"
-
 required>
 
 </div>
-
-
 
 <div class="form-group">
 
@@ -292,373 +247,214 @@ required>
 
 شماره موبایل
 
-<span class="required">*</span>
-
 </label>
 
 <input
-
 type="tel"
-
 id="phone"
-
 maxlength="11"
-
-placeholder="09xxxxxxxxx"
-
+placeholder="09123456789"
 required>
 
 </div>
 
+</div>
+<!--============================-->
+<!-- مرحله دوم -->
+<!--============================-->
 
+<div class="step"
+     id="step2">
 
-<div class="button-group">
+    <h3>
 
-<button
+        <i class="fa-solid fa-scissors"></i>
 
-type="button"
+        انتخاب خدمت
 
-class="btn btn-prev"
+    </h3>
 
-id="prevBtn"
+    <div class="services-grid">
 
-disabled>
+        <label class="service-card">
 
-<i class="fa-solid fa-arrow-right"></i>
+            <input
+                type="radio"
+                name="service"
+                value="اصلاح سر و صورت">
 
-قبلی
+            <img
+                src="images/services/haircut.jpg"
+                alt="اصلاح سر و صورت">
 
-</button>
+            <h4>
 
+                اصلاح سر و صورت
 
+            </h4>
 
-<button
+        </label>
 
-type="button"
+        <label class="service-card">
 
-class="btn btn-next"
+            <input
+                type="radio"
+                name="service"
+                value="حالت مو">
 
-id="nextBtn"
+            <img
+                src="images/services/style.jpg"
+                alt="حالت مو">
 
-onclick="nextStep()">
+            <h4>
 
-بعدی
+                حالت مو
 
-<i class="fa-solid fa-arrow-left"></i>
+            </h4>
 
-</button>
+        </label>
+
+        <label class="service-card">
+
+            <input
+                type="radio"
+                name="service"
+                value="خط و سایه">
+
+            <img
+                src="images/services/line.jpg"
+                alt="خط و سایه">
+
+            <h4>
+
+                خط و سایه
+
+            </h4>
+
+        </label>
+
+        <label class="service-card">
+
+            <input
+                type="radio"
+                name="service"
+                value="سایه ریش">
+
+            <img
+                src="images/services/beard.jpg"
+                alt="سایه ریش">
+
+            <h4>
+
+                سایه ریش
+
+            </h4>
+
+        </label>
+
+    </div>
 
 </div>
 
-</div>
+<!--============================-->
+<!-- مرحله سوم -->
+<!--============================-->
 
+<div class="step"
+     id="step3">
 
+    <h3>
 
-<!--==================================
-مرحله دوم
-انتخاب خدمت
-===================================-->
-
-<div
-
-id="step2"
-
-class="steps">
-
-<div class="step-title">
-
-<span class="step-number">
-
-2
-
-</span>
-
-انتخاب خدمت
-
-</div>
-
-
-
-<div class="services-options">
-
-<label class="service-option">
-
-<input
-
-type="radio"
-
-name="service"
-
-value="اصلاح سر و صورت">
-
-<div class="service-icon">
-
-✂️
-
-</div>
-
-<h3>
-
-اصلاح سر و صورت
-
-</h3>
-
-<p>
-
-۶۰ دقیقه
-
-</p>
-
-</label>
-
-
-
-<label class="service-option">
-
-<input
-
-type="radio"
-
-name="service"
-
-value="حالت مو">
-
-<div class="service-icon">
-
-💇
-
-</div>
-
-<h3>
-
-حالت مو
-
-</h3>
-
-<p>
-
-۳۰ دقیقه
-
-</p>
-
-</label>
-
-
-
-<label class="service-option">
-
-<input
-
-type="radio"
-
-name="service"
-
-value="خط و سایه">
-
-<div class="service-icon">
-
-✨
-
-</div>
-
-<h3>
-
-خط و سایه
-
-</h3>
-
-<p>
-
-۳۰ دقیقه
-
-</p>
-
-</label>
-
-
-
-<label class="service-option">
-
-<input
-
-type="radio"
-
-name="service"
-
-value="سایه ریش">
-
-<div class="service-icon">
-
-🧔
-
-</div>
-
-<h3>
-
-سایه ریش
-
-</h3>
-
-<p>
-
-۳۰ دقیقه
-
-</p>
-
-</label>
-
-</div>
-
-
-
-<div class="button-group">
-
-<button
-
-type="button"
-
-class="btn btn-prev"
-
-onclick="prevStep()">
-
-<i class="fa-solid fa-arrow-right"></i>
-
-قبلی
-
-</button>
-
-
-
-<button
-
-type="button"
-
-class="btn btn-next"
-
-onclick="nextStep()">
-
-بعدی
-
-<i class="fa-solid fa-arrow-left"></i>
-
-</button>
-
-</div>
-
-</div>  
-<!--==================================
-مرحله سوم
-انتخاب روز
-===================================-->
-
-<div id="step3" class="steps">
-
-    <div class="step-title">
-
-        <span class="step-number">3</span>
+        <i class="fa-solid fa-calendar-days"></i>
 
         انتخاب روز
 
-    </div>
+    </h3>
 
-    <p class="step-description">
+    <p class="step-info">
 
-        یکی از روزهای آزاد را انتخاب کنید.
+        یکی از روزهای آزاد زیر را انتخاب کنید.
 
     </p>
 
-    <div id="calendar" class="calendar"></div>
+    <div id="daysContainer"
+         class="days-grid">
 
-    <div class="button-group">
-
-        <button
-            type="button"
-            class="btn btn-prev"
-            onclick="prevStep()">
-
-            <i class="fa-solid fa-arrow-right"></i>
-
-            قبلی
-
-        </button>
-
-        <button
-            type="button"
-            class="btn btn-next"
-            onclick="nextStep()">
-
-            بعدی
-
-            <i class="fa-solid fa-arrow-left"></i>
-
-        </button>
+        <!-- توسط JavaScript ساخته می‌شود -->
 
     </div>
 
 </div>
 
+<!--============================-->
+<!-- مرحله چهارم -->
+<!--============================-->
 
+<div class="step"
+     id="step4">
 
-<!--==================================
-مرحله چهارم
-انتخاب ساعت
-===================================-->
+    <h3>
 
-<div id="step4" class="steps">
-
-    <div class="step-title">
-
-        <span class="step-number">4</span>
+        <i class="fa-solid fa-clock"></i>
 
         انتخاب ساعت
 
-    </div>
+    </h3>
 
-    <p class="step-description">
+    <p class="step-info">
 
-        ساعت دلخواه خود را انتخاب کنید.
+        ساعت مورد نظر خود را انتخاب کنید.
 
     </p>
 
-    <div
-        id="timesGrid"
-        class="times-grid">
+    <div id="timesContainer"
+         class="times-grid">
 
-    </div>
-
-    <div class="button-group">
-
-        <button
-            type="button"
-            class="btn btn-prev"
-            onclick="prevStep()">
-
-            <i class="fa-solid fa-arrow-right"></i>
-
-            قبلی
-
-        </button>
-
-        <button
-            id="submitBtn"
-            type="submit"
-            class="btn btn-submit">
-
-            <i class="fa-solid fa-circle-check"></i>
-
-            ثبت رزرو
-
-        </button>
+        <!-- توسط JavaScript ساخته می‌شود -->
 
     </div>
 
 </div>
+<!--============================-->
+<!-- Buttons -->
+<!--============================-->
 
+<div class="reserve-buttons">
 
+    <button
+        type="button"
+        id="prevBtn"
+        class="secondary-btn">
 
-<!--==================================
-پیام موفقیت
-===================================-->
+        <i class="fa-solid fa-arrow-right"></i>
+
+        مرحله قبل
+
+    </button>
+
+    <button
+        type="button"
+        id="nextBtn"
+        class="primary-btn">
+
+        مرحله بعد
+
+        <i class="fa-solid fa-arrow-left"></i>
+
+    </button>
+
+</div>
+
+<button
+    type="submit"
+    id="submitBtn"
+    class="primary-btn submit-btn">
+
+    <i class="fa-solid fa-check"></i>
+
+    ثبت رزرو
+
+</button>
 
 </form>
 
@@ -666,13 +462,13 @@ onclick="nextStep()">
 
 </section>
 
+<!--============================-->
+<!-- Success Modal -->
+<!--============================-->
 
+<div id="successModal">
 
-<div
-id="successModal"
-class="success-modal">
-
-    <div class="success-content">
+    <div class="success-box">
 
         <div class="success-icon">
 
@@ -680,19 +476,15 @@ class="success-modal">
 
         </div>
 
-        <h2 class="success-title">
+        <h2>
 
             رزرو شما با موفقیت ثبت شد
 
         </h2>
 
-        <p class="success-message">
+        <p>
 
-            اطلاعات رزرو شما ثبت شد.
-
-            <br>
-
-            منتظر تماس یا پیامک سالن باشید.
+            اطلاعات رزرو شما به شرح زیر است.
 
         </p>
 
@@ -704,80 +496,35 @@ class="success-modal">
 
         <div class="success-buttons">
 
-            <button
-                class="success-btn-home"
-                onclick="goHome()">
+            <a
+                href="index.html"
+                class="primary-btn">
 
-                بازگشت به صفحه اصلی
+                <i class="fa-solid fa-house"></i>
 
-            </button>
+                صفحه اصلی
 
-            <button
-                class="success-btn-contact"
-                onclick="contactSalon()">
+            </a>
+
+            <a
+                href="tel:09380449987"
+                class="secondary-btn">
+
+                <i class="fa-solid fa-phone"></i>
 
                 تماس با سالن
 
-            </button>
+            </a>
 
         </div>
 
     </div>
 
-</div> 
-<!--=========================
-فوتر
-==========================-->
-
-<footer class="reserve-footer">
-
-    <a href="index.html">
-
-        <i class="fa-solid fa-house"></i>
-
-        صفحه اصلی
-
-    </a>
-
-    <span class="footer-divider">
-
-        |
-
-    </span>
-
-    <a href="tel:09380449987">
-
-        <i class="fa-solid fa-phone"></i>
-
-        تماس با سالن
-
-    </a>
-
-</footer>
-
-
-
-<!--=========================
-Loading
-==========================-->
-
-<div id="loadingBox" class="loading-box">
-
-    <div class="loader"></div>
-
-    <p>
-
-        در حال ثبت رزرو...
-
-    </p>
-
 </div>
 
-
-
-<!--=========================
-Scripts
-==========================-->
+<!--============================-->
+<!-- Scripts -->
+<!--============================-->
 
 <script type="module" src="firebase.js"></script>
 
@@ -787,4 +534,4 @@ Scripts
 
 </body>
 
-</html>    
+</html>
