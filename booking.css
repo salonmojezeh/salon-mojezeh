@@ -1,1163 +1,885 @@
-/* ==========================================
-   سالن معجزه
-   booking.css
-   نسخه نهایی
-========================================== */
+/*======================================
+    Salon Mojezeh
+    booking.css
+======================================*/
 
-
-/*==========================
-متغیرها
-==========================*/
-
-:root{
-
---primary:#d4af37;
---primary-light:#f4d66f;
-
---dark:#111111;
---dark2:#1b1b1b;
-
---white:#ffffff;
---gray:#d6d6d6;
-
---success:#2d8659;
---danger:#c62828;
-
---border:rgba(212,175,55,.25);
-
---shadow:0 20px 60px rgba(0,0,0,.25);
-
---radius:18px;
-
---transition:.30s;
-
-}
-
-
-
-/*==========================
-حالت روشن
-==========================*/
-
-body.light-mode{
-
---dark:#ffffff;
-
---dark2:#f5f7fb;
-
---white:#222;
-
---gray:#666;
-
---border:#dbe5ff;
-
-background:#f4f8ff;
-
-}
-
-
-
-/*==========================
-صفحه رزرو
-==========================*/
+/*============================
+Reserve Page
+=============================*/
 
 .reserve-page{
 
-min-height:100vh;
+    width:min(1200px,92%);
 
-background:
-
-linear-gradient(
-
-135deg,
-
-rgba(0,0,0,.78),
-
-rgba(0,0,0,.84)
-
-),
-
-url("images/hero.jpg");
-
-background-size:cover;
-
-background-position:center;
-
-background-attachment:fixed;
+    margin:50px auto 100px;
 
 }
 
+.reserve-box{
 
+    max-width:900px;
 
-/*==========================
-باکس اصلی
-==========================*/
+    margin:auto;
 
-.reserve-container{
+    background:var(--card);
 
-padding:35px 18px 70px;
+    border-radius:28px;
 
-}
+    padding:45px;
 
+    box-shadow:var(--shadow);
 
-
-.reserve-wrapper{
-
-max-width:650px;
-
-margin:auto;
-
-background:var(--dark2);
-
-border:1px solid var(--border);
-
-border-radius:22px;
-
-padding:35px;
-
-backdrop-filter:blur(15px);
-
-box-shadow:var(--shadow);
-
-transition:var(--transition);
+    border:1px solid var(--border);
 
 }
 
+.reserve-header{
 
+    text-align:center;
 
-/*==========================
-عنوان
-==========================*/
-
-.reserve-title{
-
-font-size:34px;
-
-font-weight:700;
-
-text-align:center;
-
-color:var(--primary);
-
-margin-bottom:8px;
+    margin-bottom:35px;
 
 }
 
+.reserve-header h1{
 
+    font-size:38px;
 
-.reserve-subtitle{
+    color:var(--primary);
 
-text-align:center;
+    margin-bottom:15px;
 
-color:var(--gray);
-
-font-size:15px;
-
-margin-bottom:35px;
-
-line-height:1.8;
+    font-weight:800;
 
 }
 
+.reserve-header p{
 
+    color:var(--text-light);
 
-/*==========================
+    font-size:17px;
+
+    line-height:2;
+
+}
+
+/*============================
 Progress
-==========================*/
+=============================*/
 
-.progress-bar{
+.progress{
 
-width:100%;
+    width:100%;
 
-height:8px;
+    height:10px;
 
-background:#303030;
+    background:var(--surface);
 
-border-radius:20px;
+    border-radius:50px;
 
-overflow:hidden;
+    overflow:hidden;
 
-margin-bottom:35px;
-
-}
-
-
-
-body.light-mode .progress-bar{
-
-background:#dbe5ff;
+    margin-bottom:45px;
 
 }
 
+#progressBar{
 
+    width:25%;
 
-.progress-fill{
+    height:100%;
 
-height:100%;
+    background:linear-gradient(
+        90deg,
+        var(--primary),
+        #d4af37
+    );
 
-width:25%;
-
-background:
-
-linear-gradient(
-
-90deg,
-
-#d4af37,
-
-#ffd95e
-
-);
-
-transition:.40s;
-
-}
-/*==========================
-مراحل
-==========================*/
-
-.steps{
-
-display:none;
-
-animation:fadeStep .35s ease;
+    transition:.35s;
 
 }
 
-.steps.active{
+/*============================
+Steps
+=============================*/
 
-display:block;
+.step{
 
-}
+    display:none;
 
-@keyframes fadeStep{
-
-from{
-
-opacity:0;
-
-transform:translateY(15px);
+    animation:fadeUp .45s ease;
 
 }
 
-to{
+.step.active{
 
-opacity:1;
-
-transform:translateY(0);
+    display:block;
 
 }
 
-}
+.step h3{
 
+    display:flex;
 
+    align-items:center;
 
-/*==========================
-عنوان مرحله
-==========================*/
+    gap:12px;
 
-.step-title{
+    font-size:28px;
 
-display:flex;
+    color:var(--text);
 
-align-items:center;
-
-gap:12px;
-
-font-size:22px;
-
-font-weight:700;
-
-color:var(--primary);
-
-margin-bottom:30px;
+    margin-bottom:25px;
 
 }
 
+.step h3 i{
 
-
-.step-number{
-
-width:40px;
-
-height:40px;
-
-border-radius:50%;
-
-background:var(--primary);
-
-color:#000;
-
-display:flex;
-
-align-items:center;
-
-justify-content:center;
-
-font-weight:bold;
-
-font-size:18px;
+    color:var(--primary);
 
 }
 
+.step-info{
 
+    color:var(--text-light);
 
-.step-description{
+    font-size:17px;
 
-margin-bottom:25px;
-
-color:var(--gray);
-
-line-height:1.9;
+    margin-bottom:25px;
 
 }
 
-
-
-/*==========================
-فرم
-==========================*/
+/*============================
+Form
+=============================*/
 
 .form-group{
 
-margin-bottom:22px;
+    margin-bottom:22px;
 
 }
-
-
 
 .form-group label{
 
-display:block;
+    display:block;
 
-margin-bottom:8px;
+    margin-bottom:10px;
 
-font-weight:600;
+    font-size:16px;
 
-color:var(--primary);
+    font-weight:700;
 
-}
-
-
-
-.required{
-
-color:#ff4b4b;
+    color:var(--text);
 
 }
-
-
 
 .form-group input{
 
-width:100%;
+    width:100%;
 
-padding:15px;
+    height:58px;
 
-border-radius:12px;
+    border-radius:16px;
 
-border:2px solid var(--border);
+    border:2px solid var(--border);
 
-background:rgba(255,255,255,.04);
+    background:var(--surface);
 
-color:var(--white);
+    color:var(--text);
 
-font-size:15px;
+    padding:0 18px;
 
-transition:.30s;
+    font-size:17px;
 
-}
+    transition:.3s;
 
-
-
-body.light-mode .form-group input{
-
-background:#ffffff;
+    font-family:inherit;
 
 }
-
-
 
 .form-group input:focus{
 
-outline:none;
+    outline:none;
 
-border-color:var(--primary);
+    border-color:var(--primary);
 
-box-shadow:0 0 15px rgba(212,175,55,.25);
+    background:var(--card);
 
 }
-
-
 
 .form-group input::placeholder{
 
-color:#888;
+    color:#999;
+
+}
+/*============================
+Services
+=============================*/
+
+.services-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(2,1fr);
+
+    gap:25px;
 
 }
 
+.service-card{
 
+    position:relative;
 
-/*==========================
-دکمه‌ها
-==========================*/
+    display:flex;
 
-.button-group{
+    flex-direction:column;
 
-display:flex;
+    overflow:hidden;
 
-gap:15px;
+    background:var(--card);
 
-margin-top:35px;
+    border:2px solid var(--border);
 
-}
+    border-radius:22px;
 
+    cursor:pointer;
 
-
-.btn{
-
-flex:1;
-
-border:none;
-
-border-radius:14px;
-
-padding:15px;
-
-font-size:16px;
-
-font-weight:bold;
-
-cursor:pointer;
-
-transition:.30s;
-
-display:flex;
-
-justify-content:center;
-
-align-items:center;
-
-gap:10px;
+    transition:.35s;
 
 }
 
+.service-card:hover{
 
+    transform:translateY(-8px);
 
-.btn-prev{
+    border-color:var(--primary);
 
-background:transparent;
-
-border:2px solid var(--primary);
-
-color:var(--primary);
+    box-shadow:var(--shadow);
 
 }
 
+.service-card input{
 
-
-.btn-prev:hover{
-
-background:rgba(212,175,55,.10);
+    display:none;
 
 }
 
+.service-card img{
 
+    width:100%;
 
-.btn-prev:disabled{
+    height:180px;
 
-opacity:.4;
-
-cursor:not-allowed;
-
-}
-
-
-
-.btn-next{
-
-background:var(--primary);
-
-color:#000;
+    object-fit:cover;
 
 }
 
+.service-card h4{
 
+    padding:20px;
 
-.btn-next:hover{
+    text-align:center;
 
-transform:translateY(-2px);
+    font-size:22px;
 
-box-shadow:0 12px 25px rgba(212,175,55,.25);
+    font-weight:700;
 
-}
-
-
-
-.btn-submit{
-
-width:100%;
-
-background:linear-gradient(
-
-135deg,
-
-#d4af37,
-
-#ffd95e
-
-);
-
-color:#000;
-
-font-size:17px;
-
-padding:16px;
-
-border-radius:14px;
-
-font-weight:bold;
-
-transition:.30s;
+    color:var(--text);
 
 }
 
+.service-card input:checked + img{
 
-
-.btn-submit:hover{
-
-transform:translateY(-3px);
-
-box-shadow:0 15px 30px rgba(212,175,55,.30);
-
-  }
-/*==========================
-کارت‌های خدمات
-==========================*/
-
-.services-options{
-
-display:grid;
-
-grid-template-columns:repeat(2,1fr);
-
-gap:18px;
-
-margin-top:10px;
+    outline:4px solid var(--primary);
 
 }
 
-.service-option{
+.service-card:has(input:checked){
 
-cursor:pointer;
+    border-color:var(--primary);
 
-border:2px solid var(--border);
-
-border-radius:16px;
-
-padding:22px 18px;
-
-background:rgba(255,255,255,.03);
-
-text-align:center;
-
-transition:.30s;
-
-user-select:none;
+    background:rgba(25,118,210,.08);
 
 }
 
-body.light-mode .service-option{
+body.dark .service-card:has(input:checked){
 
-background:#ffffff;
-
-}
-
-.service-option input{
-
-display:none;
+    background:rgba(212,175,55,.12);
 
 }
 
-.service-option:hover{
+/*============================
+Days
+=============================*/
 
-transform:translateY(-4px);
+.days-grid{
 
-border-color:var(--primary);
+    display:grid;
 
-}
+    grid-template-columns:repeat(2,1fr);
 
-.service-option.selected{
-
-background:var(--primary);
-
-color:#000;
-
-border-color:var(--primary);
+    gap:18px;
 
 }
 
-.service-option.selected h3,
+.day-card{
 
-.service-option.selected p{
+    background:var(--card);
 
-color:#000;
+    border:2px solid var(--border);
 
-}
+    border-radius:18px;
 
-.service-icon{
+    padding:22px;
 
-font-size:34px;
+    text-align:center;
 
-margin-bottom:12px;
+    cursor:pointer;
 
-}
-
-.service-option h3{
-
-font-size:17px;
-
-margin-bottom:8px;
-
-color:var(--white);
+    transition:.30s;
 
 }
 
-.service-option p{
+.day-card:hover{
 
-font-size:14px;
+    transform:translateY(-5px);
 
-color:var(--gray);
-
-}
-
-
-
-/*==========================
-تقویم
-==========================*/
-
-.calendar{
-
-display:grid;
-
-grid-template-columns:repeat(5,1fr);
-
-gap:12px;
-
-margin-top:10px;
+    border-color:var(--primary);
 
 }
 
-.day-option{
+.day-card.selected{
 
-cursor:pointer;
+    background:var(--primary);
 
-border-radius:14px;
+    color:#fff;
 
-border:2px solid var(--border);
-
-background:rgba(255,255,255,.03);
-
-padding:14px 8px;
-
-text-align:center;
-
-transition:.30s;
-
-user-select:none;
+    border-color:var(--primary);
 
 }
 
-body.light-mode .day-option{
+.day-name{
 
-background:#ffffff;
+    display:block;
 
-}
+    font-size:22px;
 
-.day-option input{
+    font-weight:800;
 
-display:none;
-
-}
-
-.day-option:hover{
-
-border-color:var(--primary);
-
-transform:translateY(-3px);
+    margin-bottom:12px;
 
 }
 
-.day-option.selected{
+.day-date{
 
-background:var(--primary);
+    display:block;
 
-border-color:var(--primary);
+    font-size:19px;
 
-color:#000;
-
-font-weight:bold;
+    font-weight:700;
 
 }
 
+.day-card.selected .day-name,
 
+.day-card.selected .day-date{
 
-/*==========================
-ساعت‌ها
-==========================*/
+    color:#fff;
+
+}
+/*============================
+Times
+=============================*/
 
 .times-grid{
 
-display:grid;
+    display:grid;
 
-grid-template-columns:repeat(2,1fr);
+    grid-template-columns:repeat(2,1fr);
 
-gap:16px;
-
-margin-top:10px;
+    gap:18px;
 
 }
 
-.time-option{
+.time-card{
 
-cursor:pointer;
+    display:flex;
 
-border-radius:15px;
+    align-items:center;
 
-padding:18px;
+    justify-content:center;
 
-text-align:center;
+    height:75px;
 
-font-size:18px;
+    border-radius:18px;
 
-font-weight:bold;
+    border:2px solid var(--border);
 
-transition:.30s;
+    background:var(--card);
 
-border:2px solid transparent;
+    color:var(--text);
 
-user-select:none;
+    font-size:24px;
 
-}
+    font-weight:700;
 
-.time-option input{
+    cursor:pointer;
 
-display:none;
-
-}
-
-
-
-/* ساعت آزاد */
-
-.time-option.available{
-
-background:#2e9d5b;
-
-color:#fff;
+    transition:.30s;
 
 }
 
+.time-card:hover{
 
+    transform:translateY(-4px);
 
-/* ساعت رزرو شده */
-
-.time-option.booked{
-
-background:#c62828;
-
-color:#fff;
-
-cursor:not-allowed;
-
-opacity:.65;
+    border-color:var(--primary);
 
 }
 
+.time-card.selected{
 
+    background:var(--primary);
 
-/* ساعت انتخاب شده */
+    color:#fff;
 
-.time-option.selected{
-
-background:var(--primary);
-
-color:#000;
-
-border-color:#000;
-
-transform:scale(1.04);
+    border-color:var(--primary);
 
 }
 
+.time-card.booked{
 
+    background:#e53935;
 
-/* هاور فقط برای ساعت آزاد */
+    color:#fff;
 
-.time-option.available:hover{
+    border-color:#e53935;
 
-transform:translateY(-3px);
+    cursor:not-allowed;
 
-box-shadow:0 10px 20px rgba(0,0,0,.20);
-
-}
-/*==========================
-مودال موفقیت
-==========================*/
-
-.success-modal{
-
-position:fixed;
-
-inset:0;
-
-background:rgba(0,0,0,.75);
-
-display:none;
-
-justify-content:center;
-
-align-items:center;
-
-z-index:9999;
-
-padding:20px;
+    opacity:.8;
 
 }
 
-.success-modal.show{
+.time-card.disabled{
 
-display:flex;
+    background:#9e9e9e;
 
-animation:fadeIn .35s ease;
+    color:#fff;
+
+    border-color:#9e9e9e;
+
+    cursor:not-allowed;
 
 }
 
-.success-content{
+/*============================
+Buttons
+=============================*/
 
-width:100%;
+.reserve-buttons{
 
-max-width:430px;
+    display:flex;
 
-background:var(--dark2);
+    justify-content:space-between;
 
-border:2px solid var(--primary);
+    gap:20px;
 
-border-radius:20px;
+    margin-top:40px;
 
-padding:35px 30px;
+}
 
-text-align:center;
+.reserve-buttons .primary-btn,
 
-box-shadow:0 20px 60px rgba(0,0,0,.35);
+.reserve-buttons .secondary-btn{
+
+    flex:1;
+
+    justify-content:center;
+
+}
+
+.submit-btn{
+
+    width:100%;
+
+    margin-top:25px;
+
+    justify-content:center;
+
+    display:none;
+
+}
+
+/*============================
+Success Modal
+=============================*/
+
+#successModal{
+
+    position:fixed;
+
+    inset:0;
+
+    background:rgba(0,0,0,.55);
+
+    display:none;
+
+    align-items:center;
+
+    justify-content:center;
+
+    padding:20px;
+
+    z-index:3000;
+
+}
+
+#successModal.active{
+
+    display:flex;
+
+}
+
+.success-box{
+
+    width:100%;
+
+    max-width:520px;
+
+    background:var(--card);
+
+    border-radius:28px;
+
+    padding:40px 35px;
+
+    text-align:center;
+
+    box-shadow:var(--shadow);
+
+    animation:fadeUp .35s ease;
 
 }
 
 .success-icon{
 
-font-size:65px;
+    font-size:70px;
 
-margin-bottom:20px;
+    color:#4caf50;
 
-color:#2e9d5b;
-
-}
-
-.success-title{
-
-font-size:26px;
-
-font-weight:bold;
-
-color:var(--primary);
-
-margin-bottom:15px;
+    margin-bottom:20px;
 
 }
 
-.success-message{
+.success-box h2{
 
-color:var(--gray);
+    color:var(--primary);
 
-line-height:2;
+    font-size:32px;
 
-margin-bottom:20px;
+    margin-bottom:15px;
+
+}
+
+.success-box p{
+
+    color:var(--text-light);
+
+    line-height:2;
+
+    margin-bottom:25px;
 
 }
 
 .success-details{
 
-background:rgba(255,255,255,.04);
+    background:var(--surface);
 
-border:1px solid var(--border);
+    border-radius:18px;
 
-border-radius:12px;
+    padding:20px;
 
-padding:18px;
+    text-align:right;
 
-margin-bottom:20px;
+    line-height:2.3;
 
-text-align:right;
+    color:var(--text);
 
-line-height:2;
-
-font-size:14px;
+    margin-bottom:30px;
 
 }
 
 .success-buttons{
 
-display:flex;
+    display:flex;
 
-gap:12px;
-
-}
-
-.success-buttons button{
-
-flex:1;
-
-padding:14px;
-
-border:none;
-
-border-radius:12px;
-
-cursor:pointer;
-
-font-weight:bold;
-
-transition:.30s;
+    gap:15px;
 
 }
 
-.success-btn-home{
+.success-buttons a{
 
-background:var(--primary);
+    flex:1;
 
-color:#000;
+    justify-content:center;
+
+}
+/*============================
+Dark Mode
+=============================*/
+
+body.dark .reserve-box{
+
+    background:var(--card);
+
+    border-color:var(--border);
 
 }
 
-.success-btn-home:hover{
+body.dark .day-card.selected,
 
-transform:translateY(-2px);
+body.dark .time-card.selected{
 
-}
-
-.success-btn-contact{
-
-background:transparent;
-
-border:2px solid var(--primary);
-
-color:var(--primary);
+    color:#000;
 
 }
 
-.success-btn-contact:hover{
+body.dark .service-card{
 
-background:rgba(212,175,55,.12);
-
-}
-
-
-
-/*==========================
-لودر
-==========================*/
-
-.loading-box{
-
-position:fixed;
-
-inset:0;
-
-background:rgba(0,0,0,.65);
-
-display:none;
-
-justify-content:center;
-
-align-items:center;
-
-flex-direction:column;
-
-z-index:9998;
+    background:var(--card);
 
 }
 
-.loading-box.show{
+body.dark .success-box{
 
-display:flex;
-
-}
-
-.loader{
-
-width:55px;
-
-height:55px;
-
-border:5px solid rgba(255,255,255,.2);
-
-border-top:5px solid var(--primary);
-
-border-radius:50%;
-
-animation:spin .8s linear infinite;
-
-margin-bottom:18px;
+    background:var(--card);
 
 }
 
-.loading-box p{
+body.dark .success-details{
 
-color:#fff;
-
-font-size:15px;
+    background:var(--surface);
 
 }
 
-@keyframes spin{
+/*============================
+Responsive
+=============================*/
 
-100%{
+@media(max-width:900px){
 
-transform:rotate(360deg);
+    .reserve-box{
 
-}
+        padding:35px 25px;
 
-}
+    }
 
+    .services-grid{
 
+        grid-template-columns:1fr;
 
-/*==========================
-فوتر
-==========================*/
-
-.reserve-footer{
-
-margin-top:35px;
-
-padding-top:20px;
-
-text-align:center;
-
-border-top:1px solid var(--border);
+    }
 
 }
-
-.reserve-footer a{
-
-color:var(--primary);
-
-text-decoration:none;
-
-font-weight:600;
-
-}
-
-.reserve-footer a:hover{
-
-text-decoration:underline;
-
-}
-
-.footer-divider{
-
-margin:0 10px;
-
-color:#888;
-
-}
-
-
-
-/*==========================
-ریسپانسیو
-==========================*/
 
 @media(max-width:768px){
 
-.reserve-wrapper{
+    .reserve-page{
 
-padding:25px;
+        width:95%;
 
-}
+        margin:30px auto 70px;
 
-.services-options{
+    }
 
-grid-template-columns:1fr;
+    .reserve-box{
 
-}
+        padding:25px 18px;
 
-.calendar{
+        border-radius:22px;
 
-grid-template-columns:repeat(3,1fr);
+    }
 
-}
+    .reserve-header h1{
 
-.times-grid{
+        font-size:30px;
 
-grid-template-columns:repeat(2,1fr);
+    }
 
-}
+    .reserve-header p{
 
-.success-buttons{
+        font-size:15px;
 
-flex-direction:column;
+    }
 
-}
+    .step h3{
 
-.button-group{
+        font-size:24px;
 
-flex-direction:column;
+    }
 
-}
+    .service-card img{
 
-.btn{
+        height:170px;
 
-width:100%;
+    }
 
-}
+    .service-card h4{
+
+        font-size:20px;
+
+    }
+
+    .day-name{
+
+        font-size:20px;
+
+    }
+
+    .day-date{
+
+        font-size:18px;
+
+    }
+
+    .time-card{
+
+        height:68px;
+
+        font-size:22px;
+
+    }
+
+    .reserve-buttons{
+
+        flex-direction:column;
+
+    }
+
+    .reserve-buttons button{
+
+        width:100%;
+
+    }
+
+    .success-buttons{
+
+        flex-direction:column;
+
+    }
+
+    .success-buttons a{
+
+        width:100%;
+
+    }
 
 }
 
 @media(max-width:480px){
 
-.reserve-title{
+    .days-grid{
 
-font-size:26px;
+        grid-template-columns:1fr;
+
+    }
+
+    .times-grid{
+
+        grid-template-columns:1fr;
+
+    }
+
+    .reserve-header h1{
+
+        font-size:26px;
+
+    }
+
+    .step h3{
+
+        font-size:21px;
+
+    }
+
+    .service-card img{
+
+        height:150px;
+
+    }
+
+    .service-card h4{
+
+        font-size:18px;
+
+    }
+
+    .day-card{
+
+        padding:18px;
+
+    }
+
+    .day-name{
+
+        font-size:18px;
+
+    }
+
+    .day-date{
+
+        font-size:16px;
+
+    }
+
+    .time-card{
+
+        font-size:20px;
+
+        height:62px;
+
+    }
+
+    .success-box{
+
+        padding:30px 20px;
+
+    }
+
+    .success-box h2{
+
+        font-size:26px;
+
+    }
+
+    .success-icon{
+
+        font-size:58px;
+
+    }
 
 }
 
-.reserve-subtitle{
+/*============================
+Animation
+=============================*/
 
-font-size:14px;
+.step{
 
-}
-
-.calendar{
-
-grid-template-columns:repeat(2,1fr);
-
-gap:10px;
+    animation:fadeUp .45s ease;
 
 }
 
-.times-grid{
+.service-card,
 
-grid-template-columns:1fr 1fr;
+.day-card,
 
-gap:12px;
+.time-card{
 
-}
-
-.service-icon{
-
-font-size:28px;
+    transition:all .3s ease;
 
 }
 
-}
+/*============================
+End Of File
+=============================*/
