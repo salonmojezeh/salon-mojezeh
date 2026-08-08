@@ -1,14 +1,14 @@
-/*=========================================================
-    SALON MOJEZEH
+/*======================================
+    Salon Mojezeh
     reserve-script.js
-    FINAL — Reservation System
-=========================================================*/
+    Final Reservation System
+======================================*/
 
 "use strict";
 
-/*=========================================================
-  IMPORTS
-=========================================================*/
+/*======================================
+    Imports
+======================================*/
 
 import { db } from "./firebase.js";
 
@@ -19,113 +19,34 @@ import {
     query,
     where,
     getDocs,
-    doc,
-    runTransaction,
+    addDoc,
     serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 
-/*=========================================================
-  CONFIGURATION
-=========================================================*/
+/*======================================
+    Configuration
+======================================*/
 
-const CONFIG = RESERVATION_CONFIG || {};
+const CONFIG = RESERVATION_CONFIG;
+
+const SERVICES = CONFIG.services || [];
+
+const WORKING_HOURS = CONFIG.workingHours || {};
+
+const CALENDAR_CONFIG = CONFIG.calendar || {};
+
+const BOOKING_CONFIG = CONFIG.booking || {};
+
+const BOOKINGS_COLLECTION =
+    BOOKING_CONFIG.collection || "reservations";
 
 const TOTAL_STEPS = 4;
 
-/*
-  خدمات از config.js خوانده می‌شوند.
-  اگر به هر دلیل config خدمات نداشت،
-  خود HTML مرجع قرار می‌گیرد.
-*/
-const SERVICES_CONFIG =
-    Array.isArray(CONFIG.services)
-        ? CONFIG.services
-        : [];
 
-
-/*
-  تنظیمات ساعت کاری
-*/
-const WORKING_HOURS =
-    CONFIG.workingHours || {};
-
-
-/*
-  تنظیمات تقویم
-*/
-const CALENDAR_CONFIG =
-    CONFIG.calendar || {};
-
-
-/*
-  تنظیمات رزرو
-*/
-const BOOKING_CONFIG =
-    CONFIG.booking || {};
-
-
-/*
-  نام Collection رزروها
-
-  اولویت:
-  booking.collection
-  booking.collectionName
-  bookingsCollection
-  در غیر این صورت:
-  bookings
-*/
-const BOOKINGS_COLLECTION =
-    BOOKING_CONFIG.collection ||
-    BOOKING_CONFIG.collectionName ||
-    CONFIG.bookingsCollection ||
-    "bookings";
-
-
-/*
-  ساعت شروع
-*/
-const WORK_START =
-    WORKING_HOURS.start || "09:00";
-
-
-/*
-  آخرین ساعت قابل رزرو
-*/
-const WORK_END =
-    WORKING_HOURS.lastBookingTime ||
-    WORKING_HOURS.end ||
-    "21:00";
-
-
-/*
-  فاصله بین ساعت‌ها
-
-  طبق درخواست فعلی:
-  یک ساعت یک ساعت
-*/
-const WORK_INTERVAL =
-    Number(
-        WORKING_HOURS.interval
-    ) > 0
-        ? Number(WORKING_HOURS.interval)
-        : 60;
-
-
-/*
-  تعداد روزهای قابل نمایش
-*/
-const DAYS_TO_SHOW =
-    Number(
-        CALENDAR_CONFIG.daysToShow
-    ) > 0
-        ? Number(CALENDAR_CONFIG.daysToShow)
-        : 30;
-
-
-/*=========================================================
-  DOM
-=========================================================*/
+/*======================================
+    DOM
+======================================*/
 
 const reserveForm =
     document.getElementById("reserveForm");
@@ -164,9 +85,9 @@ const successDetails =
     document.getElementById("successDetails");
 
 
-/*=========================================================
-  STATE
-=========================================================*/
+/*======================================
+    State
+======================================*/
 
 let currentStep = 1;
 
@@ -181,9 +102,29 @@ let isSubmitting = false;
 let currentBookingId = null;
 
 
-/*=========================================================
-  DIGITS
-=========================================================*/
+/*======================================
+    Persian Digits
+======================================*/
+
+function toPersianDigits(value) {
+
+    if (
+        value === null ||
+        value === undefined
+    ) {
+        return "";
+    }
+
+    return String(value).replace(
+        /\d/g,
+        digit => "۰۱۲۳۴۵۶۷۸۹"[digit]
+    );
+}
+
+
+/*======================================
+    English Digits
+======================================*/
 
 function toEnglishDigits(value) {
 
@@ -200,8 +141,7 @@ function toEnglishDigits(value) {
             /[۰-۹]/g,
             digit =>
                 String(
-                    "۰۱۲۳۴۵۶۷۸۹"
-                        .indexOf(digit)
+                    "۰۱۲۳۴۵۶۷۸۹".indexOf(digit)
                 )
         )
 
@@ -209,33 +149,15 @@ function toEnglishDigits(value) {
             /[٠-٩]/g,
             digit =>
                 String(
-                    "٠١٢٣٤٥٦٧٨٩"
-                        .indexOf(digit)
+                    "٠١٢٣٤٥٦٧٨٩".indexOf(digit)
                 )
         );
 }
 
 
-function toPersianDigits(value) {
-
-    if (
-        value === null ||
-        value === undefined
-    ) {
-        return "";
-    }
-
-    return String(value).replace(
-        /\d/g,
-        digit =>
-            "۰۱۲۳۴۵۶۷۸۹"[digit]
-    );
-}
-
-
-/*=========================================================
-  PHONE
-=========================================================*/
+/*======================================
+    Normalize Phone
+======================================*/
 
 function normalizePhone(value) {
 
@@ -246,10 +168,7 @@ function normalizePhone(value) {
             .replace(/\(/g, "")
             .replace(/\)/g, "");
 
-
-    if (
-        phone.startsWith("+98")
-    ) {
+    if (phone.startsWith("+98")) {
 
         phone =
             "0" +
@@ -257,10 +176,7 @@ function normalizePhone(value) {
 
     }
 
-
-    if (
-        phone.startsWith("0098")
-    ) {
+    if (phone.startsWith("0098")) {
 
         phone =
             "0" +
@@ -268,10 +184,13 @@ function normalizePhone(value) {
 
     }
 
-
     return phone;
 }
 
+
+/*======================================
+    Validate Mobile
+======================================*/
 
 function isValidIranianMobile(value) {
 
@@ -282,55 +201,37 @@ function isValidIranianMobile(value) {
 }
 
 
-/*=========================================================
-  HTML ESCAPE
-=========================================================*/
+/*======================================
+    Escape HTML
+======================================*/
 
 function escapeHTML(value) {
 
     return String(value ?? "")
 
-        .replace(
-            /&/g,
-            "&amp;"
-        )
+        .replace(/&/g, "&amp;")
 
-        .replace(
-            /</g,
-            "&lt;"
-        )
+        .replace(/</g, "&lt;")
 
-        .replace(
-            />/g,
-            "&gt;"
-        )
+        .replace(/>/g, "&gt;")
 
-        .replace(
-            /"/g,
-            "&quot;"
-        )
+        .replace(/"/g, "&quot;")
 
-        .replace(
-            /'/g,
-            "&#039;"
-        );
+        .replace(/'/g, "&#039;");
 
 }
 
 
-/*=========================================================
-  TIME HELPERS
-=========================================================*/
+/*======================================
+    Time To Minutes
+======================================*/
 
 function timeToMinutes(time) {
 
     const parts =
-        String(time)
-            .split(":");
+        String(time).split(":");
 
-    if (
-        parts.length !== 2
-    ) {
+    if (parts.length !== 2) {
 
         return NaN;
 
@@ -342,15 +243,6 @@ function timeToMinutes(time) {
     const minutes =
         Number(parts[1]);
 
-    if (
-        !Number.isFinite(hours) ||
-        !Number.isFinite(minutes)
-    ) {
-
-        return NaN;
-
-    }
-
     return (
         hours * 60 +
         minutes
@@ -359,68 +251,30 @@ function timeToMinutes(time) {
 }
 
 
+/*======================================
+    Minutes To Time
+======================================*/
+
 function minutesToTime(minutes) {
 
     const hours =
-        Math.floor(
-            minutes / 60
-        );
+        Math.floor(minutes / 60);
 
     const mins =
         minutes % 60;
 
     return (
-        String(hours)
-            .padStart(2, "0")
-        +
-        ":"
-        +
-        String(mins)
-            .padStart(2, "0")
+        String(hours).padStart(2, "0") +
+        ":" +
+        String(mins).padStart(2, "0")
     );
 
 }
 
 
-function normalizeTime(time) {
-
-    if (!time) {
-
-        return "";
-
-    }
-
-    const value =
-        toEnglishDigits(time)
-            .trim();
-
-    const parts =
-        value.split(":");
-
-    if (
-        parts.length !== 2
-    ) {
-
-        return value;
-
-    }
-
-    return (
-        String(parts[0])
-            .padStart(2, "0")
-        +
-        ":"
-        +
-        String(parts[1])
-            .padStart(2, "0")
-    );
-
-}
-
-
-/*=========================================================
-  GENERATE TIME SLOTS
-=========================================================*/
+/*======================================
+    Generate Time Slots
+======================================*/
 
 function generateTimeSlots() {
 
@@ -428,22 +282,31 @@ function generateTimeSlots() {
 
     const start =
         timeToMinutes(
-            WORK_START
+            WORKING_HOURS.start || "10:00"
         );
 
-    const end =
+    const lastBooking =
         timeToMinutes(
-            WORK_END
+            WORKING_HOURS.lastBookingTime ||
+            WORKING_HOURS.end ||
+            "21:00"
         );
+
+    /*
+      طبق تنظیمات فعلی:
+      هر ۶۰ دقیقه یک نوبت
+    */
 
     const interval =
-        WORK_INTERVAL;
+        Number(
+            WORKING_HOURS.interval
+        ) || 60;
 
 
     if (
         !Number.isFinite(start) ||
-        !Number.isFinite(end) ||
-        start >= end
+        !Number.isFinite(lastBooking) ||
+        interval <= 0
     ) {
 
         console.error(
@@ -456,13 +319,13 @@ function generateTimeSlots() {
 
 
     for (
-        let current = start;
-        current <= end;
-        current += interval
+        let minutes = start;
+        minutes <= lastBooking;
+        minutes += interval
     ) {
 
         slots.push(
-            minutesToTime(current)
+            minutesToTime(minutes)
         );
 
     }
@@ -477,20 +340,17 @@ const TIME_SLOTS =
     generateTimeSlots();
 
 
-/*=========================================================
-  SERVICES
-=========================================================*/
+/*======================================
+    Service Helpers
+======================================*/
 
 function getServiceById(id) {
 
     return (
-        SERVICES_CONFIG.find(
+        SERVICES.find(
             service =>
-                String(service?.id) ===
-                String(id)
-        )
-        ||
-        null
+                service.id === id
+        ) || null
     );
 
 }
@@ -498,35 +358,22 @@ function getServiceById(id) {
 
 function getServiceByName(name) {
 
-    if (!name) {
-
-        return null;
-
-    }
-
     return (
-        SERVICES_CONFIG.find(
+        SERVICES.find(
             service =>
-                String(service?.name)
-                    .trim()
-                ===
-                String(name)
-                    .trim()
-        )
-        ||
-        null
+                service.name === name
+        ) || null
     );
 
 }
 
 
-function getSelectedService() {
+function getSelectedServiceObject() {
 
     const input =
         document.querySelector(
             'input[name="service"]:checked'
         );
-
 
     if (!input) {
 
@@ -535,65 +382,17 @@ function getSelectedService() {
     }
 
 
-    const serviceId =
-        input.value;
-
-
-    /*
-      اگر config بر اساس ID باشد
-    */
-    const byId =
-        getServiceById(
-            serviceId
-        );
-
-
-    if (byId) {
-
-        return byId;
-
-    }
-
-
-    /*
-      اگر HTML نام فارسی داشته باشد
-    */
-    const byName =
-        getServiceByName(
-            serviceId
-        );
-
-
-    if (byName) {
-
-        return byName;
-
-    }
-
-
-    /*
-      اگر config هنوز خدمات را نداشته باشد،
-      خود HTML را معتبر می‌دانیم.
-    */
-    return {
-
-        id:
-            serviceId,
-
-        name:
-            serviceId,
-
-        duration:
-            60
-
-    };
+    return (
+        getServiceById(input.value) ||
+        getServiceByName(input.value)
+    );
 
 }
 
 
-/*=========================================================
-  INITIALIZE SERVICES
-=========================================================*/
+/*======================================
+    Initialize Services
+======================================*/
 
 function initializeServices() {
 
@@ -603,58 +402,30 @@ function initializeServices() {
         );
 
 
-    inputs.forEach(
-        input => {
+    inputs.forEach(input => {
 
-            input.addEventListener(
-                "change",
-                () => {
+        input.addEventListener(
+            "change",
+            () => {
 
-                    selectedService =
-                        getSelectedService();
+                selectedService =
+                    getSelectedServiceObject();
 
-                    selectedTime =
-                        null;
+                selectedTime = null;
 
-                    document
-                        .querySelectorAll(
-                            ".time-card.selected"
-                        )
-                        .forEach(
-                            card =>
-                                card.classList
-                                    .remove(
-                                        "selected"
-                                    )
-                        );
+            }
+        );
 
-                }
-            );
-
-        }
-    );
+    });
 
 }
 
 
-/*=========================================================
-  DATE HELPERS
-=========================================================*/
+/*======================================
+    Persian Calendar
+======================================*/
 
-const PERSIAN_DAYS = [
-
-    "یکشنبه",
-    "دوشنبه",
-    "سه‌شنبه",
-    "چهارشنبه",
-    "پنجشنبه",
-    "جمعه",
-    "شنبه"
-
-];
-
-
-const PERSIAN_MONTHS = [
+const PERSIAN_MONTH_NAMES = [
 
     "فروردین",
     "اردیبهشت",
@@ -672,9 +443,22 @@ const PERSIAN_MONTHS = [
 ];
 
 
-/*=========================================================
-  GREGORIAN → JALALI
-=========================================================*/
+const PERSIAN_DAY_NAMES = [
+
+    "یکشنبه",
+    "دوشنبه",
+    "سه‌شنبه",
+    "چهارشنبه",
+    "پنجشنبه",
+    "جمعه",
+    "شنبه"
+
+];
+
+
+/*======================================
+    Gregorian To Jalali
+======================================*/
 
 function gregorianToJalali(
     gy,
@@ -682,7 +466,7 @@ function gregorianToJalali(
     gd
 ) {
 
-    const gdm = [
+    const gDays = [
 
         0,
         31,
@@ -703,9 +487,7 @@ function gregorianToJalali(
     let jy;
 
 
-    if (
-        gy > 1600
-    ) {
+    if (gy > 1600) {
 
         jy = 979;
 
@@ -758,7 +540,7 @@ function gregorianToJalali(
 
         +
 
-        gdm[gm - 1];
+        gDays[gm - 1];
 
 
     jy +=
@@ -781,9 +563,7 @@ function gregorianToJalali(
     days %= 1461;
 
 
-    if (
-        days > 365
-    ) {
+    if (days > 365) {
 
         jy +=
             Math.floor(
@@ -799,9 +579,7 @@ function gregorianToJalali(
     let jm;
 
 
-    if (
-        days < 186
-    ) {
+    if (days < 186) {
 
         jm =
             1 +
@@ -832,20 +610,20 @@ function gregorianToJalali(
 
     return {
 
-        year: jy,
-        month: jm,
-        day: jd
+        jy,
+        jm,
+        jd
 
     };
 
 }
 
 
-/*=========================================================
-  DATE KEY
-=========================================================*/
+/*======================================
+    Format Gregorian
+======================================*/
 
-function createDateKey(date) {
+function formatGregorianDate(date) {
 
     return [
 
@@ -864,344 +642,20 @@ function createDateKey(date) {
 }
 
 
-/*=========================================================
-  GREGORIAN FORMAT
-=========================================================*/
+/*======================================
+    Date Key
+======================================*/
 
-function formatGregorianDate(date) {
+function createDateKey(date) {
 
-    return createDateKey(date);
-
-}
-
-
-/*=========================================================
-  GENERATE CALENDAR
-=========================================================*/
-
-function generateCalendarDays() {
-
-    const days = [];
-
-    const today =
-        new Date();
-
-    today.setHours(
-        0,
-        0,
-        0,
-        0
-    );
-
-
-    for (
-        let i = 0;
-        i < DAYS_TO_SHOW;
-        i++
-    ) {
-
-        const date =
-            new Date(today);
-
-
-        date.setDate(
-            today.getDate() + i
-        );
-
-
-        const jalali =
-            gregorianToJalali(
-                date.getFullYear(),
-                date.getMonth() + 1,
-                date.getDate()
-            );
-
-
-        days.push({
-
-            date,
-
-            dateKey:
-                createDateKey(date),
-
-            dayName:
-                PERSIAN_DAYS[
-                    date.getDay()
-                ],
-
-            jalaliYear:
-                jalali.year,
-
-            jalaliMonth:
-                jalali.month,
-
-            jalaliDay:
-                jalali.day,
-
-            jalaliMonthName:
-                PERSIAN_MONTHS[
-                    jalali.month - 1
-                ]
-
-        });
-
-    }
-
-
-    return days;
+    return formatGregorianDate(date);
 
 }
 
 
-/*=========================================================
-  RENDER DAYS
-=========================================================*/
-
-function renderDays() {
-
-    if (!daysContainer) {
-
-        return;
-
-    }
-
-
-    daysContainer.innerHTML = "";
-
-
-    selectedDay = null;
-
-    selectedTime = null;
-
-
-    const days =
-        generateCalendarDays();
-
-
-    days.forEach(
-        day => {
-
-            const button =
-                document.createElement(
-                    "button"
-                );
-
-
-            button.type =
-                "button";
-
-
-            button.className =
-                "day-card";
-
-
-            button.dataset.date =
-                day.dateKey;
-
-
-            button.innerHTML = `
-
-                <span class="day-name">
-                    ${escapeHTML(
-                        day.dayName
-                    )}
-                </span>
-
-                <span class="day-date">
-                    ${toPersianDigits(
-                        day.jalaliYear
-                    )}
-                    /
-                    ${toPersianDigits(
-                        String(
-                            day.jalaliMonth
-                        ).padStart(2, "0")
-                    )}
-                    /
-                    ${toPersianDigits(
-                        String(
-                            day.jalaliDay
-                        ).padStart(2, "0")
-                    )}
-                </span>
-
-            `;
-
-
-            button.addEventListener(
-                "click",
-                () => {
-
-                    selectDay(
-                        button,
-                        day
-                    );
-
-                }
-            );
-
-
-            daysContainer.appendChild(
-                button
-            );
-
-        }
-    );
-
-}
-
-
-/*=========================================================
-  SELECT DAY
-=========================================================*/
-
-async function selectDay(
-    card,
-    day
-) {
-
-    document
-        .querySelectorAll(
-            ".day-card"
-        )
-        .forEach(
-            item =>
-                item.classList
-                    .remove(
-                        "selected"
-                    )
-        );
-
-
-    card.classList.add(
-        "selected"
-    );
-
-
-    selectedDay = {
-
-        key:
-            day.dateKey,
-
-        date:
-            day.date,
-
-        gregorian:
-            formatGregorianDate(
-                day.date
-            ),
-
-        jalali:
-            `${day.jalaliYear}/` +
-            `${String(
-                day.jalaliMonth
-            ).padStart(2, "0")}/` +
-            `${String(
-                day.jalaliDay
-            ).padStart(2, "0")}`
-
-    };
-
-
-    selectedTime = null;
-
-
-    if (timesContainer) {
-
-        timesContainer.innerHTML = "";
-
-    }
-
-
-    /*
-      وقتی روز انتخاب شد،
-      ساعت‌های آن روز بررسی می‌شوند.
-    */
-    await renderTimes();
-
-}
-
-
-/*=========================================================
-  FIRESTORE — BOOKED TIMES
-=========================================================*/
-
-async function getBookedTimes(
-    dateKey
-) {
-
-    const booked =
-        new Set();
-
-
-    try {
-
-        const q =
-            query(
-                collection(
-                    db,
-                    BOOKINGS_COLLECTION
-                ),
-                where(
-                    "dateKey",
-                    "==",
-                    dateKey
-                )
-            );
-
-
-        const snapshot =
-            await getDocs(q);
-
-
-        snapshot.forEach(
-            docSnapshot => {
-
-                const data =
-                    docSnapshot.data();
-
-
-                if (
-                    data?.time
-                ) {
-
-                    booked.add(
-                        normalizeTime(
-                            data.time
-                        )
-                    );
-
-                }
-
-            }
-        );
-
-
-    }
-    catch (error) {
-
-        console.error(
-            "خطا در دریافت رزروها:",
-            error
-        );
-
-        /*
-          خطا را به caller می‌دهیم
-          تا UI وضعیت خطا را نشان دهد.
-        */
-        throw error;
-
-    }
-
-
-    return booked;
-
-}
-
-
-/*=========================================================
-  PAST TIME
-=========================================================*/
+/*======================================
+    Same Date
+======================================*/
 
 function sameDate(
     first,
@@ -1228,19 +682,294 @@ function sameDate(
 }
 
 
+/*======================================
+    Generate Calendar
+======================================*/
+
+function generateCalendarDays() {
+
+    const result = [];
+
+    const today = new Date();
+
+    today.setHours(
+        0,
+        0,
+        0,
+        0
+    );
+
+
+    const count =
+        Number(
+            CALENDAR_CONFIG.daysToShow
+        ) || 30;
+
+
+    for (
+        let i = 0;
+        i < count;
+        i++
+    ) {
+
+        const date =
+            new Date(today);
+
+        date.setDate(
+            today.getDate() + i
+        );
+
+
+        const jalali =
+            gregorianToJalali(
+                date.getFullYear(),
+                date.getMonth() + 1,
+                date.getDate()
+            );
+
+
+        result.push({
+
+            date,
+
+            dateKey:
+                createDateKey(date),
+
+            dayName:
+                PERSIAN_DAY_NAMES[
+                    date.getDay()
+                ],
+
+            jalaliYear:
+                jalali.jy,
+
+            jalaliMonth:
+                jalali.jm,
+
+            jalaliDay:
+                jalali.jd,
+
+            monthName:
+                PERSIAN_MONTH_NAMES[
+                    jalali.jm - 1
+                ]
+
+        });
+
+    }
+
+
+    return result;
+
+}
+
+
+/*======================================
+    Render Days
+======================================*/
+
+function renderDays() {
+
+    if (!daysContainer) {
+
+        return;
+
+    }
+
+
+    daysContainer.innerHTML = "";
+
+    selectedDay = null;
+
+    selectedTime = null;
+
+
+    const days =
+        generateCalendarDays();
+
+
+    days.forEach(day => {
+
+        const card =
+            document.createElement("button");
+
+
+        card.type = "button";
+
+        card.className =
+            "day-card";
+
+
+        card.dataset.date =
+            day.dateKey;
+
+
+        card.innerHTML = `
+
+            <span class="day-name">
+                ${escapeHTML(
+                    day.dayName
+                )}
+            </span>
+
+            <span class="day-date">
+                ${toPersianDigits(
+                    `${day.jalaliYear}/${String(
+                        day.jalaliMonth
+                    ).padStart(2, "0")}/${String(
+                        day.jalaliDay
+                    ).padStart(2, "0")}`
+                )}
+            </span>
+
+        `;
+
+
+        card.addEventListener(
+            "click",
+            () => {
+
+                selectDay(
+                    card,
+                    day
+                );
+
+            }
+        );
+
+
+        daysContainer.appendChild(card);
+
+    });
+
+}
+
+
+/*======================================
+    Select Day
+======================================*/
+
+async function selectDay(
+    card,
+    day
+) {
+
+    document
+        .querySelectorAll(
+            ".day-card"
+        )
+        .forEach(item => {
+
+            item.classList.remove(
+                "selected"
+            );
+
+        });
+
+
+    card.classList.add(
+        "selected"
+    );
+
+
+    selectedDay = {
+
+        key:
+            day.dateKey,
+
+        date:
+            day.date,
+
+        gregorian:
+            formatGregorianDate(
+                day.date
+            ),
+
+        jalali:
+            `${day.jalaliYear}/${String(
+                day.jalaliMonth
+            ).padStart(2, "0")}/${String(
+                day.jalaliDay
+            ).padStart(2, "0")}`
+
+    };
+
+
+    selectedTime = null;
+
+
+    if (timesContainer) {
+
+        timesContainer.innerHTML = "";
+
+    }
+
+}
+
+
+/*======================================
+    Normalize Time
+======================================*/
+
+function normalizeTime(time) {
+
+    if (!time) {
+
+        return "";
+
+    }
+
+
+    const value =
+        toEnglishDigits(
+            time
+        ).trim();
+
+
+    const parts =
+        value.split(":");
+
+
+    if (parts.length !== 2) {
+
+        return value;
+
+    }
+
+
+    return (
+
+        String(
+            Number(parts[0])
+        ).padStart(2, "0")
+
+        +
+
+        ":" +
+
+        String(
+            Number(parts[1])
+        ).padStart(2, "0")
+
+    );
+
+}
+
+
+/*======================================
+    Is Past Time
+======================================*/
+
 function isPastTime(time) {
 
     const normalized =
         normalizeTime(time);
 
-
     const parts =
         normalized.split(":");
 
 
-    if (
-        parts.length !== 2
-    ) {
+    if (parts.length !== 2) {
 
         return false;
 
@@ -1258,27 +987,161 @@ function isPastTime(time) {
         new Date();
 
 
-    const currentMinutes =
-        now.getHours() * 60 +
+    const currentHour =
+        now.getHours();
+
+    const currentMinute =
         now.getMinutes();
 
 
-    const slotMinutes =
-        hour * 60 +
-        minute;
+    if (
+        hour < currentHour
+    ) {
+
+        return true;
+
+    }
 
 
-    return (
-        slotMinutes <=
-        currentMinutes
-    );
+    if (
+        hour === currentHour &&
+        minute <= currentMinute
+    ) {
+
+        return true;
+
+    }
+
+
+    return false;
 
 }
 
 
-/*=========================================================
-  RENDER TIMES
-=========================================================*/
+/*======================================
+    Firestore — Get Booked Times
+======================================*/
+
+async function getBookedTimes(
+    dateKey
+) {
+
+    const result =
+        new Set();
+
+
+    if (
+        BOOKING_CONFIG.checkFirebase === false
+    ) {
+
+        return result;
+
+    }
+
+
+    const q =
+        query(
+
+            collection(
+                db,
+                BOOKINGS_COLLECTION
+            ),
+
+            where(
+                "dateKey",
+                "==",
+                dateKey
+            )
+
+        );
+
+
+    const snapshot =
+        await getDocs(q);
+
+
+    snapshot.forEach(
+        docSnapshot => {
+
+            const data =
+                docSnapshot.data();
+
+
+            if (
+                data &&
+                data.time
+            ) {
+
+                result.add(
+                    normalizeTime(
+                        data.time
+                    )
+                );
+
+            }
+
+        }
+    );
+
+
+    return result;
+
+}
+
+
+/*======================================
+    Check Single Time
+======================================*/
+
+async function isTimeBooked(
+    dateKey,
+    time
+) {
+
+    if (
+        BOOKING_CONFIG.checkFirebase === false
+    ) {
+
+        return false;
+
+    }
+
+
+    const q =
+        query(
+
+            collection(
+                db,
+                BOOKINGS_COLLECTION
+            ),
+
+            where(
+                "dateKey",
+                "==",
+                dateKey
+            ),
+
+            where(
+                "time",
+                "==",
+                normalizeTime(time)
+            )
+
+        );
+
+
+    const snapshot =
+        await getDocs(q);
+
+
+    return !snapshot.empty;
+
+}
+
+
+/*======================================
+    Render Times
+======================================*/
 
 async function renderTimes() {
 
@@ -1315,5 +1178,133 @@ async function renderTimes() {
             );
 
 
-        timesContainer.innerHTML =
+        const today =
+            new Date();
+
+
+        const selectedDate =
+            new Date(
+                selectedDay.date
+            );
+
+
+        const isToday =
+            sameDate(
+                today,
+                selectedDate
+            );
+
+
+        timesContainer.innerHTML = "";
+
+
+        TIME_SLOTS.forEach(
+            time => {
+
+                const card =
+                    document.createElement(
+                        "button"
+                    );
+
+
+                card.type = "button";
+
+                card.className =
+                    "time-card";
+
+
+                card.dataset.time =
+                    time;
+
+
+                card.textContent =
+                    toPersianDigits(
+                        time
+                    );
+
+
+                /*------------------------------
+                    رزرو شده
+                ------------------------------*/
+
+                if (
+                    bookedTimes.has(time)
+                ) {
+
+                    card.classList.add(
+                        "booked"
+                    );
+
+                    card.disabled =
+                        true;
+
+                    card.innerHTML = `
+
+                        <i class="fa-solid fa-lock"></i>
+
+                        ${toPersianDigits(
+                            time
+                        )}
+
+                    `;
+
+                    timesContainer.appendChild(
+                        card
+                    );
+
+                    return;
+
+                }
+
+
+                /*------------------------------
+                    ساعت گذشته
+                ------------------------------*/
+
+                if (
+                    isToday &&
+                    isPastTime(time)
+                ) {
+
+                    card.classList.add(
+                        "disabled"
+                    );
+
+                    card.disabled =
+                        true;
+
+                    timesContainer.appendChild(
+                        card
+                    );
+
+                    return;
+
+                }
+
+
+                /*------------------------------
+                    ساعت آزاد
+                ------------------------------*/
+
+                card.addEventListener(
+                    "click",
+                    () => {
+
+                        document
+                            .querySelectorAll(
+                                ".time-card"
+                            )
+                            .forEach(
+                                item => {
+
+                                    item.classList.remove(
+                                        "selected"
+                                    );
+
+                                }
+                            );
+
+
+                        card.classList.add(
+                            "selected"
   
