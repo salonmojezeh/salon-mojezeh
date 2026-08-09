@@ -663,6 +663,67 @@ body.dark .success-details{
 }
 
 /*============================
+Dark Mode - Reservation Text
+=============================*/
+
+body.dark .step h3{
+
+    color:#ffffff;
+
+}
+
+body.dark .step-info{
+
+    color:#ffffff;
+
+}
+
+body.dark .day-card{
+
+    color:#ffffff;
+
+}
+
+body.dark .day-card .day-name{
+
+    color:#ffffff;
+
+}
+
+body.dark .day-card .day-date{
+
+    color:#ffffff;
+
+}
+
+body.dark .time-card{
+
+    color:#ffffff;
+
+}
+
+/* انتخاب‌شده */
+
+body.dark .day-card.selected{
+
+    color:#ffffff;
+
+}
+
+body.dark .day-card.selected .day-name,
+body.dark .day-card.selected .day-date{
+
+    color:#ffffff;
+
+}
+
+body.dark .time-card.selected{
+
+    color:#ffffff;
+
+}
+
+/*============================
 Responsive
 =============================*/
 
