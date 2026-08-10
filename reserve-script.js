@@ -1,7 +1,7 @@
 /*======================================
     Salon Mojezeh
     reserve-script.js
-    FINAL VERSION
+    FINAL - 5 STEP BOOKING SYSTEM
 ======================================*/
 
 "use strict";
@@ -23,7 +23,7 @@ import { db } from "./firebase.js";
 
 
 /*======================================
-    DOM Elements
+    DOM
 ======================================*/
 
 const reserveForm = document.getElementById("reserveForm");
@@ -32,28 +32,34 @@ const step1 = document.getElementById("step1");
 const step2 = document.getElementById("step2");
 const step3 = document.getElementById("step3");
 const step4 = document.getElementById("step4");
+const step5 = document.getElementById("step5");
 
 const nextBtn = document.getElementById("nextBtn");
 const prevBtn = document.getElementById("prevBtn");
-
 const submitBtn = document.getElementById("submitBtn");
 
 const progressBar = document.getElementById("progressBar");
 
-const daysContainer = document.getElementById("daysContainer");
-const timesContainer = document.getElementById("timesContainer");
+const daysContainer =
+    document.getElementById("daysContainer");
 
-const successModal = document.getElementById("successModal");
-const successDetails = document.getElementById("successDetails");
+const timesContainer =
+    document.getElementById("timesContainer");
+
+const successModal =
+    document.getElementById("successModal");
+
+const successDetails =
+    document.getElementById("successDetails");
 
 
 /*======================================
-    Current Step
+    Steps
 ======================================*/
 
 let currentStep = 1;
 
-const totalSteps = 4;
+const totalSteps = 5;
 
 
 /*======================================
@@ -65,11 +71,36 @@ const reservationData = {
     firstName: "",
     lastName: "",
     phone: "",
+
+    barberId: "",
+    barberName: "",
+
     service: "",
+    duration: 0,
+
     date: "",
     time: ""
 
 };
+
+
+/*======================================
+    Barbers
+======================================*/
+
+const barbers = [
+
+    {
+        id: "barber-1",
+        name: "آرایشگر اصلی"
+    },
+
+    {
+        id: "barber-2",
+        name: "آرایشگر دوم"
+    }
+
+];
 
 
 /*======================================
@@ -130,7 +161,8 @@ function showStep(stepNumber) {
         step1,
         step2,
         step3,
-        step4
+        step4,
+        step5
     ];
 
     steps.forEach(step => {
@@ -141,7 +173,8 @@ function showStep(stepNumber) {
 
     });
 
-    const selectedStep = steps[stepNumber - 1];
+    const selectedStep =
+        steps[stepNumber - 1];
 
     if (selectedStep) {
         selectedStep.classList.add("active");
@@ -167,15 +200,13 @@ function showStep(stepNumber) {
 
 function updateProgress() {
 
+    if (!progressBar) return;
+
     const percentage =
         (currentStep / totalSteps) * 100;
 
-    if (progressBar) {
-
-        progressBar.style.width =
-            `${percentage}%`;
-
-    }
+    progressBar.style.width =
+        `${percentage}%`;
 
 }
 
@@ -185,6 +216,10 @@ function updateProgress() {
 ======================================*/
 
 function updateButtons() {
+
+    if (!prevBtn || !nextBtn || !submitBtn) {
+        return;
+    }
 
     if (currentStep === 1) {
 
@@ -215,7 +250,8 @@ function updateButtons() {
 
 
 /*======================================
-    Step 1 Validation
+    Step 1
+    Customer Information
 ======================================*/
 
 function validateStep1() {
@@ -228,6 +264,17 @@ function validateStep1() {
 
     const phoneInput =
         document.getElementById("phone");
+
+
+    if (!firstNameInput ||
+        !lastNameInput ||
+        !phoneInput) {
+
+        alert("فیلدهای اطلاعات مشتری پیدا نشدند.");
+
+        return false;
+
+    }
 
 
     const firstName =
@@ -262,11 +309,7 @@ function validateStep1() {
     }
 
 
-    const phonePattern =
-        /^09\d{9}$/;
-
-
-    if (!phonePattern.test(phone)) {
+    if (!/^09\d{9}$/.test(phone)) {
 
         alert(
             "لطفاً شماره موبایل معتبر وارد کنید.\nمثال: 09123456789"
@@ -295,10 +338,45 @@ function validateStep1() {
 
 
 /*======================================
-    Step 2 Validation
+    Step 2
+    Barber
 ======================================*/
 
 function validateStep2() {
+
+    const selectedBarber =
+        document.querySelector(
+            'input[name="barber"]:checked'
+        );
+
+
+    if (!selectedBarber) {
+
+        alert("لطفاً آرایشگر مورد نظر خود را انتخاب کنید.");
+
+        return false;
+
+    }
+
+
+    reservationData.barberId =
+        selectedBarber.value;
+
+    reservationData.barberName =
+        selectedBarber.dataset.name || "";
+
+
+    return true;
+
+}
+
+
+/*======================================
+    Step 3
+    Service
+======================================*/
+
+function validateStep3() {
 
     const selectedService =
         document.querySelector(
@@ -308,7 +386,7 @@ function validateStep2() {
 
     if (!selectedService) {
 
-        alert("لطفاً یک خدمت را انتخاب کنید.");
+        alert("لطفاً خدمت خود را انتخاب کنید.");
 
         return false;
 
@@ -319,20 +397,27 @@ function validateStep2() {
         selectedService.value;
 
 
+    reservationData.duration =
+        services[
+            reservationData.service
+        ]?.duration || 30;
+
+
     return true;
 
 }
 
 
 /*======================================
-    Step 3 Validation
+    Step 4
+    Date
 ======================================*/
 
-function validateStep3() {
+function validateStep4() {
 
     if (!reservationData.date) {
 
-        alert("لطفاً یک روز را انتخاب کنید.");
+        alert("لطفاً روز مورد نظر خود را انتخاب کنید.");
 
         return false;
 
@@ -344,16 +429,17 @@ function validateStep3() {
 
 
 /*======================================
-    Step 4 Validation
+    Step 5
+    Time
 ======================================*/
 
-function validateStep4() {
+function validateStep5() {
 
     if (!reservationData.date) {
 
-        alert("لطفاً ابتدا روز مورد نظر خود را انتخاب کنید.");
+        alert("لطفاً ابتدا روز را انتخاب کنید.");
 
-        showStep(3);
+        showStep(4);
 
         return false;
 
@@ -380,16 +466,29 @@ function validateStep4() {
 
 function generateDays() {
 
+    if (!daysContainer) return;
+
     daysContainer.innerHTML = "";
 
     const today = new Date();
 
-    today.setHours(0, 0, 0, 0);
+    today.setHours(
+        0,
+        0,
+        0,
+        0
+    );
 
+
+    /*
+        امروز + 29 روز
+        = 30 روز قابل رزرو
+    */
 
     for (let i = 0; i < 30; i++) {
 
-        const date = new Date(today);
+        const date =
+            new Date(today);
 
         date.setDate(
             today.getDate() + i
@@ -400,12 +499,14 @@ function generateDays() {
             date.getFullYear();
 
         const month =
-            String(date.getMonth() + 1)
-                .padStart(2, "0");
+            String(
+                date.getMonth() + 1
+            ).padStart(2, "0");
 
         const day =
-            String(date.getDate())
-                .padStart(2, "0");
+            String(
+                date.getDate()
+            ).padStart(2, "0");
 
 
         const dateValue =
@@ -438,7 +539,8 @@ function generateDays() {
 
         dayCard.type = "button";
 
-        dayCard.className = "day-card";
+        dayCard.className =
+            "day-card";
 
         dayCard.dataset.date =
             dateValue;
@@ -462,7 +564,9 @@ function generateDays() {
             () => {
 
                 document
-                    .querySelectorAll(".day-card")
+                    .querySelectorAll(
+                        ".day-card"
+                    )
                     .forEach(card => {
 
                         card.classList.remove(
@@ -481,16 +585,15 @@ function generateDays() {
                     dateValue;
 
 
-                reservationData.time = "";
+                reservationData.time =
+                    "";
 
 
-                timesContainer.innerHTML = "";
+                if (timesContainer) {
 
+                    timesContainer.innerHTML = "";
 
-                console.log(
-                    "Selected date:",
-                    reservationData.date
-                );
+                }
 
             }
         );
@@ -506,22 +609,47 @@ function generateDays() {
 
 
 /*======================================
-    Check Reserved Times
+    Get Reserved Times
+    Per Barber + Date
 ======================================*/
 
-async function getReservedTimes(date) {
+async function getReservedTimes(
+    date,
+    barberId
+) {
 
     try {
 
         const reservationsRef =
-            collection(db, "reservations");
+            collection(
+                db,
+                "reservations"
+            );
 
 
         const q =
             query(
+
                 reservationsRef,
-                where("date", "==", date),
-                where("status", "==", "reserved")
+
+                where(
+                    "date",
+                    "==",
+                    date
+                ),
+
+                where(
+                    "barberId",
+                    "==",
+                    barberId
+                ),
+
+                where(
+                    "status",
+                    "==",
+                    "reserved"
+                )
+
             );
 
 
@@ -534,7 +662,8 @@ async function getReservedTimes(date) {
 
         snapshot.forEach(doc => {
 
-            const data = doc.data();
+            const data =
+                doc.data();
 
 
             if (data.time) {
@@ -558,7 +687,6 @@ async function getReservedTimes(date) {
             error
         );
 
-
         return [];
 
     }
@@ -572,10 +700,15 @@ async function getReservedTimes(date) {
 
 async function generateTimeSlots() {
 
+    if (!timesContainer) return;
+
     timesContainer.innerHTML = "";
 
 
-    if (!reservationData.date) {
+    if (
+        !reservationData.date ||
+        !reservationData.barberId
+    ) {
 
         return;
 
@@ -600,7 +733,11 @@ async function generateTimeSlots() {
 
     const reservedTimes =
         await getReservedTimes(
-            reservationData.date
+
+            reservationData.date,
+
+            reservationData.barberId
+
         );
 
 
@@ -613,9 +750,13 @@ async function generateTimeSlots() {
             document.createElement("button");
 
 
-        timeCard.type = "button";
+        timeCard.type =
+            "button";
 
-        timeCard.className = "time-card";
+
+        timeCard.className =
+            "time-card";
+
 
         timeCard.dataset.time =
             time;
@@ -625,9 +766,9 @@ async function generateTimeSlots() {
             time;
 
 
-        /*----------------------------------
-            Already Reserved
-        ----------------------------------*/
+        /*
+            Reserved
+        */
 
         if (
             reservedTimes.includes(time)
@@ -637,37 +778,45 @@ async function generateTimeSlots() {
                 "booked"
             );
 
-            timeCard.disabled = true;
+
+            timeCard.disabled =
+                true;
+
 
             timeCard.innerHTML = `
 
-                <i class="fa-solid fa-lock"
-                   style="margin-left:8px">
+                <i
+                    class="fa-solid fa-lock"
+                    style="margin-left:8px">
                 </i>
 
                 ${time}
 
             `;
 
+
             timesContainer.appendChild(
                 timeCard
             );
+
 
             return;
 
         }
 
 
-        /*----------------------------------
-            Select Time
-        ----------------------------------*/
+        /*
+            Available
+        */
 
         timeCard.addEventListener(
             "click",
             () => {
 
                 document
-                    .querySelectorAll(".time-card")
+                    .querySelectorAll(
+                        ".time-card"
+                    )
                     .forEach(card => {
 
                         card.classList.remove(
@@ -686,11 +835,6 @@ async function generateTimeSlots() {
                     time;
 
 
-                console.log(
-                    "Selected time:",
-                    reservationData.time
-                );
-
             }
         );
 
@@ -701,10 +845,6 @@ async function generateTimeSlots() {
 
     });
 
-
-    /*----------------------------------
-        No Available Time
-    ----------------------------------*/
 
     if (
         timesContainer.children.length === 0
@@ -731,51 +871,22 @@ async function generateTimeSlots() {
 
 
 /*======================================
-    Save Reservation To Firebase
+    Save Reservation
 ======================================*/
 
 async function saveReservation() {
 
-    const reservation = {
-
-        firstName:
-            reservationData.firstName,
-
-        lastName:
-            reservationData.lastName,
-
-        name:
-            `${reservationData.firstName} ${reservationData.lastName}`,
-
-        phone:
-            reservationData.phone,
-
-        service:
-            reservationData.service,
-
-        duration:
-            services[
-                reservationData.service
-            ]?.duration || 30,
-
-        date:
-            reservationData.date,
-
-        time:
-            reservationData.time,
-
-        status:
-            "reserved",
-
-        createdAt:
-            serverTimestamp()
-
-    };
+    const reservationsRef =
+        collection(
+            db,
+            "reservations"
+        );
 
 
     try {
 
         submitBtn.disabled = true;
+
 
         submitBtn.innerHTML = `
 
@@ -786,72 +897,122 @@ async function saveReservation() {
         `;
 
 
-        /*----------------------------------
-            Final Duplicate Check
-        ----------------------------------*/
+        /*
+            Final duplicate check
 
-        const reservationsRef =
-            collection(db, "reservations");
+            مهم:
+            تاریخ + ساعت + آرایشگر
+        */
 
-
-        const q =
+        const duplicateQuery =
             query(
+
                 reservationsRef,
+
                 where(
                     "date",
                     "==",
                     reservationData.date
                 ),
+
                 where(
                     "time",
                     "==",
                     reservationData.time
                 ),
+
+                where(
+                    "barberId",
+                    "==",
+                    reservationData.barberId
+                ),
+
                 where(
                     "status",
                     "==",
                     "reserved"
                 )
+
             );
 
 
         const snapshot =
-            await getDocs(q);
+            await getDocs(
+                duplicateQuery
+            );
 
 
         if (!snapshot.empty) {
 
             alert(
-                "این ساعت همین الان توسط مشتری دیگری رزرو شده است. لطفاً ساعت دیگری انتخاب کنید."
+                "این ساعت برای این آرایشگر قبلاً رزرو شده است. لطفاً ساعت دیگری انتخاب کنید."
             );
 
 
-            submitBtn.disabled = false;
-
-            submitBtn.innerHTML = `
-
-                <i class="fa-solid fa-check"></i>
-
-                ثبت رزرو
-
-            `;
-
-
             await generateTimeSlots();
+
 
             return false;
 
         }
 
 
-        /*----------------------------------
-            Save
-        ----------------------------------*/
+        /*
+            Reservation Object
+        */
+
+        const reservation = {
+
+            firstName:
+                reservationData.firstName,
+
+            lastName:
+                reservationData.lastName,
+
+            name:
+                `${reservationData.firstName} ${reservationData.lastName}`,
+
+            phone:
+                reservationData.phone,
+
+            barberId:
+                reservationData.barberId,
+
+            barberName:
+                reservationData.barberName,
+
+            service:
+                reservationData.service,
+
+            duration:
+                reservationData.duration,
+
+            date:
+                reservationData.date,
+
+            time:
+                reservationData.time,
+
+            status:
+                "reserved",
+
+            createdAt:
+                serverTimestamp()
+
+        };
+
+
+        /*
+            Save to Firestore
+        */
 
         const docRef =
             await addDoc(
+
                 reservationsRef,
+
                 reservation
+
             );
 
 
@@ -882,7 +1043,9 @@ async function saveReservation() {
 
     } finally {
 
-        submitBtn.disabled = false;
+        submitBtn.disabled =
+            false;
+
 
         submitBtn.innerHTML = `
 
@@ -898,10 +1061,12 @@ async function saveReservation() {
 
 
 /*======================================
-    Persian Date For Success
+    Persian Date
 ======================================*/
 
-function getPersianDate(dateString) {
+function getPersianDate(
+    dateString
+) {
 
     if (!dateString) {
         return "";
@@ -914,9 +1079,13 @@ function getPersianDate(dateString) {
 
     const date =
         new Date(
+
             Number(parts[0]),
+
             Number(parts[1]) - 1,
+
             Number(parts[2])
+
         );
 
 
@@ -934,21 +1103,29 @@ function getPersianDate(dateString) {
 
 
 /*======================================
-    Show Success
+    Success
 ======================================*/
 
 function showSuccess() {
+
+    if (
+        !successModal ||
+        !successDetails
+    ) {
+
+        alert(
+            "رزرو با موفقیت ثبت شد."
+        );
+
+        return;
+
+    }
+
 
     const persianDate =
         getPersianDate(
             reservationData.date
         );
-
-
-    const duration =
-        services[
-            reservationData.service
-        ]?.duration || 30;
 
 
     successDetails.innerHTML = `
@@ -965,13 +1142,19 @@ function showSuccess() {
         </div>
 
         <div>
+            <strong>آرایشگر:</strong>
+            ${reservationData.barberName}
+        </div>
+
+        <div>
             <strong>خدمت:</strong>
             ${reservationData.service}
         </div>
 
         <div>
             <strong>مدت خدمت:</strong>
-            ${duration} دقیقه
+            ${reservationData.duration}
+            دقیقه
         </div>
 
         <div>
@@ -999,7 +1182,7 @@ function showSuccess() {
 
 
 /*======================================
-    Submit Reservation
+    Submit
 ======================================*/
 
 reserveForm.addEventListener(
@@ -1009,7 +1192,7 @@ reserveForm.addEventListener(
         event.preventDefault();
 
 
-        if (!validateStep4()) {
+        if (!validateStep5()) {
 
             return;
 
@@ -1034,23 +1217,22 @@ reserveForm.addEventListener(
 
 
 /*======================================
-    Next Button
+    Next
 ======================================*/
 
 nextBtn.addEventListener(
     "click",
     async () => {
 
-        /*----------------------------------
+
+        /*==============================
             Step 1 → Step 2
-        ----------------------------------*/
+        ==============================*/
 
         if (currentStep === 1) {
 
             if (!validateStep1()) {
-
                 return;
-
             }
 
             showStep(2);
@@ -1060,16 +1242,13 @@ nextBtn.addEventListener(
         }
 
 
-        /*----------------------------------
+        /*==============================
             Step 2 → Step 3
-        ----------------------------------*/
-
-        if (currentStep === 2) {
+        ==============================*/
+if (currentStep === 2) {
 
             if (!validateStep2()) {
-
                 return;
-
             }
 
             showStep(3);
@@ -1079,19 +1258,34 @@ nextBtn.addEventListener(
         }
 
 
-        /*----------------------------------
+        /*==============================
             Step 3 → Step 4
-        ----------------------------------*/
+        ==============================*/
 
         if (currentStep === 3) {
 
             if (!validateStep3()) {
-
                 return;
-
             }
 
             showStep(4);
+
+            return;
+
+        }
+
+
+        /*==============================
+            Step 4 → Step 5
+        ==============================*/
+
+        if (currentStep === 4) {
+
+            if (!validateStep4()) {
+                return;
+            }
+
+            showStep(5);
 
             await generateTimeSlots();
 
@@ -1104,7 +1298,7 @@ nextBtn.addEventListener(
 
 
 /*======================================
-    Previous Button
+    Previous
 ======================================*/
 
 prevBtn.addEventListener(
@@ -1112,11 +1306,8 @@ prevBtn.addEventListener(
     () => {
 
         if (currentStep <= 1) {
-
             return;
-
         }
-
 
         showStep(
             currentStep - 1
@@ -1127,7 +1318,7 @@ prevBtn.addEventListener(
 
 
 /*======================================
-    Initial Setup
+    Initial
 ======================================*/
 
 generateDays();
@@ -1136,5 +1327,5 @@ showStep(1);
 
 
 console.log(
-    "Salon Mojezeh reservation system ready."
+    "Salon Mojezeh - Final booking system ready."
 );
