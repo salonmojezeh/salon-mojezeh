@@ -1,7 +1,7 @@
 /*======================================
     Salon Mojezeh
     reserve-script.js
-    FINAL - 5 STEP BOOKING SYSTEM
+    Part 1 - Base + 5 Steps
 ======================================*/
 
 "use strict";
@@ -11,40 +11,64 @@
 ======================================*/
 
 import {
+    db
+} from "./firebase.js";
+
+import {
     collection,
-    addDoc,
-    getDocs,
     query,
     where,
+    getDocs,
+    addDoc,
+    doc,
+    setDoc,
     serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-import { db } from "./firebase.js";
-
 
 /*======================================
-    DOM
+    DOM Elements
 ======================================*/
 
-const reserveForm = document.getElementById("reserveForm");
+const reserveForm =
+    document.getElementById("reserveForm");
 
-const step1 = document.getElementById("step1");
-const step2 = document.getElementById("step2");
-const step3 = document.getElementById("step3");
-const step4 = document.getElementById("step4");
-const step5 = document.getElementById("step5");
+const step1 =
+    document.getElementById("step1");
 
-const nextBtn = document.getElementById("nextBtn");
-const prevBtn = document.getElementById("prevBtn");
-const submitBtn = document.getElementById("submitBtn");
+const step2 =
+    document.getElementById("step2");
 
-const progressBar = document.getElementById("progressBar");
+const step3 =
+    document.getElementById("step3");
+
+const step4 =
+    document.getElementById("step4");
+
+const step5 =
+    document.getElementById("step5");
+
+
+const nextBtn =
+    document.getElementById("nextBtn");
+
+const prevBtn =
+    document.getElementById("prevBtn");
+
+const submitBtn =
+    document.getElementById("submitBtn");
+
+
+const progressBar =
+    document.getElementById("progressBar");
+
 
 const daysContainer =
     document.getElementById("daysContainer");
 
 const timesContainer =
     document.getElementById("timesContainer");
+
 
 const successModal =
     document.getElementById("successModal");
@@ -54,12 +78,12 @@ const successDetails =
 
 
 /*======================================
-    Steps
+    Step Settings
 ======================================*/
 
-let currentStep = 1;
-
 const totalSteps = 5;
+
+let currentStep = 1;
 
 
 /*======================================
@@ -69,38 +93,26 @@ const totalSteps = 5;
 const reservationData = {
 
     firstName: "",
+
     lastName: "",
+
     phone: "",
 
     barberId: "",
+
     barberName: "",
 
     service: "",
-    duration: 0,
+
+    serviceDuration: 0,
 
     date: "",
+
+    displayDate: "",
+
     time: ""
 
 };
-
-
-/*======================================
-    Barbers
-======================================*/
-
-const barbers = [
-
-    {
-        id: "barber-1",
-        name: "آرایشگر اصلی"
-    },
-
-    {
-        id: "barber-2",
-        name: "آرایشگر دوم"
-    }
-
-];
 
 
 /*======================================
@@ -152,43 +164,63 @@ const timeSlots = [
 
 
 /*======================================
+    Step Elements
+======================================*/
+
+const steps = [
+
+    step1,
+    step2,
+    step3,
+    step4,
+    step5
+
+];
+
+
+/*======================================
     Show Step
 ======================================*/
 
 function showStep(stepNumber) {
 
-    const steps = [
-        step1,
-        step2,
-        step3,
-        step4,
-        step5
-    ];
-
     steps.forEach(step => {
 
         if (step) {
+
             step.classList.remove("active");
+
         }
 
     });
 
+
     const selectedStep =
         steps[stepNumber - 1];
 
+
     if (selectedStep) {
+
         selectedStep.classList.add("active");
+
     }
 
-    currentStep = stepNumber;
+
+    currentStep =
+        stepNumber;
+
 
     updateProgress();
 
     updateButtons();
 
+
     window.scrollTo({
+
         top: 0,
+
         behavior: "smooth"
+
     });
 
 }
@@ -200,10 +232,9 @@ function showStep(stepNumber) {
 
 function updateProgress() {
 
-    if (!progressBar) return;
-
     const percentage =
         (currentStep / totalSteps) * 100;
+
 
     progressBar.style.width =
         `${percentage}%`;
@@ -216,10 +247,6 @@ function updateProgress() {
 ======================================*/
 
 function updateButtons() {
-
-    if (!prevBtn || !nextBtn || !submitBtn) {
-        return;
-    }
 
     if (currentStep === 1) {
 
@@ -250,48 +277,41 @@ function updateButtons() {
 
 
 /*======================================
-    Step 1
-    Customer Information
+    Validate Step 1
 ======================================*/
 
 function validateStep1() {
 
-    const firstNameInput =
-        document.getElementById("firstName");
-
-    const lastNameInput =
-        document.getElementById("lastName");
-
-    const phoneInput =
-        document.getElementById("phone");
-
-
-    if (!firstNameInput ||
-        !lastNameInput ||
-        !phoneInput) {
-
-        alert("فیلدهای اطلاعات مشتری پیدا نشدند.");
-
-        return false;
-
-    }
-
-
     const firstName =
-        firstNameInput.value.trim();
+        document
+            .getElementById("firstName")
+            .value
+            .trim();
+
 
     const lastName =
-        lastNameInput.value.trim();
+        document
+            .getElementById("lastName")
+            .value
+            .trim();
+
 
     const phone =
-        phoneInput.value.trim();
+        document
+            .getElementById("phone")
+            .value
+            .trim();
 
 
     if (!firstName) {
 
-        alert("لطفاً نام خود را وارد کنید.");
+        alert(
+            "لطفاً نام خود را وارد کنید."
+        );
 
-        firstNameInput.focus();
+        document
+            .getElementById("firstName")
+            .focus();
 
         return false;
 
@@ -300,9 +320,13 @@ function validateStep1() {
 
     if (!lastName) {
 
-        alert("لطفاً نام خانوادگی خود را وارد کنید.");
+        alert(
+            "لطفاً نام خانوادگی خود را وارد کنید."
+        );
 
-        lastNameInput.focus();
+        document
+            .getElementById("lastName")
+            .focus();
 
         return false;
 
@@ -312,10 +336,12 @@ function validateStep1() {
     if (!/^09\d{9}$/.test(phone)) {
 
         alert(
-            "لطفاً شماره موبایل معتبر وارد کنید.\nمثال: 09123456789"
+            "لطفاً شماره موبایل معتبر وارد کنید."
         );
 
-        phoneInput.focus();
+        document
+            .getElementById("phone")
+            .focus();
 
         return false;
 
@@ -338,8 +364,7 @@ function validateStep1() {
 
 
 /*======================================
-    Step 2
-    Barber
+    Validate Step 2
 ======================================*/
 
 function validateStep2() {
@@ -352,7 +377,9 @@ function validateStep2() {
 
     if (!selectedBarber) {
 
-        alert("لطفاً آرایشگر مورد نظر خود را انتخاب کنید.");
+        alert(
+            "لطفاً آرایشگر مورد نظر خود را انتخاب کنید."
+        );
 
         return false;
 
@@ -362,8 +389,9 @@ function validateStep2() {
     reservationData.barberId =
         selectedBarber.value;
 
+
     reservationData.barberName =
-        selectedBarber.dataset.name || "";
+        selectedBarber.dataset.name;
 
 
     return true;
@@ -372,8 +400,7 @@ function validateStep2() {
 
 
 /*======================================
-    Step 3
-    Service
+    Validate Step 3
 ======================================*/
 
 function validateStep3() {
@@ -386,7 +413,9 @@ function validateStep3() {
 
     if (!selectedService) {
 
-        alert("لطفاً خدمت خود را انتخاب کنید.");
+        alert(
+            "لطفاً خدمت مورد نظر خود را انتخاب کنید."
+        );
 
         return false;
 
@@ -397,10 +426,10 @@ function validateStep3() {
         selectedService.value;
 
 
-    reservationData.duration =
+    reservationData.serviceDuration =
         services[
-            reservationData.service
-        ]?.duration || 30;
+            selectedService.value
+        ]?.duration || 0;
 
 
     return true;
@@ -409,68 +438,423 @@ function validateStep3() {
 
 
 /*======================================
-    Step 4
-    Date
+    Initial State
 ======================================*/
 
-function validateStep4() {
+showStep(1);
 
-    if (!reservationData.date) {
 
-        alert("لطفاً روز مورد نظر خود را انتخاب کنید.");
+/*======================================
+    Debug
+======================================*/
 
-        return false;
+console.log(
+    "Salon Mojezeh reservation system started."
+);
+
+console.log(
+    "5-step reservation flow is ready."
+);
+/*======================================
+    Step Navigation
+======================================*/
+
+
+/*======================================
+    Next Button
+======================================*/
+
+nextBtn.addEventListener("click", async () => {
+
+    let valid = true;
+
+
+    /*----------------------------------
+        Step 1
+    ----------------------------------*/
+
+    if (currentStep === 1) {
+
+        valid = validateStep1();
 
     }
 
-    return true;
 
-}
+    /*----------------------------------
+        Step 2
+    ----------------------------------*/
+
+    else if (currentStep === 2) {
+
+        valid = validateStep2();
+
+    }
 
 
-/*======================================
-    Step 5
-    Time
-======================================*/
+    /*----------------------------------
+        Step 3
+    ----------------------------------*/
 
-function validateStep5() {
+    else if (currentStep === 3) {
 
-    if (!reservationData.date) {
+        valid = validateStep3();
 
-        alert("لطفاً ابتدا روز را انتخاب کنید.");
+    }
+
+
+    /*----------------------------------
+        Step 4
+    ----------------------------------*/
+
+    else if (currentStep === 4) {
+
+        const selectedDay =
+            document.querySelector(
+                ".day-card.selected"
+            );
+
+
+        if (!selectedDay) {
+
+            alert(
+                "لطفاً ابتدا یک روز را انتخاب کنید."
+            );
+
+            return;
+
+        }
+
+
+        reservationData.date =
+            selectedDay.dataset.date;
+
+
+        reservationData.displayDate =
+            selectedDay.dataset.displayDate;
+
+    }
+
+
+    /*----------------------------------
+        Continue
+    ----------------------------------*/
+
+    if (!valid) {
+
+        return;
+
+    }
+
+
+    /*----------------------------------
+        Step 2 → Step 3
+    ----------------------------------*/
+
+    if (currentStep === 2) {
+
+        showStep(3);
+
+    }
+
+
+    /*----------------------------------
+        Step 3 → Step 4
+    ----------------------------------*/
+
+    else if (currentStep === 3) {
+
+        createDays();
 
         showStep(4);
 
-        return false;
+    }
+
+
+    /*----------------------------------
+        Step 4 → Step 5
+    ----------------------------------*/
+
+    else if (currentStep === 4) {
+
+        await createTimes();
+
+        showStep(5);
 
     }
 
 
-    if (!reservationData.time) {
+    /*----------------------------------
+        Step 1 → Step 2
+    ----------------------------------*/
 
-        alert("لطفاً ساعت مورد نظر خود را انتخاب کنید.");
+    else {
 
-        return false;
+        showStep(
+            currentStep + 1
+        );
+
+    }
+
+});
+
+
+/*======================================
+    Previous Button
+======================================*/
+
+prevBtn.addEventListener("click", () => {
+
+    if (currentStep <= 1) {
+
+        return;
 
     }
 
 
-    return true;
+    showStep(
+        currentStep - 1
+    );
+
+});
+
+
+/*======================================
+    Phone Input
+======================================*/
+
+const phoneInput =
+    document.getElementById("phone");
+
+
+if (phoneInput) {
+
+    phoneInput.addEventListener(
+        "input",
+        () => {
+
+            phoneInput.value =
+                phoneInput.value
+                    .replace(/\D/g, "")
+                    .slice(0, 11);
+
+        }
+    );
 
 }
 
 
 /*======================================
-    Generate Days
+    Barber Selection
 ======================================*/
 
-function generateDays() {
+const barberInputs =
+    document.querySelectorAll(
+        'input[name="barber"]'
+    );
 
-    if (!daysContainer) return;
+
+barberInputs.forEach(input => {
+
+    input.addEventListener(
+        "change",
+        () => {
+
+            reservationData.barberId =
+                input.value;
+
+
+            reservationData.barberName =
+                input.dataset.name || "";
+
+
+            /*
+                اگر آرایشگر عوض شد،
+                روز و ساعت قبلی پاک می‌شود.
+            */
+
+            reservationData.date = "";
+
+            reservationData.displayDate = "";
+
+            reservationData.time = "";
+
+
+            daysContainer.innerHTML = "";
+
+            timesContainer.innerHTML = "";
+
+        }
+    );
+
+});
+
+
+/*======================================
+    Service Selection
+======================================*/
+
+const serviceInputs =
+    document.querySelectorAll(
+        'input[name="service"]'
+    );
+
+
+serviceInputs.forEach(input => {
+
+    input.addEventListener(
+        "change",
+        () => {
+
+            const serviceName =
+                input.value;
+
+
+            reservationData.service =
+                serviceName;
+
+
+            reservationData.serviceDuration =
+                services[
+                    serviceName
+                ]?.duration || 0;
+
+
+            /*
+                اگر خدمت تغییر کرد،
+                ساعت انتخاب‌شده قبلی
+                دیگر معتبر نیست.
+            */
+
+            reservationData.time = "";
+
+            timesContainer.innerHTML = "";
+
+        }
+    );
+
+});
+
+
+/*======================================
+    Form Submit Protection
+======================================*/
+
+reserveForm.addEventListener(
+    "submit",
+    event => {
+
+        event.preventDefault();
+
+        /*
+            ثبت نهایی در قسمت‌های بعدی
+            انجام خواهد شد.
+        */
+
+        console.log(
+            "Reservation data:",
+            reservationData
+        );
+
+    }
+);
+/*======================================
+    Part 3
+    30 Days Calendar
+======================================*/
+
+
+/*======================================
+    Persian Date Helpers
+======================================*/
+
+/*
+    برای نمایش تاریخ شمسی از Intl استفاده می‌کنیم.
+    مقدار dataset.date همچنان میلادی و استاندارد
+    باقی می‌ماند تا Firebase راحت‌تر بتواند آن را
+    ذخیره و جستجو کند.
+*/
+
+function getPersianDate(date) {
+
+    return new Intl.DateTimeFormat(
+        "fa-IR-u-ca-persian",
+        {
+            year: "numeric",
+            month: "long",
+            day: "numeric"
+        }
+    ).format(date);
+
+}
+
+
+/*======================================
+    Persian Day Name
+======================================*/
+
+function getPersianDayName(date) {
+
+    return new Intl.DateTimeFormat(
+        "fa-IR",
+        {
+            weekday: "long"
+        }
+    ).format(date);
+
+}
+
+
+/*======================================
+    ISO Date
+======================================*/
+
+function getISODate(date) {
+
+    const year =
+        date.getFullYear();
+
+
+    const month =
+        String(
+            date.getMonth() + 1
+        ).padStart(2, "0");
+
+
+    const day =
+        String(
+            date.getDate()
+        ).padStart(2, "0");
+
+
+    return `${year}-${month}-${day}`;
+
+}
+
+
+/*======================================
+    Create 30 Days
+======================================*/
+
+function createDays() {
+
+    if (!daysContainer) {
+
+        return;
+
+    }
+
 
     daysContainer.innerHTML = "";
 
-    const today = new Date();
+
+    /*
+        هر بار که وارد مرحله چهار می‌شویم
+        ۳۰ روز آینده ساخته می‌شود.
+    */
+
+    const today =
+        new Date();
+
 
     today.setHours(
         0,
@@ -480,88 +864,98 @@ function generateDays() {
     );
 
 
-    /*
-        امروز + 29 روز
-        = 30 روز قابل رزرو
-    */
-
-    for (let i = 0; i < 30; i++) {
+    for (
+        let i = 0;
+        i < 30;
+        i++
+    ) {
 
         const date =
             new Date(today);
+
 
         date.setDate(
             today.getDate() + i
         );
 
 
-        const year =
-            date.getFullYear();
-
-        const month =
-            String(
-                date.getMonth() + 1
-            ).padStart(2, "0");
-
-        const day =
-            String(
-                date.getDate()
-            ).padStart(2, "0");
-
-
-        const dateValue =
-            `${year}-${month}-${day}`;
-
-
-        const dayName =
-            new Intl.DateTimeFormat(
-                "fa-IR",
-                {
-                    weekday: "long"
-                }
-            ).format(date);
+        const isoDate =
+            getISODate(date);
 
 
         const persianDate =
-            new Intl.DateTimeFormat(
-                "fa-IR",
-                {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric"
-                }
-            ).format(date);
+            getPersianDate(date);
+
+
+        const dayName =
+            getPersianDayName(date);
 
 
         const dayCard =
-            document.createElement("button");
+            document.createElement("div");
 
-
-        dayCard.type = "button";
 
         dayCard.className =
             "day-card";
 
-        dayCard.dataset.date =
-            dateValue;
 
+        dayCard.dataset.date =
+            isoDate;
+
+
+        dayCard.dataset.displayDate =
+            persianDate;
+
+
+        /*
+            نمایش کارت روز
+        */
 
         dayCard.innerHTML = `
 
             <span class="day-name">
+
                 ${dayName}
+
             </span>
 
             <span class="day-date">
+
                 ${persianDate}
+
             </span>
 
         `;
 
 
+        /*
+            اگر روز قبلی انتخاب شده باشد،
+            دوباره همان روز انتخاب شود.
+        */
+
+        if (
+            reservationData.date ===
+            isoDate
+        ) {
+
+            dayCard.classList.add(
+                "selected"
+            );
+
+        }
+
+
+        /*----------------------------------
+            انتخاب روز
+        ----------------------------------*/
+
         dayCard.addEventListener(
             "click",
             () => {
+
+                /*
+                    حذف انتخاب قبلی
+                */
 
                 document
                     .querySelectorAll(
@@ -576,14 +970,30 @@ function generateDays() {
                     });
 
 
+                /*
+                    انتخاب کارت جدید
+                */
+
                 dayCard.classList.add(
                     "selected"
                 );
 
 
-                reservationData.date =
-                    dateValue;
+                /*
+                    ذخیره اطلاعات روز
+                */
 
+                reservationData.date =
+                    isoDate;
+
+
+                reservationData.displayDate =
+                    persianDate;
+
+
+                /*
+                    ساعت قبلی دیگر معتبر نیست
+                */
 
                 reservationData.time =
                     "";
@@ -591,9 +1001,16 @@ function generateDays() {
 
                 if (timesContainer) {
 
-                    timesContainer.innerHTML = "";
+                    timesContainer.innerHTML =
+                        "";
 
                 }
+
+
+                console.log(
+                    "Selected date:",
+                    reservationData.date
+                );
 
             }
         );
@@ -609,83 +1026,318 @@ function generateDays() {
 
 
 /*======================================
-    Get Reserved Times
-    Per Barber + Date
+    Initial Calendar
 ======================================*/
 
-async function getReservedTimes(
-    date,
-    barberId
-) {
+console.log(
+    "30-day calendar module loaded."
+);
+/*======================================
+    Part 4
+    Time Selection - Step 5
+======================================*/
+
+
+/*======================================
+    Working Hours
+======================================*/
+
+/*
+    ساعت‌های کاری سالن
+    فعلاً از 09:00 تا 21:00
+    به فاصله یک ساعت
+*/
+
+const workingHours = [
+    "09:00",
+    "10:00",
+    "11:00",
+    "12:00",
+    "13:00",
+    "14:00",
+    "15:00",
+    "16:00",
+    "17:00",
+    "18:00",
+    "19:00",
+    "20:00",
+    "21:00"
+];
+
+
+/*======================================
+    Create Time Cards
+======================================*/
+
+async function createTimes() {
+
+    if (!timesContainer) {
+
+        return;
+
+    }
+
+
+    timesContainer.innerHTML = "";
+
+
+    /*
+        اگر آرایشگر انتخاب نشده باشد
+    */
+
+    if (!reservationData.barberId) {
+
+        timesContainer.innerHTML = `
+            <div class="time-message">
+                ابتدا آرایشگر را انتخاب کنید.
+            </div>
+        `;
+
+        return;
+
+    }
+
+
+    /*
+        اگر روز انتخاب نشده باشد
+    */
+
+    if (!reservationData.date) {
+
+        timesContainer.innerHTML = `
+            <div class="time-message">
+                ابتدا روز مورد نظر را انتخاب کنید.
+            </div>
+        `;
+
+        return;
+
+    }
+
+
+    /*
+        دریافت ساعت‌های رزروشده
+        برای آرایشگر و روز انتخاب‌شده
+    */
+
+    let bookedTimes = [];
+
 
     try {
 
-        const reservationsRef =
-            collection(
-                db,
-                "reservations"
+        bookedTimes =
+            await getBookedTimes(
+                reservationData.barberId,
+                reservationData.date
             );
-
-
-        const q =
-            query(
-
-                reservationsRef,
-
-                where(
-                    "date",
-                    "==",
-                    date
-                ),
-
-                where(
-                    "barberId",
-                    "==",
-                    barberId
-                ),
-
-                where(
-                    "status",
-                    "==",
-                    "reserved"
-                )
-
-            );
-
-
-        const snapshot =
-            await getDocs(q);
-
-
-        const reservedTimes = [];
-
-
-        snapshot.forEach(doc => {
-
-            const data =
-                doc.data();
-
-
-            if (data.time) {
-
-                reservedTimes.push(
-                    data.time
-                );
-
-            }
-
-        });
-
-
-        return reservedTimes;
-
 
     } catch (error) {
 
         console.error(
-            "Error loading reserved times:",
+            "Error loading booked times:",
             error
         );
+
+    }
+
+
+    /*
+        ساخت کارت ساعت‌ها
+    */
+
+    workingHours.forEach(
+        time => {
+
+            const timeCard =
+                document.createElement(
+                    "div"
+                );
+
+
+            timeCard.className =
+                "time-card";
+
+
+            timeCard.dataset.time =
+                time;
+
+
+            /*
+                ساعت رزروشده
+            */
+
+            if (
+                bookedTimes.includes(time)
+            ) {
+
+                timeCard.classList.add(
+                    "booked"
+                );
+
+
+                timeCard.innerHTML = `
+
+                    <i class="fa-solid fa-lock"></i>
+
+                    <span>
+                        ${time}
+                    </span>
+
+                    <small>
+                        رزرو شده
+                    </small>
+
+                `;
+
+
+                return;
+
+            }
+
+
+            /*
+                ساعت آزاد
+            */
+
+            timeCard.innerHTML = `
+
+                <i class="fa-regular fa-clock"></i>
+
+                <span>
+                    ${time}
+                </span>
+
+            `;
+
+
+            /*
+                اگر ساعت قبلاً انتخاب شده
+            */
+
+            if (
+                reservationData.time ===
+                time
+            ) {
+
+                timeCard.classList.add(
+                    "selected"
+                );
+
+            }
+
+
+            /*
+                انتخاب ساعت
+            */
+
+            timeCard.addEventListener(
+                "click",
+                () => {
+
+                    /*
+                        حذف انتخاب قبلی
+                    */
+
+                    document
+                        .querySelectorAll(
+                            ".time-card"
+                        )
+                        .forEach(card => {
+
+                            card.classList.remove(
+                                "selected"
+                            );
+
+                        });
+
+
+                    /*
+                        انتخاب ساعت جدید
+                    */
+
+                    timeCard.classList.add(
+                        "selected"
+                    );
+
+
+                    /*
+                        ذخیره ساعت
+                    */
+
+                    reservationData.time =
+                        time;
+
+
+                    console.log(
+                        "Selected time:",
+                        reservationData.time
+                    );
+
+                }
+            );
+
+
+            timesContainer.appendChild(
+                timeCard
+            );
+
+        }
+    );
+
+}
+
+
+/*======================================
+    Get Booked Times
+======================================*/
+
+/*
+    این تابع فعلاً از Firebase
+    رزروهای موجود را می‌خواند.
+
+    در قسمت Firebase نهایی،
+    query دقیق آن را کامل می‌کنیم.
+*/
+
+async function getBookedTimes(
+    barberId,
+    date
+) {
+
+    try {
+
+        /*
+            اگر تابع Firebase در دسترس باشد
+        */
+
+        if (
+            typeof loadBookedTimes ===
+            "function"
+        ) {
+
+            return await loadBookedTimes(
+                barberId,
+                date
+            );
+
+        }
+
+
+        /*
+            فعلاً اگر تابع Firebase
+            هنوز ساخته نشده باشد،
+            هیچ ساعتی رزروشده نیست.
+        */
+
+        return [];
+
+    } catch (error) {
+
+        console.error(
+            "Could not get booked times:",
+            error
+        );
+
 
         return [];
 
@@ -695,175 +1347,111 @@ async function getReservedTimes(
 
 
 /*======================================
-    Generate Time Slots
+    Step 5 Validation
 ======================================*/
 
-async function generateTimeSlots() {
-
-    if (!timesContainer) return;
-
-    timesContainer.innerHTML = "";
-
+function validateStep5() {
 
     if (
-        !reservationData.date ||
-        !reservationData.barberId
+        !reservationData.time
     ) {
 
-        return;
+        alert(
+            "لطفاً ابتدا یک ساعت را انتخاب کنید."
+        );
+
+        return false;
 
     }
 
 
-    timesContainer.innerHTML = `
+    return true;
 
-        <div style="
-            grid-column:1/-1;
-            text-align:center;
-            padding:25px;
-            color:var(--text-light);
-        ">
-
-            در حال بررسی ساعت‌های آزاد...
-
-        </div>
-
-    `;
+}
 
 
-    const reservedTimes =
-        await getReservedTimes(
+/*======================================
+    Final Step Button
+======================================*/
 
-            reservationData.date,
+/*
+    در مرحله پنجم، دکمه «مرحله بعد»
+    تبدیل به «ثبت رزرو» می‌شود.
+*/
 
-            reservationData.barberId
-
-        );
-
-
-    timesContainer.innerHTML = "";
-
-
-    timeSlots.forEach(time => {
-
-        const timeCard =
-            document.createElement("button");
-
-
-        timeCard.type =
-            "button";
-
-
-        timeCard.className =
-            "time-card";
-
-
-        timeCard.dataset.time =
-            time;
-
-
-        timeCard.textContent =
-            time;
-
-
-        /*
-            Reserved
-        */
-
-        if (
-            reservedTimes.includes(time)
-        ) {
-
-            timeCard.classList.add(
-                "booked"
-            );
-
-
-            timeCard.disabled =
-                true;
-
-
-            timeCard.innerHTML = `
-
-                <i
-                    class="fa-solid fa-lock"
-                    style="margin-left:8px">
-                </i>
-
-                ${time}
-
-            `;
-
-
-            timesContainer.appendChild(
-                timeCard
-            );
-
-
-            return;
-
-        }
-
-
-        /*
-            Available
-        */
-
-        timeCard.addEventListener(
-            "click",
-            () => {
-
-                document
-                    .querySelectorAll(
-                        ".time-card"
-                    )
-                    .forEach(card => {
-
-                        card.classList.remove(
-                            "selected"
-                        );
-
-                    });
-
-
-                timeCard.classList.add(
-                    "selected"
-                );
-
-
-                reservationData.time =
-                    time;
-
-
-            }
-        );
-
-
-        timesContainer.appendChild(
-            timeCard
-        );
-
-    });
-
+function updateFinalStepButtons() {
 
     if (
-        timesContainer.children.length === 0
+        currentStep === 5
     ) {
 
-        timesContainer.innerHTML = `
+        nextBtn.style.display =
+            "none";
 
-            <div style="
-                grid-column:1/-1;
-                text-align:center;
-                padding:30px;
-                color:var(--text-light);
-            ">
 
-                برای این روز ساعت آزادی وجود ندارد.
+        submitBtn.style.display =
+            "flex";
 
-            </div>
+    } else {
 
-        `;
+        nextBtn.style.display =
+            "flex";
+
+
+        submitBtn.style.display =
+            "none";
+
+    }
+
+}
+/*======================================
+    Part 5
+    Step 5 + Final Validation
+======================================*/
+
+
+/*======================================
+    Update Buttons
+======================================*/
+
+function updateFinalButtons() {
+
+    /*
+        مرحله ۵ = انتخاب ساعت
+        در این مرحله دیگر دکمه
+        «مرحله بعد» نداریم.
+    */
+
+    if (currentStep === 5) {
+
+        nextBtn.style.display = "none";
+
+        submitBtn.style.display = "flex";
+
+    }
+
+    else {
+
+        nextBtn.style.display = "flex";
+
+        submitBtn.style.display = "none";
+
+    }
+
+
+    /*
+        مرحله اول دکمه قبلی ندارد.
+    */
+
+    if (currentStep === 1) {
+
+        prevBtn.style.display = "none";
+
+    }
+
+    else {
+
+        prevBtn.style.display = "flex";
 
     }
 
@@ -871,21 +1459,171 @@ async function generateTimeSlots() {
 
 
 /*======================================
-    Save Reservation
+    Replace Button State
 ======================================*/
 
-async function saveReservation() {
+const originalShowStep =
+    showStep;
 
-    const reservationsRef =
-        collection(
-            db,
-            "reservations"
+
+/*
+    هر بار که showStep اجرا شود،
+    وضعیت دکمه‌ها هم بررسی می‌شود.
+*/
+
+showStep = function(stepNumber) {
+
+    originalShowStep(stepNumber);
+
+    updateFinalButtons();
+
+};
+
+
+/*======================================
+    Final Reservation Validation
+======================================*/
+
+function validateFinalReservation() {
+
+    /*
+        اطلاعات مشتری
+    */
+
+    if (
+        !reservationData.firstName ||
+        !reservationData.lastName ||
+        !reservationData.phone
+    ) {
+
+        alert(
+            "اطلاعات مشتری کامل نیست."
         );
 
+        showStep(1);
 
-    try {
+        return false;
+
+    }
+
+
+    /*
+        آرایشگر
+    */
+
+    if (
+        !reservationData.barberId ||
+        !reservationData.barberName
+    ) {
+
+        alert(
+            "لطفاً آرایشگر را انتخاب کنید."
+        );
+
+        showStep(2);
+
+        return false;
+
+    }
+
+
+    /*
+        خدمت
+    */
+
+    if (
+        !reservationData.service
+    ) {
+
+        alert(
+            "لطفاً خدمت مورد نظر را انتخاب کنید."
+        );
+
+        showStep(3);
+
+        return false;
+
+    }
+
+
+    /*
+        روز
+    */
+
+    if (
+        !reservationData.date
+    ) {
+
+        alert(
+            "لطفاً روز مورد نظر را انتخاب کنید."
+        );
+
+        showStep(4);
+
+        return false;
+
+    }
+
+
+    /*
+        ساعت
+    */
+
+    if (
+        !reservationData.time
+    ) {
+
+        alert(
+            "لطفاً ساعت مورد نظر را انتخاب کنید."
+        );
+
+        showStep(5);
+
+        return false;
+
+    }
+
+
+    return true;
+
+}
+
+
+/*======================================
+    Final Submit
+======================================*/
+
+reserveForm.addEventListener(
+    "submit",
+    async event => {
+
+        event.preventDefault();
+
+
+        /*
+            بررسی کامل اطلاعات
+        */
+
+        const valid =
+            validateFinalReservation();
+
+
+        if (!valid) {
+
+            return;
+
+        }
+
+
+        /*
+            جلوگیری از چند بار کلیک
+        */
 
         submitBtn.disabled = true;
+
+
+        const oldText =
+            submitBtn.innerHTML;
 
 
         submitBtn.innerHTML = `
@@ -897,274 +1635,123 @@ async function saveReservation() {
         `;
 
 
-        /*
-            Final duplicate check
+        try {
 
-            مهم:
-            تاریخ + ساعت + آرایشگر
-        */
+            /*
+                فعلاً فقط اطلاعات را
+                در Console می‌بینیم.
 
-        const duplicateQuery =
-            query(
+                در قسمت بعدی اینجا
+                ثبت واقعی Firebase
+                قرار می‌گیرد.
+            */
 
-                reservationsRef,
-
-                where(
-                    "date",
-                    "==",
-                    reservationData.date
-                ),
-
-                where(
-                    "time",
-                    "==",
-                    reservationData.time
-                ),
-
-                where(
-                    "barberId",
-                    "==",
-                    reservationData.barberId
-                ),
-
-                where(
-                    "status",
-                    "==",
-                    "reserved"
-                )
-
+            console.log(
+                "FINAL RESERVATION:",
+                reservationData
             );
 
 
-        const snapshot =
-            await getDocs(
-                duplicateQuery
+            /*
+                موفقیت موقت
+            */
+
+            showSuccessPreview();
+
+
+        }
+
+        catch (error) {
+
+            console.error(
+                "Reservation error:",
+                error
             );
 
-
-        if (!snapshot.empty) {
 
             alert(
-                "این ساعت برای این آرایشگر قبلاً رزرو شده است. لطفاً ساعت دیگری انتخاب کنید."
+                "در ثبت رزرو مشکلی پیش آمد. لطفاً دوباره تلاش کنید."
             );
-
-
-            await generateTimeSlots();
-
-
-            return false;
 
         }
 
+        finally {
 
-        /*
-            Reservation Object
-        */
+            submitBtn.disabled = false;
 
-        const reservation = {
+            submitBtn.innerHTML =
+                oldText;
 
-            firstName:
-                reservationData.firstName,
-
-            lastName:
-                reservationData.lastName,
-
-            name:
-                `${reservationData.firstName} ${reservationData.lastName}`,
-
-            phone:
-                reservationData.phone,
-
-            barberId:
-                reservationData.barberId,
-
-            barberName:
-                reservationData.barberName,
-
-            service:
-                reservationData.service,
-
-            duration:
-                reservationData.duration,
-
-            date:
-                reservationData.date,
-
-            time:
-                reservationData.time,
-
-            status:
-                "reserved",
-
-            createdAt:
-                serverTimestamp()
-
-        };
-
-
-        /*
-            Save to Firestore
-        */
-
-        const docRef =
-            await addDoc(
-
-                reservationsRef,
-
-                reservation
-
-            );
-
-
-        console.log(
-            "Reservation saved:",
-            docRef.id
-        );
-
-
-        return true;
-
-
-    } catch (error) {
-
-        console.error(
-            "Firebase reservation error:",
-            error
-        );
-
-
-        alert(
-            "متأسفانه ثبت رزرو انجام نشد.\nلطفاً دوباره تلاش کنید."
-        );
-
-
-        return false;
-
-
-    } finally {
-
-        submitBtn.disabled =
-            false;
-
-
-        submitBtn.innerHTML = `
-
-            <i class="fa-solid fa-check"></i>
-
-            ثبت رزرو
-
-        `;
-
-    }
-
-}
-
-
-/*======================================
-    Persian Date
-======================================*/
-
-function getPersianDate(
-    dateString
-) {
-
-    if (!dateString) {
-        return "";
-    }
-
-
-    const parts =
-        dateString.split("-");
-
-
-    const date =
-        new Date(
-
-            Number(parts[0]),
-
-            Number(parts[1]) - 1,
-
-            Number(parts[2])
-
-        );
-
-
-    return new Intl.DateTimeFormat(
-        "fa-IR",
-        {
-            weekday: "long",
-            year: "numeric",
-            month: "long",
-            day: "numeric"
         }
-    ).format(date);
 
-}
+    }
+);
 
 
 /*======================================
-    Success
+    Success Preview
 ======================================*/
 
-function showSuccess() {
+function showSuccessPreview() {
 
-    if (
-        !successModal ||
-        !successDetails
-    ) {
-
-        alert(
-            "رزرو با موفقیت ثبت شد."
-        );
+    if (!successModal) {
 
         return;
 
     }
 
 
-    const persianDate =
-        getPersianDate(
-            reservationData.date
-        );
-
-
     successDetails.innerHTML = `
 
         <div>
             <strong>نام مشتری:</strong>
-            ${reservationData.firstName}
-            ${reservationData.lastName}
+            ${escapeHTML(
+                reservationData.firstName
+            )}
+            ${escapeHTML(
+                reservationData.lastName
+            )}
         </div>
 
         <div>
             <strong>شماره موبایل:</strong>
-            ${reservationData.phone}
+            ${escapeHTML(
+                reservationData.phone
+            )}
         </div>
 
         <div>
             <strong>آرایشگر:</strong>
-            ${reservationData.barberName}
+            ${escapeHTML(
+                reservationData.barberName
+            )}
         </div>
 
         <div>
             <strong>خدمت:</strong>
-            ${reservationData.service}
+            ${escapeHTML(
+                reservationData.service
+            )}
         </div>
 
         <div>
             <strong>مدت خدمت:</strong>
-            ${reservationData.duration}
+            ${reservationData.serviceDuration}
             دقیقه
         </div>
 
         <div>
             <strong>روز:</strong>
-            ${persianDate}
+            ${escapeHTML(
+                reservationData.displayDate
+            )}
         </div>
 
         <div>
             <strong>ساعت:</strong>
-            ${reservationData.time}
+            ${escapeHTML(
+                reservationData.time
+            )}
         </div>
 
     `;
@@ -1182,150 +1769,27 @@ function showSuccess() {
 
 
 /*======================================
-    Submit
+    Escape HTML
 ======================================*/
 
-reserveForm.addEventListener(
-    "submit",
-    async event => {
+function escapeHTML(value) {
 
-        event.preventDefault();
+    return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
 
-
-        if (!validateStep5()) {
-
-            return;
-
-        }
-
-
-        const saved =
-            await saveReservation();
-
-
-        if (!saved) {
-
-            return;
-
-        }
-
-
-        showSuccess();
-
-    }
-);
+}
 
 
 /*======================================
-    Next
+    Start
 ======================================*/
 
-nextBtn.addEventListener(
-    "click",
-    async () => {
-
-
-        /*==============================
-            Step 1 → Step 2
-        ==============================*/
-
-        if (currentStep === 1) {
-
-            if (!validateStep1()) {
-                return;
-            }
-
-            showStep(2);
-
-            return;
-
-        }
-
-
-        /*==============================
-            Step 2 → Step 3
-        ==============================*/
-if (currentStep === 2) {
-
-            if (!validateStep2()) {
-                return;
-            }
-
-            showStep(3);
-
-            return;
-
-        }
-
-
-        /*==============================
-            Step 3 → Step 4
-        ==============================*/
-
-        if (currentStep === 3) {
-
-            if (!validateStep3()) {
-                return;
-            }
-
-            showStep(4);
-
-            return;
-
-        }
-
-
-        /*==============================
-            Step 4 → Step 5
-        ==============================*/
-
-        if (currentStep === 4) {
-
-            if (!validateStep4()) {
-                return;
-            }
-
-            showStep(5);
-
-            await generateTimeSlots();
-
-            return;
-
-        }
-
-    }
-);
-
-
-/*======================================
-    Previous
-======================================*/
-
-prevBtn.addEventListener(
-    "click",
-    () => {
-
-        if (currentStep <= 1) {
-            return;
-        }
-
-        showStep(
-            currentStep - 1
-        );
-
-    }
-);
-
-
-/*======================================
-    Initial
-======================================*/
-
-generateDays();
-
-showStep(1);
-
+updateFinalButtons();
 
 console.log(
-    "Salon Mojezeh - Final booking system ready."
+    "Final reservation validation ready."
 );
