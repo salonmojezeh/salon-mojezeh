@@ -214,6 +214,7 @@ function createReservationKey(
 
 // ==========================================
 // Get Booked Times
+// بدون نیاز به Composite Index
 // ==========================================
 
 async function loadBookedTimes(
@@ -236,12 +237,6 @@ async function loadBookedTimes(
                 "date",
                 "==",
                 date
-            ),
-
-            where(
-                "status",
-                "==",
-                "reserved"
             )
 
         );
@@ -264,6 +259,7 @@ async function loadBookedTimes(
 
 
             if (
+                data.status === "reserved" &&
                 data.time &&
                 !bookedTimes.includes(
                     data.time
