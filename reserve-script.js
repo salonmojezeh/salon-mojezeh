@@ -1322,64 +1322,37 @@ reserveForm?.addEventListener(
 
         catch (error) {
 
-            console.error(
-                "Reservation failed:",
-                error
-            );
+    console.error(
+        "Reservation failed:",
+        error
+    );
+
+    if (
+        error.code ===
+        "already-exists"
+    ) {
+
+        alert(
+            "متأسفانه این ساعت همین الان توسط شخص دیگری رزرو شد. لطفاً یک ساعت دیگر انتخاب کنید."
+        );
+
+        reservationData.time = "";
+
+        showStep(5);
+
+        return;
+
+    }
 
 
-            /*
-             * Conflict
-             *
-             * یعنی ساعت در همین فاصله
-             * توسط فرد دیگری گرفته شده.
-             */
-
-            if (
-                error?.code ===
-                "already-exists"
-            ) {
-
-                alert(
-                    "این ساعت همین الان توسط شخص دیگری رزرو شد. لطفاً ساعت دیگری انتخاب کنید."
-                );
-
-
-                reservationData.time =
-                    "";
-
-
-                showStep(5);
-
-                return;
-
-            }
-
-
-            /*
-             * خطای شبکه
-             */
-
-            if (
-                isNetworkError(error)
-            ) {
-
-                alert(
-                    "ارتباط با سامانه رزرو برقرار نشد. لطفاً اتصال اینترنت را بررسی کنید و دوباره تلاش کنید."
-                );
-
-                return;
-
-            }
-
-
-            /*
-             * خطای عمومی
-             */
-
-            alert(
-                "در ثبت رزرو مشکلی پیش آمد. لطفاً دوباره تلاش کنید."
-            );
+    alert(
+        "خطای واقعی ثبت رزرو:\n\n" +
+        "Code: " +
+        (error.code || "unknown") +
+        "\n\n" +
+        "Message: " +
+        (error.message || "خطای نامشخص")
+    );
 
         }
 
