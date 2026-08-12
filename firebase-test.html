@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Firebase Test</title>
+    <title>Firebase Write Test</title>
 </head>
 
 <body>
 
-    <h2>تست اتصال Firebase</h2>
+    <h2>تست ثبت Firebase</h2>
 
     <div id="result">
-        در حال بررسی...
+        در حال تست ثبت...
     </div>
 
     <script type="module">
@@ -22,10 +22,9 @@
 
         import {
             getFirestore,
-            collection,
-            getDocs,
-            limit,
-            query
+            doc,
+            setDoc,
+            serverTimestamp
         } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 
@@ -65,20 +64,40 @@
                 getFirestore(app);
 
 
-            const q =
-                query(
-                    collection(db, "reservations"),
-                    limit(1)
+            const testDocument =
+                doc(
+                    db,
+                    "firebase_test",
+                    "browser_test"
                 );
 
 
-            await getDocs(q);
+            await setDoc(
+                testDocument,
+                {
+
+                    test: true,
+
+                    message:
+                        "Firebase write test",
+
+                    createdAt:
+                        serverTimestamp()
+
+                }
+            );
 
 
             result.innerHTML = `
+
                 <h3 style="color:green">
-                    ✅ اتصال به Firebase موفق است
+                    ✅ ثبت در Firebase موفق است
                 </h3>
+
+                <p>
+                    عملیات نوشتن Firestore بدون مشکل انجام شد.
+                </p>
+
             `;
 
         }
@@ -87,20 +106,21 @@
 
             console.error(error);
 
+
             result.innerHTML = `
 
                 <h3 style="color:red">
-                    ❌ اتصال ناموفق است
+                    ❌ ثبت در Firebase ناموفق است
                 </h3>
 
                 <p>
                     <strong>Code:</strong>
-                    ${error.code || "ندارد"}
+                    ${error.code || "unknown"}
                 </p>
 
                 <p>
                     <strong>Message:</strong>
-                    ${error.message || "ندارد"}
+                    ${error.message || "unknown"}
                 </p>
 
             `;
