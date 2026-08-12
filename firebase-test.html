@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Test</title>
+</head>
+
+<body>
+
+    <h2>تست اتصال Firebase</h2>
+
+    <div id="result">
+        در حال بررسی...
+    </div>
+
+    <script type="module">
+
+        import {
+            initializeApp
+        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+        import {
+            getFirestore,
+            collection,
+            getDocs,
+            limit,
+            query
+        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+
+        const firebaseConfig = {
+
+            apiKey:
+                "AIzaSyCeDSU7d3JyNgny0MWjEpYYY4QrMTMDngs",
+
+            authDomain:
+                "salon-mojezeh.firebaseapp.com",
+
+            projectId:
+                "salon-mojezeh",
+
+            storageBucket:
+                "salon-mojezeh.firebasestorage.app",
+
+            messagingSenderId:
+                "1023073696440",
+
+            appId:
+                "1:1023073696440:web:98f95b75e36408d990124d"
+
+        };
+
+
+        const result =
+            document.getElementById("result");
+
+
+        try {
+
+            const app =
+                initializeApp(firebaseConfig);
+
+            const db =
+                getFirestore(app);
+
+
+            const q =
+                query(
+                    collection(db, "reservations"),
+                    limit(1)
+                );
+
+
+            await getDocs(q);
+
+
+            result.innerHTML = `
+                <h3 style="color:green">
+                    ✅ اتصال به Firebase موفق است
+                </h3>
+            `;
+
+        }
+
+        catch (error) {
+
+            console.error(error);
+
+            result.innerHTML = `
+
+                <h3 style="color:red">
+                    ❌ اتصال ناموفق است
+                </h3>
+
+                <p>
+                    <strong>Code:</strong>
+                    ${error.code || "ندارد"}
+                </p>
+
+                <p>
+                    <strong>Message:</strong>
+                    ${error.message || "ندارد"}
+                </p>
+
+            `;
+
+        }
+
+    </script>
+
+</body>
+</html>
