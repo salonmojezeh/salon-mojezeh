@@ -9,7 +9,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
 import {
-    getFirestore,
+    initializeFirestore,
     collection,
     doc,
     query,
@@ -64,7 +64,12 @@ const app =
 // ==========================================
 
 const db =
-    getFirestore(app);
+    initializeFirestore(
+        app,
+        {
+            experimentalForceLongPolling: true
+        }
+    );
 
 
 // ==========================================
