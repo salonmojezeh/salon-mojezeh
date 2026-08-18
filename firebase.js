@@ -219,6 +219,7 @@ function createReservationKey(
 
 // ==========================================
 // Get Booked Times
+// بدون نیاز به Composite Index
 // ==========================================
 
 async function loadBookedTimes(
@@ -241,12 +242,6 @@ async function loadBookedTimes(
                 "date",
                 "==",
                 date
-            ),
-
-            where(
-                "status",
-                "==",
-                "reserved"
             )
 
         );
@@ -268,7 +263,14 @@ async function loadBookedTimes(
                 reservation.data();
 
 
+            /*
+                فقط رزروهای فعال را
+                به عنوان ساعت اشغال‌شده
+                در نظر می‌گیریم.
+            */
+
             if (
+                data.status === "reserved" &&
                 data.time &&
                 !bookedTimes.includes(
                     data.time
