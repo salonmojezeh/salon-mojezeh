@@ -1320,68 +1320,41 @@ reserveForm?.addEventListener(
 
         }
 
-        catch (error) {
+catch (error) {
 
-            console.error(
-                "Reservation failed:",
-                error
-            );
+    console.error(
+        "Reservation failed:",
+        error
+    );
 
+    if (
+        error.code ===
+        "already-exists"
+    ) {
 
-            /*
-             * Conflict
-             *
-             * یعنی ساعت در همین فاصله
-             * توسط فرد دیگری گرفته شده.
-             */
+        alert(
+            "متأسفانه این ساعت همین الان توسط شخص دیگری رزرو شد. لطفاً یک ساعت دیگر انتخاب کنید."
+        );
 
-            if (
-                error?.code ===
-                "already-exists"
-            ) {
+        reservationData.time = "";
 
-                alert(
-                    "این ساعت همین الان توسط شخص دیگری رزرو شد. لطفاً ساعت دیگری انتخاب کنید."
-                );
+        showStep(5);
 
+        return;
 
-                reservationData.time =
-                    "";
+    }
 
 
-                showStep(5);
+    alert(
+        "خطای واقعی ثبت رزرو:\n\n" +
+        "Code: " +
+        (error.code || "unknown") +
+        "\n\n" +
+        "Message: " +
+        (error.message || "خطای نامشخص")
+    );
 
-                return;
-
-            }
-
-
-            /*
-             * خطای شبکه
-             */
-
-            if (
-                isNetworkError(error)
-            ) {
-
-                alert(
-                    "ارتباط با سامانه رزرو برقرار نشد. لطفاً اتصال اینترنت را بررسی کنید و دوباره تلاش کنید."
-                );
-
-                return;
-
-            }
-
-
-            /*
-             * خطای عمومی
-             */
-
-            alert(
-                "در ثبت رزرو مشکلی پیش آمد. لطفاً دوباره تلاش کنید."
-            );
-
-        }
+} 
 
         finally {
 
