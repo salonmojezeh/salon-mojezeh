@@ -18,7 +18,8 @@ const SUPABASE_URL =
     "https://erfzhyvraenceykiwlci.supabase.co";
 
 const SUPABASE_ANON_KEY =
-    "کلید publishable خودت را اینجا قرار بده";
+    "sb_publishable_uRbq30GBNHcXwGrinzhx1Q_5-egxs5_    
+    ";
 
 
 // ==========================================
@@ -141,14 +142,14 @@ export const DEFAULT_BARBERS = [
 
     {
         id: "artin",
-        name: "آرتین",
+        name: "سبحان",
         role: "آرایشگر",
         active: true
     },
 
     {
         id: "barber2",
-        name: "آرایشگر دوم",
+        name: "سجاد",
         role: "آرایشگر",
         active: true
     }
