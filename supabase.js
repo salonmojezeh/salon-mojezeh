@@ -18,8 +18,7 @@ const SUPABASE_URL =
     "https://erfzhyvraenceykiwlci.supabase.co";
 
 const SUPABASE_ANON_KEY =
-    "sb_publishable_uRbq30GBNHcXwGrinzhx1Q_5-egxs5_    
-    ";
+    "sb_publishable_uRbq30GBNHcXwGrinzhx1Q_5-egxs5_";
 
 
 // ==========================================
