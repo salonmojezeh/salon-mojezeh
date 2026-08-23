@@ -1824,6 +1824,69 @@ body.dark .customer-info-item {
 
   }
 
+/* ======================================
+   Header Right
+====================================== */
+
+.header-right {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+}
+
+
+/* Profile Button */
+
+.profile-btn {
+
+    width: 42px;
+    height: 42px;
+
+    border-radius: 50%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    text-decoration: none;
+
+    color: inherit;
+
+    border: 1px solid rgba(0,0,0,.12);
+
+    background: rgba(255,255,255,.75);
+
+    transition: .25s ease;
+
+}
+
+.profile-btn i {
+
+    font-size: 18px;
+
+}
+
+.profile-btn:hover {
+
+    transform: translateY(-2px);
+
+}
+
+
+/* Dark Mode */
+
+body.dark .profile-btn {
+
+    border-color: rgba(255,255,255,.15);
+
+    background: rgba(255,255,255,.08);
+
+}
+
 /*======================================
 End Of File
 ======================================*/
