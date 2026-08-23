@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>پروفایل مشتری | سالن معجزه</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap">
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+
+<body>
+
+<header id="header">
+
+    <a href="index.html" class="profile-back">
+        <i class="fa-solid fa-arrow-right"></i>
+    </a>
+
+    <div class="logo-box">
+        <div>
+            <h2>پروفایل مشتری</h2>
+            <small>سالن معجزه</small>
+        </div>
+    </div>
+
+</header>
+
+
+<main class="customer-page">
+
+    <section class="customer-profile-card">
+
+        <div class="customer-avatar">
+            <i class="fa-solid fa-user"></i>
+        </div>
+
+        <h1 id="customerName">
+            مشتری سالن معجزه
+        </h1>
+
+        <p id="customerPhone">
+            هنوز اطلاعاتی ثبت نشده است
+        </p>
+
+        <div class="customer-info">
+
+            <div class="customer-info-item">
+                <i class="fa-solid fa-user"></i>
+
+                <div>
+                    <span>نام و نام خانوادگی</span>
+                    <strong id="customerFullName">---</strong>
+                </div>
+            </div>
+
+
+            <div class="customer-info-item">
+                <i class="fa-solid fa-phone"></i>
+
+                <div>
+                    <span>شماره موبایل</span>
+                    <strong id="customerPhoneInfo">---</strong>
+                </div>
+            </div>
+
+
+            <div class="customer-info-item">
+                <i class="fa-solid fa-calendar-check"></i>
+
+                <div>
+                    <span>وضعیت مشتری</span>
+                    <strong>عضو سالن معجزه</strong>
+                </div>
+            </div>
+
+        </div>
+
+        <a href="reserve.html" class="primary-btn">
+            <i class="fa-solid fa-calendar-check"></i>
+            رزرو نوبت
+        </a>
+
+    </section>
+
+</main>
+
+
+<script type="module">
+
+import {
+    getCustomer
+} from "./supabase.js";
+
+
+const customerName =
+    document.getElementById("customerName");
+
+const customerPhone =
+    document.getElementById("customerPhone");
+
+const customerFullName =
+    document.getElementById("customerFullName");
+
+const customerPhoneInfo =
+    document.getElementById("customerPhoneInfo");
+
+
+const phone =
+    localStorage.getItem("customerPhone");
+
+
+if (!phone) {
+
+    customerName.textContent =
+        "پروفایل شما";
+
+    customerPhone.textContent =
+        "هنوز شماره موبایل ثبت نشده است.";
+
+} else {
+
+    try {
+
+        const customer =
+            await getCustomer(phone);
+
+
+        if (customer) {
+
+            const fullName =
+                `${customer.first_name || ""} ${customer.last_name || ""}`.trim();
+
+
+            customerName.textContent =
+                fullName || "مشتری سالن معجزه";
+
+            customerPhone.textContent =
+                phone;
+
+            customerFullName.textContent =
+                fullName || "---";
+
+            customerPhoneInfo.textContent =
+                phone;
+
+        } else {
+
+            customerName.textContent =
+                "مشتری سالن معجزه";
+
+            customerPhone.textContent =
+                phone;
+
+            customerFullName.textContent =
+                "---";
+
+            customerPhoneInfo.textContent =
+                phone;
+
+        }
+
+    } catch (error) {
+
+        console.error(
+            "Customer profile error:",
+            error
+        );
+
+        customerName.textContent =
+            "خطا در دریافت اطلاعات";
+
+    }
+
+}
+
+</script>
+
+</body>
+</html>
