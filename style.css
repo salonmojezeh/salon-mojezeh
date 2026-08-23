@@ -1612,6 +1612,218 @@ text-align:center;
 
 }
 
+/* ======================================
+   Customer Profile Button
+====================================== */
+
+.profile-btn {
+
+    width: 44px;
+    height: 44px;
+
+    border-radius: 50%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    text-decoration: none;
+
+    color: inherit;
+
+    border: 1px solid rgba(0,0,0,.12);
+
+    background: rgba(255,255,255,.75);
+
+    transition: .25s ease;
+
+}
+
+.profile-btn i {
+
+    font-size: 19px;
+
+}
+
+.profile-btn:hover {
+
+    transform: translateY(-2px);
+
+}
+
+
+/* Dark Mode */
+
+body.dark .profile-btn {
+
+    border-color: rgba(255,255,255,.15);
+
+    background: rgba(255,255,255,.08);
+
+}
+
+
+/* Customer Page */
+
+.customer-page {
+
+    min-height: calc(100vh - 80px);
+
+    padding: 120px 20px 60px;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: flex-start;
+
+}
+
+.customer-profile-card {
+
+    width: 100%;
+
+    max-width: 520px;
+
+    padding: 35px 25px;
+
+    text-align: center;
+
+    border-radius: 24px;
+
+    background: rgba(255,255,255,.9);
+
+    box-shadow: 0 15px 45px rgba(0,0,0,.08);
+
+}
+
+.customer-avatar {
+
+    width: 100px;
+
+    height: 100px;
+
+    margin: 0 auto 20px;
+
+    border-radius: 50%;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    background: #111;
+
+    color: #fff;
+
+    font-size: 38px;
+
+}
+
+.customer-profile-card h1 {
+
+    margin-bottom: 8px;
+
+}
+
+.customer-profile-card > p {
+
+    opacity: .7;
+
+    margin-bottom: 30px;
+
+}
+
+.customer-info {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 14px;
+
+    margin-bottom: 30px;
+
+}
+
+.customer-info-item {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 15px;
+
+    text-align: right;
+
+    padding: 15px;
+
+    border-radius: 16px;
+
+    background: rgba(0,0,0,.04);
+
+}
+
+.customer-info-item > i {
+
+    width: 42px;
+
+    height: 42px;
+
+    border-radius: 50%;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    background: #111;
+
+    color: #fff;
+
+}
+
+.customer-info-item div {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 4px;
+
+}
+
+.customer-info-item span {
+
+    font-size: 13px;
+
+    opacity: .6;
+
+}
+
+.customer-info-item strong {
+
+    font-size: 15px;
+
+}
+
+
+/* Dark Mode */
+
+body.dark .customer-profile-card {
+
+    background: rgba(30,30,30,.95);
+
+}
+
+body.dark .customer-info-item {
+
+    background: rgba(255,255,255,.06);
+
+  }
+
 /*======================================
 End Of File
 ======================================*/
