@@ -1,15 +1,17 @@
 // ==========================================
 // Salon Mojezeh
 // reserve-script.js
-// Final Reservation System
-// 5 Steps
+// SUPABASE RESERVATION SYSTEM
+// 5 STEP BOOKING
 // ==========================================
+
+"use strict";
 
 import {
     loadBookedTimes,
     addReservation,
     saveCustomer
-} from "./firebase.js";
+} from "./supabase.js";
 
 
 // ==========================================
@@ -84,14 +86,40 @@ const reservationData = {
 
 
 // ==========================================
+// Configuration
+// ==========================================
+
+const RESERVATION_CONFIG = {
+
+    daysToShow: 30,
+
+    workingHours: {
+
+        start: "10:00",
+
+        end: "22:00",
+
+        lastBookingTime: "21:00",
+
+        interval: 60
+
+    }
+
+};
+
+
+// ==========================================
 // Services
 // ==========================================
 
 const serviceDurations = {
 
     "اصلاح سر و صورت": 60,
+
     "حالت مو": 30,
+
     "خط و سایه": 30,
+
     "سایه ریش": 30
 
 };
@@ -103,7 +131,6 @@ const serviceDurations = {
 
 const workingHours = [
 
-    "09:00",
     "10:00",
     "11:00",
     "12:00",
@@ -149,10 +176,8 @@ const RETRY_DELAY = 800;
 function sleep(ms) {
 
     return new Promise(
-        resolve => setTimeout(
-            resolve,
-            ms
-        )
+        resolve =>
+            setTimeout(resolve, ms)
     );
 
 }
@@ -163,7 +188,7 @@ async function retryRequest(
     retries = RETRY_COUNT
 ) {
 
-    let lastError;
+    let lastError = null;
 
     for (
         let attempt = 1;
@@ -182,7 +207,7 @@ async function retryRequest(
             lastError = error;
 
             console.warn(
-                `Firebase attempt ${attempt}/${retries} failed`,
+                `Supabase attempt ${attempt}/${retries} failed`,
                 error
             );
 
@@ -206,16 +231,12 @@ async function retryRequest(
 
 
 // ==========================================
-// Start
+// DOM Ready
 // ==========================================
 
 document.addEventListener(
     "DOMContentLoaded",
-    () => {
-
-        initializeReservation();
-
-    }
+    initializeReservation
 );
 
 
@@ -237,6 +258,10 @@ function initializeReservation() {
 
     setupPhoneInput();
 
+    console.log(
+        "Supabase reservation system initialized."
+    );
+
 }
 
 
@@ -244,9 +269,7 @@ function initializeReservation() {
 // Show Step
 // ==========================================
 
-function showStep(
-    stepNumber
-) {
+function showStep(stepNumber) {
 
     currentStep =
         Math.max(
@@ -277,7 +300,6 @@ function showStep(
     updateButtons();
 
 
-    // مرحله پنجم = ساخت ساعت‌ها
     if (
         currentStep === 5
     ) {
@@ -307,7 +329,7 @@ function updateProgress() {
     if (!progressBar) return;
 
     const percentage =
-        (currentStep / 5) * 100;
+        (currentStep / steps.length) * 100;
 
     progressBar.style.width =
         `${percentage}%`;
@@ -332,25 +354,12 @@ function updateButtons() {
     }
 
 
-    // مرحله اول
-    if (
+    prevBtn.style.display =
         currentStep === 1
-    ) {
-
-        prevBtn.style.display =
-            "none";
-
-    }
-
-    else {
-
-        prevBtn.style.display =
-            "flex";
-
-    }
+            ? "none"
+            : "flex";
 
 
-    // مرحله پنجم
     if (
         currentStep === 5
     ) {
@@ -430,14 +439,12 @@ prevBtn?.addEventListener(
 
 
 // ==========================================
-// Validate Current Step
+// Validation Router
 // ==========================================
 
 function validateCurrentStep() {
 
-    switch (
-        currentStep
-    ) {
+    switch (currentStep) {
 
         case 1:
             return validateCustomer();
@@ -544,9 +551,7 @@ function validateCustomer() {
 function setupPhoneInput() {
 
     const phone =
-        document.getElementById(
-            "phone"
-        );
+        document.getElementById("phone");
 
 
     if (!phone) return;
@@ -599,20 +604,21 @@ function setupBarberSelection() {
                         input.value;
 
 
-                    // تغییر آرایشگر
-                    // یعنی ساعت قبلی دیگر معتبر نیست
+                    /*
+                     * با تغییر آرایشگر
+                     * روز و ساعت قبلی دیگر
+                     * قابل اعتماد نیستند.
+                     */
 
-                    reservationData.date =
-                        "";
+                    reservationData.date = "";
 
-                    reservationData.displayDate =
-                        "";
+                    reservationData.displayDate = "";
 
-                    reservationData.time =
-                        "";
+                    reservationData.time = "";
 
 
                     createDays();
+
 
                     if (
                         currentStep === 5
@@ -733,12 +739,20 @@ function createDays() {
 
     for (
         let i = 0;
-        i < 30;
+        i < RESERVATION_CONFIG.daysToShow;
         i++
     ) {
 
         const date =
             new Date(today);
+
+
+        date.setHours(
+            0,
+            0,
+            0,
+            0
+        );
 
 
         date.setDate(
@@ -755,9 +769,7 @@ function createDays() {
 
 
         const dayCard =
-            document.createElement(
-                "div"
-            );
+            document.createElement("div");
 
 
         dayCard.className =
@@ -830,7 +842,11 @@ function createDays() {
                     displayDate;
 
 
-                // ساعت قبلی دیگر معتبر نیست
+                /*
+                 * انتخاب روز جدید
+                 * ساعت قبلی را پاک می‌کند.
+                 */
+
                 reservationData.time =
                     "";
 
@@ -927,12 +943,6 @@ async function createTimes() {
 
     try {
 
-        /*
-         * با retry کوتاه تلاش می‌کنیم
-         * خطاهای موقتی شبکه باعث شکست
-         * فوری نشوند.
-         */
-
         bookedTimes =
             await retryRequest(
                 () =>
@@ -944,9 +954,7 @@ async function createTimes() {
 
 
         if (
-            !Array.isArray(
-                bookedTimes
-            )
+            !Array.isArray(bookedTimes)
         ) {
 
             bookedTimes = [];
@@ -958,7 +966,7 @@ async function createTimes() {
     catch (error) {
 
         console.error(
-            "Load booked times error:",
+            "Supabase booked times error:",
             error
         );
 
@@ -990,22 +998,11 @@ async function createTimes() {
     timesContainer.innerHTML = "";
 
 
-    /*
-     * بسیار مهم:
-     *
-     * همه ساعت‌ها ساخته می‌شوند.
-     *
-     * ساعت رزروشده حذف نمی‌شود.
-     * فقط کلاس booked می‌گیرد.
-     */
-
     workingHours.forEach(
         time => {
 
             const card =
-                document.createElement(
-                    "div"
-                );
+                document.createElement("div");
 
 
             card.className =
@@ -1026,7 +1023,7 @@ async function createTimes() {
 
 
             // ==================================
-            // رزرو شده
+            // Booked
             // ==================================
 
             if (isBooked) {
@@ -1047,7 +1044,7 @@ async function createTimes() {
                     <i class="fa-solid fa-lock"></i>
 
                     <span>
-                        ${time}
+                        ${escapeHTML(time)}
                     </span>
 
                     <small>
@@ -1056,11 +1053,6 @@ async function createTimes() {
 
                 `;
 
-
-                /*
-                 * عمداً هیچ click event
-                 * برای این کارت ثبت نمی‌کنیم.
-                 */
 
                 timesContainer.appendChild(
                     card
@@ -1072,7 +1064,7 @@ async function createTimes() {
 
 
             // ==================================
-            // ساعت آزاد
+            // Available
             // ==================================
 
             card.innerHTML = `
@@ -1080,7 +1072,7 @@ async function createTimes() {
                 <i class="fa-regular fa-clock"></i>
 
                 <span>
-                    ${time}
+                    ${escapeHTML(time)}
                 </span>
 
             `;
@@ -1102,7 +1094,6 @@ async function createTimes() {
                 "click",
                 () => {
 
-                    // فقط ساعت‌های آزاد
                     document
                         .querySelectorAll(
                             ".time-card:not(.booked)"
@@ -1144,9 +1135,7 @@ async function createTimes() {
 // Time Message
 // ==========================================
 
-function showTimeMessage(
-    message
-) {
+function showTimeMessage(message) {
 
     if (!timesContainer) return;
 
@@ -1189,9 +1178,9 @@ function validateTime() {
 
 
 // ==========================================
-// Final Submit
+// FINAL SUBMIT
 // ==========================================
-
+  
 reserveForm?.addEventListener(
     "submit",
     async event => {
@@ -1199,7 +1188,6 @@ reserveForm?.addEventListener(
         event.preventDefault();
 
 
-        // جلوگیری از ثبت دوباره
         if (
             submitBtn?.disabled
         ) {
@@ -1210,7 +1198,7 @@ reserveForm?.addEventListener(
 
 
         /*
-         * آخرین بررسی‌ها
+         * آخرین Validation
          */
 
         if (
@@ -1227,18 +1215,16 @@ reserveForm?.addEventListener(
 
 
         /*
-         * اطلاعات نهایی را جدا می‌کنیم
-         * تا در زمان request تغییر نکند.
+         * جلوگیری از تغییر اطلاعات
+         * در زمان ارسال درخواست
          */
 
         const finalData = {
+
             ...reservationData
+
         };
 
-
-        /*
-         * جلوگیری از کلیک چندباره
-         */
 
         submitBtn.disabled =
             true;
@@ -1256,10 +1242,11 @@ reserveForm?.addEventListener(
         try {
 
             /*
-             * ثبت اصلی رزرو
+             * مرحله ۱:
+             * ثبت رزرو در Supabase
              *
-             * این قسمت باید در firebase.js
-             * با Transaction انجام شود.
+             * Unique Index دیتابیس
+             * جلوی رزرو همزمان را می‌گیرد.
              */
 
             const reservationId =
@@ -1272,10 +1259,8 @@ reserveForm?.addEventListener(
 
 
             /*
-             * ذخیره مشتری یک عملیات جانبی است.
-             *
-             * اگر ذخیره customer شکست خورد،
-             * رزرو اصلی را ناموفق اعلام نمی‌کنیم.
+             * مرحله ۲:
+             * ثبت / بروزرسانی مشتری
              */
 
             try {
@@ -1291,8 +1276,14 @@ reserveForm?.addEventListener(
 
             catch (customerError) {
 
+                /*
+                 * اگر پروفایل مشتری
+                 * شکست خورد، رزرو اصلی
+                 * همچنان موفق محسوب می‌شود.
+                 */
+
                 console.warn(
-                    "Customer profile save failed:",
+                    "Customer save failed:",
                     customerError
                 );
 
@@ -1300,7 +1291,8 @@ reserveForm?.addEventListener(
 
 
             /*
-             * رزرو با موفقیت ثبت شده.
+             * مرحله ۳:
+             * نمایش موفقیت
              */
 
             showSuccess(
@@ -1309,58 +1301,94 @@ reserveForm?.addEventListener(
             );
 
 
-            /*
-             * بعد از ثبت موفق،
-             * اطلاعات رزرو را نگه می‌داریم
-             * ولی دیگر اجازه ارسال مجدد نمی‌دهیم.
-             */
-
             reserveForm.dataset.submitted =
                 "true";
 
         }
 
-catch (error) {
+        catch (error) {
 
-    console.error(
-        "Reservation failed:",
-        error
-    );
-
-    if (
-        error.code ===
-        "already-exists"
-    ) {
-
-        alert(
-            "متأسفانه این ساعت همین الان توسط شخص دیگری رزرو شد. لطفاً یک ساعت دیگر انتخاب کنید."
-        );
-
-        reservationData.time = "";
-
-        showStep(5);
-
-        return;
-
-    }
+            console.error(
+                "Reservation failed:",
+                error
+            );
 
 
-    alert(
-        "خطای واقعی ثبت رزرو:\n\n" +
-        "Code: " +
-        (error.code || "unknown") +
-        "\n\n" +
-        "Message: " +
-        (error.message || "خطای نامشخص")
-    );
+            /*
+             * Unique Constraint
+             *
+             * اگر دو نفر همزمان
+             * یک ساعت را بگیرند،
+             * Supabase درخواست دوم
+             * را Reject می‌کند.
+             */
 
-} 
+            if (
+                isDuplicateReservationError(
+                    error
+                )
+            ) {
+
+                alert(
+                    "متأسفانه این ساعت همین الان توسط شخص دیگری رزرو شد. لطفاً یک ساعت دیگر انتخاب کنید."
+                );
+
+
+                reservationData.time =
+                    "";
+
+
+                showStep(5);
+
+
+                return;
+
+            }
+
+
+            /*
+             * خطای شبکه
+             */
+
+            if (
+                isNetworkError(error)
+            ) {
+
+                alert(
+                    "ارتباط با سامانه رزرو برقرار نشد.\n\nلطفاً اینترنت خود را بررسی کنید و دوباره تلاش کنید."
+                );
+
+                return;
+
+            }
+
+
+            /*
+             * خطای عمومی
+             */
+
+            alert(
+                "خطایی هنگام ثبت رزرو رخ داد.\n\n" +
+                "Code: " +
+                (
+                    error?.code ||
+                    "unknown"
+                ) +
+                "\n\n" +
+                "Message: " +
+                (
+                    error?.message ||
+                    "خطای نامشخص"
+                )
+            );
+
+        }
 
         finally {
 
             /*
-             * اگر موفق شده باشیم،
-             * دکمه همچنان غیرفعال می‌ماند.
+             * اگر موفق نشده باشیم،
+             * دکمه دوباره فعال می‌شود.
              */
 
             if (
@@ -1388,15 +1416,67 @@ catch (error) {
 
 
 // ==========================================
-// Detect Network / Firebase Errors
+// Duplicate Reservation Detection
 // ==========================================
 
-function isNetworkError(
+function isDuplicateReservationError(
     error
 ) {
 
+    if (!error) return false;
+
+
+    const code =
+        String(
+            error.code || ""
+        ).toLowerCase();
+
+
+    const message =
+        String(
+            error.message || ""
+        ).toLowerCase();
+
+
+    /*
+     * PostgreSQL unique violation:
+     *
+     * 23505
+     */
+
+    return (
+
+        code === "23505" ||
+
+        code.includes("23505") ||
+
+        message.includes(
+            "duplicate"
+        ) ||
+
+        message.includes(
+            "unique"
+        ) ||
+
+        message.includes(
+            "reservations_active_slot_unique"
+        )
+
+    );
+
+}
+
+
+// ==========================================
+// Network Error Detection
+// ==========================================
+
+function isNetworkError(error) {
+
     if (!error) {
+
         return false;
+
     }
 
 
@@ -1414,41 +1494,21 @@ function isNetworkError(
 
     return (
 
-        code.includes(
-            "unavailable"
-        ) ||
+        code.includes("network") ||
 
-        code.includes(
-            "network"
-        ) ||
+        code.includes("timeout") ||
 
-        code.includes(
-            "deadline"
-        ) ||
+        code.includes("unavailable") ||
 
-        code.includes(
-            "failed-precondition"
-        ) ||
+        message.includes("network") ||
 
-        message.includes(
-            "network"
-        ) ||
+        message.includes("offline") ||
 
-        message.includes(
-            "offline"
-        ) ||
+        message.includes("failed to fetch") ||
 
-        message.includes(
-            "failed to fetch"
-        ) ||
+        message.includes("timeout") ||
 
-        message.includes(
-            "timeout"
-        ) ||
-
-        message.includes(
-            "unavailable"
-        )
+        message.includes("fetch")
 
     );
 
@@ -1456,7 +1516,7 @@ function isNetworkError(
 
 
 // ==========================================
-// Success
+// Success Modal
 // ==========================================
 
 function showSuccess(
@@ -1477,47 +1537,95 @@ function showSuccess(
     successDetails.innerHTML = `
 
         <div>
-            <strong>نام مشتری:</strong>
+
+            <strong>
+                نام مشتری:
+            </strong>
+
             ${escapeHTML(data.firstName)}
             ${escapeHTML(data.lastName)}
+
         </div>
 
+
         <div>
-            <strong>شماره موبایل:</strong>
+
+            <strong>
+                شماره موبایل:
+            </strong>
+
             ${escapeHTML(data.phone)}
+
         </div>
 
+
         <div>
-            <strong>آرایشگر:</strong>
+
+            <strong>
+                آرایشگر:
+            </strong>
+
             ${escapeHTML(data.barberName)}
+
         </div>
 
+
         <div>
-            <strong>خدمت:</strong>
+
+            <strong>
+                خدمت:
+            </strong>
+
             ${escapeHTML(data.service)}
+
         </div>
 
+
         <div>
-            <strong>مدت خدمت:</strong>
+
+            <strong>
+                مدت خدمت:
+            </strong>
+
             ${escapeHTML(
                 data.serviceDuration
             )}
+
             دقیقه
+
         </div>
 
+
         <div>
-            <strong>روز:</strong>
+
+            <strong>
+                روز:
+            </strong>
+
             ${escapeHTML(data.displayDate)}
+
         </div>
 
+
         <div>
-            <strong>ساعت:</strong>
+
+            <strong>
+                ساعت:
+            </strong>
+
             ${escapeHTML(data.time)}
+
         </div>
 
+
         <div>
-            <strong>کد رزرو:</strong>
+
+            <strong>
+                کد رزرو:
+            </strong>
+
             ${escapeHTML(reservationId)}
+
         </div>
 
     `;
@@ -1538,9 +1646,7 @@ function showSuccess(
 // Escape HTML
 // ==========================================
 
-function escapeHTML(
-    value
-) {
+function escapeHTML(value) {
 
     return String(
         value ?? ""
@@ -1570,15 +1676,14 @@ function escapeHTML(
 
 
 // ==========================================
-// Format ISO Date
+// ISO Date
 // ==========================================
 
-function formatISODate(
-    date
-) {
+function formatISODate(date) {
 
     const year =
         date.getFullYear();
+
 
     const month =
         String(
@@ -1587,6 +1692,7 @@ function formatISODate(
             2,
             "0"
         );
+
 
     const day =
         String(
@@ -1606,18 +1712,20 @@ function formatISODate(
 // Persian Date
 // ==========================================
 
-function formatPersianDate(
-    date
-) {
+function formatPersianDate(date) {
 
     try {
 
         return new Intl.DateTimeFormat(
             "fa-IR-u-ca-persian",
             {
+
                 year: "numeric",
+
                 month: "long",
+
                 day: "numeric"
+
             }
         ).format(date);
 
@@ -1635,7 +1743,7 @@ function formatPersianDate(
 
 
 // ==========================================
-// Prevent accidental refresh
+// Prevent Accidental Refresh
 // ==========================================
 
 window.addEventListener(
@@ -1643,11 +1751,15 @@ window.addEventListener(
     event => {
 
         if (
+
             currentStep > 1 &&
+
             !successModal?.classList.contains(
                 "active"
             ) &&
+
             !reserveForm?.dataset.submitted
+
         ) {
 
             event.preventDefault();
@@ -1663,7 +1775,5 @@ window.addEventListener(
 // ==========================================
 
 console.log(
-    "Salon Mojezeh reservation system ready."
+    "Salon Mojezeh - Supabase reservation system ready."
 );
-
-     
