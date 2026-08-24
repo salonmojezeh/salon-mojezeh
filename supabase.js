@@ -1,7 +1,7 @@
 // ==========================================
 // Salon Mojezeh
 // supabase.js
-// Central Database Layer
+// Central Supabase Client
 // ==========================================
 
 "use strict";
@@ -17,30 +17,23 @@ import { createClient } from
 const SUPABASE_URL =
     "https://erfzhyvraenceykiwlci.supabase.co";
 
-const SUPABASE_ANON_KEY =
-    "sb_publishable_uRbq30GBNHcXwGrinzhx1Q_5-egxs5_";
+const SUPABASE_PUBLISHABLE_KEY =
+    "YOUR_PUBLISHABLE_KEY_HERE";
 
 
 // ==========================================
-// Supabase Client
+// Create Client
 // ==========================================
 
-export const supabase =
+const supabase =
     createClient(
         SUPABASE_URL,
-        SUPABASE_ANON_KEY,
-        {
-            auth: {
-                persistSession: true,
-                autoRefreshToken: true,
-                detectSessionInUrl: true
-            }
-        }
+        SUPABASE_PUBLISHABLE_KEY
     );
 
 
 // ==========================================
-// Table Names
+// Database Tables
 // ==========================================
 
 const TABLES = {
@@ -60,7 +53,7 @@ const TABLES = {
 // Reservation Status
 // ==========================================
 
-export const RESERVATION_STATUS = {
+const RESERVATION_STATUS = {
 
     RESERVED: "reserved",
 
@@ -74,172 +67,33 @@ export const RESERVATION_STATUS = {
 
 
 // ==========================================
-// Working Hours
+// Get Available Barbers
 // ==========================================
 
-export const WORKING_HOURS = [
+async function getBarbers() {
 
-    "09:00",
-    "10:00",
-    "11:00",
-    "12:00",
-    "13:00",
-    "14:00",
-    "15:00",
-    "16:00",
-    "17:00",
-    "18:00",
-    "19:00",
-    "20:00",
-    "21:00"
+    const {
+        data,
+        error
+    } = await supabase
 
-];
+        .from(TABLES.barbers)
 
+        .select("*")
 
-// ==========================================
-// Services
-// ==========================================
+        .eq("active", true)
 
-export const DEFAULT_SERVICES = [
+        .order("name", {
+            ascending: true
+        });
 
-    {
-        id: "haircut",
-        name: "اصلاح سر و صورت",
-        duration: 60,
-        image: "images/services/haircut.jpg"
-    },
-
-    {
-        id: "style",
-        name: "حالت مو",
-        duration: 30,
-        image: "images/services/style.jpg"
-    },
-
-    {
-        id: "line",
-        name: "خط و سایه",
-        duration: 30,
-        image: "images/services/line.jpg"
-    },
-
-    {
-        id: "beard",
-        name: "سایه ریش",
-        duration: 30,
-        image: "images/services/beard.jpg"
-    }
-
-];
-
-
-// ==========================================
-// Default Barbers
-// ==========================================
-
-export const DEFAULT_BARBERS = [
-
-    {
-        id: "artin",
-        name: "سبحان",
-        role: "آرایشگر",
-        active: true
-    },
-
-    {
-        id: "barber2",
-        name: "سجاد",
-        role: "آرایشگر",
-        active: true
-    }
-
-];
-
-
-// ==========================================
-// Utility
-// ==========================================
-
-function throwIfError(error) {
 
     if (error) {
-
-        console.error(
-            "Supabase Error:",
-            error
-        );
 
         throw error;
 
     }
 
-}
-
-
-// ==========================================
-// Test Connection
-// ==========================================
-
-export async function testSupabaseConnection() {
-
-    const { error } =
-        await supabase
-            .from(TABLES.reservations)
-            .select("id")
-            .limit(1);
-
-    throwIfError(error);
-
-    return true;
-
-}
-
-
-// ==========================================
-// GET BOOKINGS FOR BARBER + DATE
-// ==========================================
-
-export async function getReservationsForDate(
-    barberId,
-    date
-) {
-
-    const { data, error } =
-        await supabase
-            .from(TABLES.reservations)
-            .select(`
-                id,
-                first_name,
-                last_name,
-                phone,
-                barber_id,
-                barber_name,
-                service,
-                service_duration,
-                date,
-                display_date,
-                time,
-                status,
-                source,
-                created_at,
-                cancelled_at
-            `)
-            .eq(
-                "barber_id",
-                barberId
-            )
-            .eq(
-                "date",
-                date
-            )
-            .order(
-                "time",
-                {
-                    ascending: true
-                }
-            );
-
-    throwIfError(error);
 
     return data || [];
 
@@ -247,91 +101,33 @@ export async function getReservationsForDate(
 
 
 // ==========================================
-// GET BOOKED TIMES
+// Get Services
 // ==========================================
 
-export async function loadBookedTimes(
-    barberId,
-    date
-) {
+async function getServices() {
 
-    const reservations =
-        await getReservationsForDate(
-            barberId,
-            date
-        );
+    const {
+        data,
+        error
+    } = await supabase
 
+        .from(TABLES.services)
 
-    return reservations
+        .select("*")
 
-        .filter(
-            reservation =>
-                reservation.status ===
-                RESERVATION_STATUS.RESERVED
-        )
+        .eq("active", true)
 
-        .map(
-            reservation =>
-                reservation.time
-        );
-
-}
+        .order("name", {
+            ascending: true
+        });
 
 
-// ==========================================
-// GET ALL RESERVATIONS
-// ==========================================
+    if (error) {
 
-export async function getAllReservations(
-    startDate = null,
-    endDate = null
-) {
-
-    let query =
-        supabase
-            .from(TABLES.reservations)
-            .select("*")
-            .order(
-                "date",
-                {
-                    ascending: true
-                }
-            )
-            .order(
-                "time",
-                {
-                    ascending: true
-                }
-            );
-
-
-    if (startDate) {
-
-        query =
-            query.gte(
-                "date",
-                startDate
-            );
+        throw error;
 
     }
 
-
-    if (endDate) {
-
-        query =
-            query.lte(
-                "date",
-                endDate
-            );
-
-    }
-
-
-    const { data, error } =
-        await query;
-
-
-    throwIfError(error);
 
     return data || [];
 
@@ -339,39 +135,64 @@ export async function getAllReservations(
 
 
 // ==========================================
-// GET SINGLE RESERVATION
+// Get Booked Times
 // ==========================================
 
-export async function getReservation(
-    reservationId
+async function loadBookedTimes(
+    barberId,
+    date
 ) {
 
-    const { data, error } =
-        await supabase
-            .from(TABLES.reservations)
-            .select("*")
-            .eq(
-                "id",
-                reservationId
-            )
-            .maybeSingle();
+    const {
+        data,
+        error
+    } = await supabase
 
-    throwIfError(error);
+        .from(TABLES.reservations)
 
-    return data || null;
+        .select("time")
+
+        .eq("barber_id", barberId)
+
+        .eq("date", date)
+
+        .eq(
+            "status",
+            RESERVATION_STATUS.RESERVED
+        );
+
+
+    if (error) {
+
+        throw error;
+
+    }
+
+
+    return (data || [])
+        .map(item => item.time)
+        .filter(Boolean);
 
 }
 
 
 // ==========================================
-// ADD RESERVATION
+// Create Reservation
 // ==========================================
 
-export async function addReservation(
+async function addReservation(
     reservationData
 ) {
 
-    const reservation = {
+    /*
+     * این تابع بعداً از یک Database Function
+     * امن استفاده خواهد کرد تا جلوگیری از
+     * رزرو همزمان یک ساعت انجام شود.
+     *
+     * فعلاً ساختار درخواست را آماده می‌کنیم.
+     */
+
+    const payload = {
 
         first_name:
             reservationData.firstName,
@@ -414,92 +235,31 @@ export async function addReservation(
     };
 
 
-    /*
-     * قبل از ثبت، یک بررسی اولیه انجام می‌دهیم.
-     *
-     * این بررسی برای UX است.
-     * جلوگیری قطعی از دوباره‌رزرو باید
-     * در خود دیتابیس نیز enforce شود.
-     */
+    const {
+        data,
+        error
+    } = await supabase
 
-    const existing =
-        await supabase
-            .from(TABLES.reservations)
-            .select("id,status")
-            .eq(
-                "barber_id",
-                reservation.barber_id
-            )
-            .eq(
-                "date",
-                reservation.date
-            )
-            .eq(
-                "time",
-                reservation.time
-            )
-            .eq(
-                "status",
-                RESERVATION_STATUS.RESERVED
-            )
-            .limit(1);
+        .from(TABLES.reservations)
 
+        .insert(payload)
 
-    throwIfError(existing.error);
+        .select("id")
 
+        .single();
 
-    if (
-        existing.data &&
-        existing.data.length > 0
-    ) {
-
-        const error =
-            new Error(
-                "این ساعت قبلاً رزرو شده است."
-            );
-
-        error.code =
-            "already-exists";
-
-        throw error;
-
-    }
-
-
-    const { data, error } =
-        await supabase
-            .from(TABLES.reservations)
-            .insert(
-                reservation
-            )
-            .select()
-            .single();
-
-
-    /*
-     * اگر در دیتابیس برای
-     * آرایشگر + تاریخ + ساعت
-     * Unique Constraint بسازیم،
-     * خطای duplicate نیز اینجا
-     * قابل تشخیص خواهد بود.
-     */
 
     if (error) {
 
-        const message =
-            String(
-                error.message || ""
-            ).toLowerCase();
-
+        /*
+         * 23505 = duplicate key
+         *
+         * این خطا برای زمانی است که
+         * ساعت قبلاً رزرو شده باشد.
+         */
 
         if (
-            error.code === "23505" ||
-            message.includes(
-                "duplicate"
-            ) ||
-            message.includes(
-                "unique"
-            )
+            error.code === "23505"
         ) {
 
             const duplicateError =
@@ -520,130 +280,177 @@ export async function addReservation(
     }
 
 
-    return data;
+    return data.id;
 
 }
 
 
 // ==========================================
-// CANCEL RESERVATION
+// Save / Update Customer
 // ==========================================
 
-export async function cancelReservation(
-    reservationId
+async function saveCustomer(
+    reservationData
 ) {
 
-    const { data, error } =
-        await supabase
-            .from(TABLES.reservations)
-            .update({
+    const customer = {
 
-                status:
-                    RESERVATION_STATUS.CANCELLED,
+        first_name:
+            reservationData.firstName,
 
-                cancelled_at:
-                    new Date().toISOString()
+        last_name:
+            reservationData.lastName,
+
+        phone:
+            reservationData.phone,
+
+        last_visit:
+            reservationData.date,
+
+        last_barber_id:
+            reservationData.barberId,
+
+        last_barber_name:
+            reservationData.barberName,
+
+        last_service:
+            reservationData.service
+
+    };
+
+
+    /*
+     * اگر شماره موبایل وجود داشته باشد،
+     * اطلاعات مشتری به‌روزرسانی می‌شود.
+     *
+     * اگر وجود نداشته باشد،
+     * مشتری جدید ساخته می‌شود.
+     */
+
+    const {
+        data: existingCustomer,
+        error: findError
+    } = await supabase
+
+        .from(TABLES.customers)
+
+        .select("id, visit_count")
+
+        .eq("phone", reservationData.phone)
+
+        .maybeSingle();
+
+
+    if (findError) {
+
+        throw findError;
+
+    }
+
+
+    if (!existingCustomer) {
+
+        const {
+            data,
+            error
+        } = await supabase
+
+            .from(TABLES.customers)
+
+            .insert({
+
+                ...customer,
+
+                visit_count: 1,
+
+                favorite_model: "",
+
+                free_gift: false,
+
+                note: ""
 
             })
-            .eq(
-                "id",
-                reservationId
-            )
-            .select()
+
+            .select("id")
+
             .single();
 
 
-    throwIfError(error);
+        if (error) {
 
-    return data;
+            throw error;
 
-}
-
-
-// ==========================================
-// COMPLETE RESERVATION
-// ==========================================
-
-export async function completeReservation(
-    reservationId
-) {
-
-    const { data, error } =
-        await supabase
-            .from(TABLES.reservations)
-            .update({
-
-                status:
-                    RESERVATION_STATUS.COMPLETED
-
-            })
-            .eq(
-                "id",
-                reservationId
-            )
-            .select()
-            .single();
+        }
 
 
-    throwIfError(error);
+        return data.id;
 
-    return data;
-
-}
+    }
 
 
-// ==========================================
-// MARK NO-SHOW
-// ==========================================
+    const {
+        error
+    } = await supabase
 
-export async function markReservationNoShow(
-    reservationId
-) {
+        .from(TABLES.customers)
 
-    const { data, error } =
-        await supabase
-            .from(TABLES.reservations)
-            .update({
+        .update({
 
-                status:
-                    RESERVATION_STATUS.NO_SHOW
+            ...customer,
 
-            })
-            .eq(
-                "id",
-                reservationId
-            )
-            .select()
-            .single();
+            visit_count:
+                Number(
+                    existingCustomer.visit_count || 0
+                ) + 1
+
+        })
+
+        .eq(
+            "id",
+            existingCustomer.id
+        );
 
 
-    throwIfError(error);
+    if (error) {
 
-    return data;
+        throw error;
+
+    }
+
+
+    return existingCustomer.id;
 
 }
 
 
 // ==========================================
-// CUSTOMER
+// Get Customer
 // ==========================================
 
-export async function getCustomer(
+async function getCustomer(
     phone
 ) {
 
-    const { data, error } =
-        await supabase
-            .from(TABLES.customers)
-            .select("*")
-            .eq(
-                "phone",
-                phone
-            )
-            .maybeSingle();
+    const {
+        data,
+        error
+    } = await supabase
+
+        .from(TABLES.customers)
+
+        .select("*")
+
+        .eq("phone", phone)
+
+        .maybeSingle();
 
 
-    throwIfError(error);
+    if (error) {
+
+        throw error;
+
+    }
+
 
     return data || null;
 
@@ -651,108 +458,35 @@ export async function getCustomer(
 
 
 // ==========================================
-// SAVE CUSTOMER
+// Get All Customers
+// مخصوص پنل مدیریت
 // ==========================================
 
-export async function saveCustomer(
-    reservationData
-) {
+async function getAllCustomers() {
 
-    const existing =
-        await getCustomer(
-            reservationData.phone
+    const {
+        data,
+        error
+    } = await supabase
+
+        .from(TABLES.customers)
+
+        .select("*")
+
+        .order(
+            "last_visit",
+            {
+                ascending: false
+            }
         );
 
 
-    /*
-     * فعلاً ساختار را با
-     * ستون‌های پایه نگه می‌داریم.
-     *
-     * وقتی جدول customers را نهایی کردیم،
-     * فیلدهای باشگاه مشتریان را نیز
-     * به همین تابع اضافه می‌کنیم.
-     */
+    if (error) {
 
-
-    if (!existing) {
-
-        const customer = {
-
-            first_name:
-                reservationData.firstName,
-
-            last_name:
-                reservationData.lastName,
-
-            phone:
-                reservationData.phone
-
-        };
-
-
-        const { data, error } =
-            await supabase
-                .from(TABLES.customers)
-                .insert(
-                    customer
-                )
-                .select()
-                .single();
-
-
-        throwIfError(error);
-
-        return data;
+        throw error;
 
     }
 
-
-    const { data, error } =
-        await supabase
-            .from(TABLES.customers)
-            .update({
-
-                first_name:
-                    reservationData.firstName,
-
-                last_name:
-                    reservationData.lastName
-
-            })
-            .eq(
-                "phone",
-                reservationData.phone
-            )
-            .select()
-            .single();
-
-
-    throwIfError(error);
-
-    return data;
-
-}
-
-
-// ==========================================
-// GET ALL CUSTOMERS
-// ==========================================
-
-export async function getAllCustomers() {
-
-    const { data, error } =
-        await supabase
-            .from(TABLES.customers)
-            .select("*")
-            .order(
-                "created_at",
-                {
-                    ascending: false
-                }
-            );
-
-
-    throwIfError(error);
 
     return data || [];
 
@@ -760,242 +494,268 @@ export async function getAllCustomers() {
 
 
 // ==========================================
-// BARBERS
+// Get Reservations
 // ==========================================
 
-export async function getBarbers() {
+async function getReservations({
+    startDate = null,
+    endDate = null,
+    barberId = null,
+    status = null
+} = {}) {
 
-    const { data, error } =
-        await supabase
-            .from(TABLES.barbers)
-            .select("*")
-            .eq(
-                "active",
-                true
+    let query =
+        supabase
+
+            .from(TABLES.reservations)
+
+            .select("*");
+
+
+    if (startDate) {
+
+        query =
+            query.gte(
+                "date",
+                startDate
             );
 
+    }
 
-    /*
-     * اگر جدول barbers هنوز ساخته
-     * یا populated نشده باشد،
-     * فعلاً آرایشگرهای پیش‌فرض
-     * سیستم استفاده می‌شوند.
-     */
 
-    if (
+    if (endDate) {
+
+        query =
+            query.lte(
+                "date",
+                endDate
+            );
+
+    }
+
+
+    if (barberId) {
+
+        query =
+            query.eq(
+                "barber_id",
+                barberId
+            );
+
+    }
+
+
+    if (status) {
+
+        query =
+            query.eq(
+                "status",
+                status
+            );
+
+    }
+
+
+    const {
+        data,
         error
-    ) {
+    } = await query
 
-        console.warn(
-            "Barbers table unavailable. Using defaults."
+        .order(
+            "date",
+            {
+                ascending: true
+            }
+        )
+
+        .order(
+            "time",
+            {
+                ascending: true
+            }
         );
 
-        return [
-            ...DEFAULT_BARBERS
-        ];
+
+    if (error) {
+
+        throw error;
 
     }
 
 
-    if (
-        !data ||
-        data.length === 0
-    ) {
-
-        return [
-            ...DEFAULT_BARBERS
-        ];
-
-    }
-
-
-    return data;
+    return data || [];
 
 }
 
 
 // ==========================================
-// SERVICES
+// Get Barber Reservations
+// مخصوص پنل مدیریت
 // ==========================================
 
-export async function getServices() {
-
-    const { data, error } =
-        await supabase
-            .from(TABLES.services)
-            .select("*")
-            .eq(
-                "active",
-                true
-            );
-
-
-    if (
-        error
-    ) {
-
-        console.warn(
-            "Services table unavailable. Using defaults."
-        );
-
-        return [
-            ...DEFAULT_SERVICES
-        ];
-
-    }
-
-
-    if (
-        !data ||
-        data.length === 0
-    ) {
-
-        return [
-            ...DEFAULT_SERVICES
-        ];
-
-    }
-
-
-    return data;
-
-}
-
-
-// ==========================================
-// GET BARBER RESERVATIONS
-// ==========================================
-
-export async function getBarberReservations(
+async function getBarberReservations(
     barberId,
     startDate,
     endDate
 ) {
 
-    const { data, error } =
-        await supabase
-            .from(TABLES.reservations)
-            .select("*")
-            .eq(
-                "barber_id",
-                barberId
-            )
-            .gte(
-                "date",
-                startDate
-            )
-            .lte(
-                "date",
-                endDate
-            )
-            .order(
-                "date",
-                {
-                    ascending: true
-                }
-            )
-            .order(
-                "time",
-                {
-                    ascending: true
-                }
-            );
+    return getReservations({
 
+        barberId,
 
-    throwIfError(error);
+        startDate,
 
-    return data || [];
+        endDate
+
+    });
 
 }
 
 
 // ==========================================
-// ADMIN HELPERS
+// Get All Reservations
+// مخصوص پنل مدیریت
 // ==========================================
 
-export async function updateReservationStatus(
-    reservationId,
-    status
+async function getAllReservations(
+    startDate,
+    endDate
 ) {
 
-    const allowedStatuses = [
+    return getReservations({
 
-        RESERVATION_STATUS.RESERVED,
+        startDate,
 
-        RESERVATION_STATUS.CANCELLED,
+        endDate
 
-        RESERVATION_STATUS.COMPLETED,
-
-        RESERVATION_STATUS.NO_SHOW
-
-    ];
-
-
-    if (
-        !allowedStatuses.includes(
-            status
-        )
-    ) {
-
-        throw new Error(
-            "وضعیت رزرو معتبر نیست."
-        );
-
-    }
-
-
-    const updateData = {
-
-        status
-
-    };
-
-
-    if (
-        status ===
-        RESERVATION_STATUS.CANCELLED
-    ) {
-
-        updateData.cancelled_at =
-            new Date().toISOString();
-
-    }
-
-
-    const { data, error } =
-        await supabase
-            .from(TABLES.reservations)
-            .update(
-                updateData
-            )
-            .eq(
-                "id",
-                reservationId
-            )
-            .select()
-            .single();
-
-
-    throwIfError(error);
-
-    return data;
+    });
 
 }
 
 
 // ==========================================
-// Export Tables
+// Cancel Reservation
+// ==========================================
+
+async function cancelReservation(
+    reservationId
+) {
+
+    const {
+        error
+    } = await supabase
+
+        .from(TABLES.reservations)
+
+        .update({
+
+            status:
+                RESERVATION_STATUS.CANCELLED,
+
+            cancelled_at:
+                new Date().toISOString()
+
+        })
+
+        .eq(
+            "id",
+            reservationId
+        );
+
+
+    if (error) {
+
+        throw error;
+
+    }
+
+
+    return true;
+
+}
+
+
+// ==========================================
+// Complete Reservation
+// ==========================================
+
+async function completeReservation(
+    reservationId
+) {
+
+    const {
+        error
+    } = await supabase
+
+        .from(TABLES.reservations)
+
+        .update({
+
+            status:
+                RESERVATION_STATUS.COMPLETED,
+
+            completed_at:
+                new Date().toISOString()
+
+        })
+
+        .eq(
+            "id",
+            reservationId
+        );
+
+
+    if (error) {
+
+        throw error;
+
+    }
+
+
+    return true;
+
+}
+
+
+// ==========================================
+// Export
 // ==========================================
 
 export {
-    TABLES
+
+    supabase,
+
+    TABLES,
+
+    RESERVATION_STATUS,
+
+    getBarbers,
+
+    getServices,
+
+    loadBookedTimes,
+
+    addReservation,
+
+    saveCustomer,
+
+    getCustomer,
+
+    getAllCustomers,
+
+    getReservations,
+
+    getBarberReservations,
+
+    getAllReservations,
+
+    cancelReservation,
+
+    completeReservation
+
 };
 
 
-// ==========================================
-// Ready
-// ==========================================
-
 console.log(
-    "Salon Mojezeh - Supabase database layer loaded."
+    "Salon Mojezeh - Supabase Client Ready"
 );
