@@ -18,7 +18,7 @@ const SUPABASE_URL =
     "https://erfzhyvraenceykiwlci.supabase.co";
 
 const SUPABASE_PUBLISHABLE_KEY =
-    "YOUR_PUBLISHABLE_KEY_HERE";
+    "sb_publishable_uRbq30GBNHcXwGrinzhx1Q_5-egxs5_";
 
 
 // ==========================================
