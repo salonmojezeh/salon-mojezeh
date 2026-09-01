@@ -22,7 +22,7 @@ const SUPABASE_PUBLISHABLE_KEY =
 
 
 // ==========================================
-// Create Client
+// Supabase Client
 // ==========================================
 
 const supabase =
@@ -61,7 +61,7 @@ const RESERVATION_STATUS = {
 
 
 // ==========================================
-// Get Barbers
+// Get Active Barbers
 // ==========================================
 
 async function getBarbers() {
@@ -74,7 +74,7 @@ async function getBarbers() {
         .from(TABLES.barbers)
 
         .select(
-            "id,name,role,image_url,active"
+            "id,name,role,image_url,active,created_at"
         )
 
         .eq(
@@ -103,7 +103,7 @@ async function getBarbers() {
 
 
 // ==========================================
-// Get Services
+// Get Active Services
 // ==========================================
 
 async function getServices() {
@@ -116,7 +116,7 @@ async function getServices() {
         .from(TABLES.services)
 
         .select(
-            "id,service_key,name,duration,image_url,active"
+            "id,service_key,name,duration,image_url,active,created_at"
         )
 
         .eq(
@@ -145,7 +145,7 @@ async function getServices() {
 
 
 // ==========================================
-// Get Booked Reservations
+// Get Reservations For Barber + Date
 // ==========================================
 
 async function loadBookedTimes(
@@ -161,7 +161,16 @@ async function loadBookedTimes(
         .from(TABLES.reservations)
 
         .select(
-            "time,service_duration"
+            `
+            id,
+            barber_id,
+            date,
+            time,
+            service_id,
+            service,
+            service_duration,
+            status
+            `
         )
 
         .eq(
@@ -188,6 +197,72 @@ async function loadBookedTimes(
 
 
     return data || [];
+
+}
+
+
+// ==========================================
+// Check Reservation Overlap
+// ==========================================
+//
+// این تابع سمت کلاینت برای تجربه کاربری است.
+// کنترل نهایی باید در دیتابیس/RLS نیز انجام شود.
+//
+
+async function checkReservationConflict(
+    barberId,
+    date,
+    time,
+    duration
+) {
+
+    const bookedReservations =
+        await loadBookedTimes(
+            barberId,
+            date
+        );
+
+
+    const candidateStart =
+        timeToMinutes(
+            time
+        );
+
+
+    const candidateEnd =
+        candidateStart +
+        Number(duration || 30);
+
+
+    return bookedReservations.some(
+        reservation => {
+
+            const bookedStart =
+                timeToMinutes(
+                    String(
+                        reservation.time
+                    ).slice(0, 5)
+                );
+
+
+            const bookedDuration =
+                Number(
+                    reservation.service_duration || 30
+                );
+
+
+            const bookedEnd =
+                bookedStart +
+                bookedDuration;
+
+
+            return (
+                candidateStart < bookedEnd &&
+                candidateEnd > bookedStart
+            );
+
+        }
+    );
 
 }
 
@@ -246,6 +321,35 @@ async function addReservation(
     };
 
 
+    /*
+     * قبل از INSERT یک بار دیگر
+     * تداخل را بررسی می‌کنیم.
+     */
+
+    const conflict =
+        await checkReservationConflict(
+            reservationData.barberId,
+            reservationData.date,
+            reservationData.time,
+            reservationData.serviceDuration
+        );
+
+
+    if (conflict) {
+
+        const conflictError =
+            new Error(
+                "این بازه زمانی قبلاً رزرو شده است."
+            );
+
+        conflictError.code =
+            "already-exists";
+
+        throw conflictError;
+
+    }
+
+
     const {
         data,
         error
@@ -253,9 +357,13 @@ async function addReservation(
 
         .from(TABLES.reservations)
 
-        .insert(payload)
+        .insert(
+            payload
+        )
 
-        .select("id")
+        .select(
+            "id"
+        )
 
         .single();
 
@@ -263,13 +371,8 @@ async function addReservation(
     if (error) {
 
         /*
-         * PostgreSQL:
-         * 23505 = duplicate key
-         *
-         * یعنی همان آرایشگر،
-         * همان روز،
-         * همان ساعت
-         * قبلاً رزرو شده است.
+         * 23505:
+         * duplicate key
          */
 
         if (
@@ -300,7 +403,7 @@ async function addReservation(
 
 
 // ==========================================
-// Find Customer
+// Get Customer
 // ==========================================
 
 async function getCustomer(
@@ -400,7 +503,9 @@ async function saveCustomer(
 
             })
 
-            .select("id")
+            .select(
+                "id"
+            )
 
             .single();
 
@@ -420,6 +525,12 @@ async function saveCustomer(
     // ======================================
     // Existing Customer
     // ======================================
+
+    const currentVisitCount =
+        Number(
+            existing.visit_count || 0
+        );
+
 
     const {
         error
@@ -448,9 +559,7 @@ async function saveCustomer(
                 reservationData.service,
 
             visit_count:
-                Number(
-                    existing.visit_count || 0
-                ) + 1
+                currentVisitCount + 1
 
         })
 
@@ -729,6 +838,32 @@ async function completeReservation(
 
 
 // ==========================================
+// Time Helper
+// ==========================================
+
+function timeToMinutes(
+    time
+) {
+
+    const [
+        hour,
+        minute
+    ] =
+        String(time)
+            .slice(0, 5)
+            .split(":")
+            .map(Number);
+
+
+    return (
+        hour * 60 +
+        minute
+    );
+
+}
+
+
+// ==========================================
 // Export
 // ==========================================
 
@@ -745,6 +880,8 @@ export {
     getServices,
 
     loadBookedTimes,
+
+    checkReservationConflict,
 
     addReservation,
 
