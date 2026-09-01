@@ -33,17 +33,14 @@ const supabase =
 
 
 // ==========================================
-// Database Tables
+// Tables
 // ==========================================
 
 const TABLES = {
 
     reservations: "reservations",
-
     customers: "customers",
-
     barbers: "barbers",
-
     services: "services"
 
 };
@@ -56,18 +53,15 @@ const TABLES = {
 const RESERVATION_STATUS = {
 
     RESERVED: "reserved",
-
     CANCELLED: "cancelled",
-
     COMPLETED: "completed",
-
     NO_SHOW: "no_show"
 
 };
 
 
 // ==========================================
-// Get Available Barbers
+// Get Barbers
 // ==========================================
 
 async function getBarbers() {
@@ -79,13 +73,21 @@ async function getBarbers() {
 
         .from(TABLES.barbers)
 
-        .select("*")
+        .select(
+            "id,name,role,image_url,active"
+        )
 
-        .eq("active", true)
+        .eq(
+            "active",
+            true
+        )
 
-        .order("name", {
-            ascending: true
-        });
+        .order(
+            "created_at",
+            {
+                ascending: true
+            }
+        );
 
 
     if (error) {
@@ -113,13 +115,21 @@ async function getServices() {
 
         .from(TABLES.services)
 
-        .select("*")
+        .select(
+            "id,service_key,name,duration,image_url,active"
+        )
 
-        .eq("active", true)
+        .eq(
+            "active",
+            true
+        )
 
-        .order("name", {
-            ascending: true
-        });
+        .order(
+            "created_at",
+            {
+                ascending: true
+            }
+        );
 
 
     if (error) {
@@ -135,7 +145,7 @@ async function getServices() {
 
 
 // ==========================================
-// Get Booked Times
+// Get Booked Reservations
 // ==========================================
 
 async function loadBookedTimes(
@@ -150,11 +160,19 @@ async function loadBookedTimes(
 
         .from(TABLES.reservations)
 
-        .select("time")
+        .select(
+            "time,service_duration"
+        )
 
-        .eq("barber_id", barberId)
+        .eq(
+            "barber_id",
+            barberId
+        )
 
-        .eq("date", date)
+        .eq(
+            "date",
+            date
+        )
 
         .eq(
             "status",
@@ -169,28 +187,18 @@ async function loadBookedTimes(
     }
 
 
-    return (data || [])
-        .map(item => item.time)
-        .filter(Boolean);
+    return data || [];
 
 }
 
 
 // ==========================================
-// Create Reservation
+// Add Reservation
 // ==========================================
 
 async function addReservation(
     reservationData
 ) {
-
-    /*
-     * این تابع بعداً از یک Database Function
-     * امن استفاده خواهد کرد تا جلوگیری از
-     * رزرو همزمان یک ساعت انجام شود.
-     *
-     * فعلاً ساختار درخواست را آماده می‌کنیم.
-     */
 
     const payload = {
 
@@ -208,6 +216,9 @@ async function addReservation(
 
         barber_name:
             reservationData.barberName,
+
+        service_id:
+            reservationData.serviceId,
 
         service:
             reservationData.service,
@@ -252,10 +263,13 @@ async function addReservation(
     if (error) {
 
         /*
+         * PostgreSQL:
          * 23505 = duplicate key
          *
-         * این خطا برای زمانی است که
-         * ساعت قبلاً رزرو شده باشد.
+         * یعنی همان آرایشگر،
+         * همان روز،
+         * همان ساعت
+         * قبلاً رزرو شده است.
          */
 
         if (
@@ -286,69 +300,61 @@ async function addReservation(
 
 
 // ==========================================
-// Save / Update Customer
+// Find Customer
+// ==========================================
+
+async function getCustomer(
+    phone
+) {
+
+    const {
+        data,
+        error
+    } = await supabase
+
+        .from(TABLES.customers)
+
+        .select("*")
+
+        .eq(
+            "phone",
+            phone
+        )
+
+        .maybeSingle();
+
+
+    if (error) {
+
+        throw error;
+
+    }
+
+
+    return data || null;
+
+}
+
+
+// ==========================================
+// Save Customer
 // ==========================================
 
 async function saveCustomer(
     reservationData
 ) {
 
-    const customer = {
-
-        first_name:
-            reservationData.firstName,
-
-        last_name:
-            reservationData.lastName,
-
-        phone:
-            reservationData.phone,
-
-        last_visit:
-            reservationData.date,
-
-        last_barber_id:
-            reservationData.barberId,
-
-        last_barber_name:
-            reservationData.barberName,
-
-        last_service:
-            reservationData.service
-
-    };
+    const existing =
+        await getCustomer(
+            reservationData.phone
+        );
 
 
-    /*
-     * اگر شماره موبایل وجود داشته باشد،
-     * اطلاعات مشتری به‌روزرسانی می‌شود.
-     *
-     * اگر وجود نداشته باشد،
-     * مشتری جدید ساخته می‌شود.
-     */
+    // ======================================
+    // New Customer
+    // ======================================
 
-    const {
-        data: existingCustomer,
-        error: findError
-    } = await supabase
-
-        .from(TABLES.customers)
-
-        .select("id, visit_count")
-
-        .eq("phone", reservationData.phone)
-
-        .maybeSingle();
-
-
-    if (findError) {
-
-        throw findError;
-
-    }
-
-
-    if (!existingCustomer) {
+    if (!existing) {
 
         const {
             data,
@@ -359,15 +365,38 @@ async function saveCustomer(
 
             .insert({
 
-                ...customer,
+                first_name:
+                    reservationData.firstName,
 
-                visit_count: 1,
+                last_name:
+                    reservationData.lastName,
 
-                favorite_model: "",
+                phone:
+                    reservationData.phone,
 
-                free_gift: false,
+                visit_count:
+                    1,
 
-                note: ""
+                favorite_model:
+                    "",
+
+                free_gift:
+                    false,
+
+                note:
+                    "",
+
+                last_visit:
+                    reservationData.date,
+
+                last_barber_id:
+                    reservationData.barberId,
+
+                last_barber_name:
+                    reservationData.barberName,
+
+                last_service:
+                    reservationData.service
 
             })
 
@@ -388,6 +417,10 @@ async function saveCustomer(
     }
 
 
+    // ======================================
+    // Existing Customer
+    // ======================================
+
     const {
         error
     } = await supabase
@@ -396,18 +429,34 @@ async function saveCustomer(
 
         .update({
 
-            ...customer,
+            first_name:
+                reservationData.firstName,
+
+            last_name:
+                reservationData.lastName,
+
+            last_visit:
+                reservationData.date,
+
+            last_barber_id:
+                reservationData.barberId,
+
+            last_barber_name:
+                reservationData.barberName,
+
+            last_service:
+                reservationData.service,
 
             visit_count:
                 Number(
-                    existingCustomer.visit_count || 0
+                    existing.visit_count || 0
                 ) + 1
 
         })
 
         .eq(
             "id",
-            existingCustomer.id
+            existing.id
         );
 
 
@@ -418,77 +467,7 @@ async function saveCustomer(
     }
 
 
-    return existingCustomer.id;
-
-}
-
-
-// ==========================================
-// Get Customer
-// ==========================================
-
-async function getCustomer(
-    phone
-) {
-
-    const {
-        data,
-        error
-    } = await supabase
-
-        .from(TABLES.customers)
-
-        .select("*")
-
-        .eq("phone", phone)
-
-        .maybeSingle();
-
-
-    if (error) {
-
-        throw error;
-
-    }
-
-
-    return data || null;
-
-}
-
-
-// ==========================================
-// Get All Customers
-// مخصوص پنل مدیریت
-// ==========================================
-
-async function getAllCustomers() {
-
-    const {
-        data,
-        error
-    } = await supabase
-
-        .from(TABLES.customers)
-
-        .select("*")
-
-        .order(
-            "last_visit",
-            {
-                ascending: false
-            }
-        );
-
-
-    if (error) {
-
-        throw error;
-
-    }
-
-
-    return data || [];
+    return existing.id;
 
 }
 
@@ -498,10 +477,12 @@ async function getAllCustomers() {
 // ==========================================
 
 async function getReservations({
+
     startDate = null,
     endDate = null,
     barberId = null,
     status = null
+
 } = {}) {
 
     let query =
@@ -589,8 +570,7 @@ async function getReservations({
 
 
 // ==========================================
-// Get Barber Reservations
-// مخصوص پنل مدیریت
+// Barber Reservations
 // ==========================================
 
 async function getBarberReservations(
@@ -602,9 +582,7 @@ async function getBarberReservations(
     return getReservations({
 
         barberId,
-
         startDate,
-
         endDate
 
     });
@@ -613,8 +591,7 @@ async function getBarberReservations(
 
 
 // ==========================================
-// Get All Reservations
-// مخصوص پنل مدیریت
+// All Reservations
 // ==========================================
 
 async function getAllReservations(
@@ -625,10 +602,44 @@ async function getAllReservations(
     return getReservations({
 
         startDate,
-
         endDate
 
     });
+
+}
+
+
+// ==========================================
+// All Customers
+// ==========================================
+
+async function getAllCustomers() {
+
+    const {
+        data,
+        error
+    } = await supabase
+
+        .from(TABLES.customers)
+
+        .select("*")
+
+        .order(
+            "last_visit",
+            {
+                ascending: false
+            }
+        );
+
+
+    if (error) {
+
+        throw error;
+
+    }
+
+
+    return data || [];
 
 }
 
