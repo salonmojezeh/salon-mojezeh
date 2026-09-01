@@ -1,7 +1,8 @@
 // ==========================================
 // Salon Mojezeh
 // reserve-script.js
-// Supabase Reservation System
+// Final Reservation System
+// Supabase
 // ==========================================
 
 import {
@@ -71,7 +72,7 @@ let currentStep = 1;
 
 
 // ==========================================
-// Reservation Data
+// Reservation State
 // ==========================================
 
 const reservationData = {
@@ -98,36 +99,26 @@ const reservationData = {
 // ==========================================
 // Working Hours
 // ==========================================
+//
+// فعلاً بازه کاری:
+//
+// 09:00 تا 21:00
+//
+// گام:
+// 30 دقیقه
+//
+// بعداً این قسمت را می‌توانیم
+// از پنل مدیریت نیز قابل تنظیم کنیم.
+//
 
-const workingHours = [
+const WORK_START_MINUTES =
+    9 * 60;
 
-    "09:00",
-    "09:30",
-    "10:00",
-    "10:30",
-    "11:00",
-    "11:30",
-    "12:00",
-    "12:30",
-    "13:00",
-    "13:30",
-    "14:00",
-    "14:30",
-    "15:00",
-    "15:30",
-    "16:00",
-    "16:30",
-    "17:00",
-    "17:30",
-    "18:00",
-    "18:30",
-    "19:00",
-    "19:30",
-    "20:00",
-    "20:30",
-    "21:00"
+const WORK_END_MINUTES =
+    21 * 60;
 
-];
+const TIME_STEP_MINUTES =
+    30;
 
 
 // ==========================================
@@ -152,10 +143,12 @@ const persianDays = [
 // ==========================================
 
 const RETRY_COUNT = 3;
-const RETRY_DELAY = 800;
+const RETRY_DELAY = 700;
 
 
-function sleep(ms) {
+function sleep(
+    ms
+) {
 
     return new Promise(
         resolve =>
@@ -175,6 +168,7 @@ async function retryRequest(
 
     let lastError;
 
+
     for (
         let attempt = 1;
         attempt <= retries;
@@ -189,7 +183,9 @@ async function retryRequest(
 
         catch (error) {
 
-            lastError = error;
+            lastError =
+                error;
+
 
             console.warn(
                 `Supabase attempt ${attempt}/${retries} failed`,
@@ -211,13 +207,14 @@ async function retryRequest(
 
     }
 
+
     throw lastError;
 
 }
 
 
 // ==========================================
-// Start
+// DOM Ready
 // ==========================================
 
 document.addEventListener(
@@ -232,9 +229,13 @@ document.addEventListener(
 
 async function initializeReservation() {
 
-    showStep(1);
+    showStep(
+        1
+    );
+
 
     setupPhoneInput();
+
 
     try {
 
@@ -245,12 +246,20 @@ async function initializeReservation() {
     catch (error) {
 
         console.error(
-            "Initialization error:",
+            "Reservation initialization error:",
             error
         );
 
-        alert(
-            "خطا در دریافت اطلاعات رزرو از سامانه."
+
+        showDynamicError(
+            barbersContainer,
+            "دریافت اطلاعات آرایشگرها انجام نشد."
+        );
+
+
+        showDynamicError(
+            servicesContainer,
+            "دریافت اطلاعات خدمات انجام نشد."
         );
 
     }
@@ -259,7 +268,7 @@ async function initializeReservation() {
 
 
 // ==========================================
-// Load Barbers + Services
+// Load Dynamic Data
 // ==========================================
 
 async function loadDynamicData() {
@@ -301,20 +310,25 @@ function renderBarbers(
 ) {
 
     if (!barbersContainer) {
+
         return;
+
     }
 
 
-    barbersContainer.innerHTML = "";
+    barbersContainer.innerHTML =
+        "";
 
 
-    if (!barbers.length) {
+    if (
+        !barbers.length
+    ) {
 
         barbersContainer.innerHTML = `
 
             <div class="time-message">
 
-                آرایشگری برای رزرو فعال نیست.
+                هیچ آرایشگر فعالی برای رزرو وجود ندارد.
 
             </div>
 
@@ -356,6 +370,7 @@ function renderBarbers(
                     <img
                         src="${escapeHTML(image)}"
                         alt="${escapeHTML(barber.name)}"
+                        loading="lazy"
                     >
 
                 </div>
@@ -367,7 +382,10 @@ function renderBarbers(
                     </h4>
 
                     <span>
-                        ${escapeHTML(barber.role || "آرایشگر")}
+                        ${escapeHTML(
+                            barber.role ||
+                            "آرایشگر"
+                        )}
                     </span>
 
                 </div>
@@ -392,6 +410,11 @@ function renderBarbers(
                         barber.name;
 
 
+                    /*
+                     * با تغییر آرایشگر،
+                     * روز و ساعت قبلی دیگر معتبر نیست.
+                     */
+
                     reservationData.date =
                         "";
 
@@ -402,7 +425,13 @@ function renderBarbers(
                         "";
 
 
-                    createDays();
+                    if (
+                        currentStep >= 4
+                    ) {
+
+                        createDays();
+
+                    }
 
 
                     if (
@@ -436,20 +465,25 @@ function renderServices(
 ) {
 
     if (!servicesContainer) {
+
         return;
+
     }
 
 
-    servicesContainer.innerHTML = "";
+    servicesContainer.innerHTML =
+        "";
 
 
-    if (!services.length) {
+    if (
+        !services.length
+    ) {
 
         servicesContainer.innerHTML = `
 
             <div class="time-message">
 
-                خدمتی برای رزرو فعال نیست.
+                هیچ خدمت فعالی برای رزرو وجود ندارد.
 
             </div>
 
@@ -478,6 +512,12 @@ function renderServices(
                 `images/services/${service.service_key}.jpg`;
 
 
+            const duration =
+                Number(
+                    service.duration || 30
+                );
+
+
             label.innerHTML = `
 
                 <input
@@ -489,6 +529,7 @@ function renderServices(
                 <img
                     src="${escapeHTML(image)}"
                     alt="${escapeHTML(service.name)}"
+                    loading="lazy"
                 >
 
                 <h4>
@@ -496,7 +537,8 @@ function renderServices(
                 </h4>
 
                 <span class="service-duration">
-                    ${Number(service.duration)} دقیقه
+                    ${duration}
+                    دقیقه
                 </span>
 
             `;
@@ -519,10 +561,26 @@ function renderServices(
                         service.name;
 
                     reservationData.serviceDuration =
-                        Number(service.duration);
+                        duration;
+
+
+                    /*
+                     * تغییر خدمت می‌تواند
+                     * ساعت انتخاب‌شده قبلی را
+                     * نامعتبر کند.
+                     */
 
                     reservationData.time =
                         "";
+
+
+                    if (
+                        currentStep === 5
+                    ) {
+
+                        createTimes();
+
+                    }
 
                 }
             );
@@ -559,7 +617,12 @@ function showStep(
     steps.forEach(
         (step, index) => {
 
-            if (!step) return;
+            if (!step) {
+
+                return;
+
+            }
+
 
             step.classList.toggle(
                 "active",
@@ -571,6 +634,8 @@ function showStep(
 
 
     updateProgress();
+
+
     updateButtons();
 
 
@@ -595,6 +660,7 @@ function showStep(
     window.scrollTo({
 
         top: 0,
+
         behavior: "smooth"
 
     });
@@ -608,7 +674,11 @@ function showStep(
 
 function updateProgress() {
 
-    if (!progressBar) return;
+    if (!progressBar) {
+
+        return;
+
+    }
 
 
     progressBar.style.width =
@@ -655,7 +725,7 @@ function updateButtons() {
 
 
 // ==========================================
-// Next
+// Next Button
 // ==========================================
 
 nextBtn?.addEventListener(
@@ -686,7 +756,7 @@ nextBtn?.addEventListener(
 
 
 // ==========================================
-// Previous
+// Previous Button
 // ==========================================
 
 prevBtn?.addEventListener(
@@ -718,21 +788,27 @@ function validateCurrentStep() {
     ) {
 
         case 1:
+
             return validateCustomer();
 
         case 2:
+
             return validateBarber();
 
         case 3:
+
             return validateService();
 
         case 4:
+
             return validateDate();
 
         case 5:
+
             return validateTime();
 
         default:
+
             return true;
 
     }
@@ -741,28 +817,34 @@ function validateCurrentStep() {
 
 
 // ==========================================
-// Customer
+// Validate Customer
 // ==========================================
 
 function validateCustomer() {
 
     const firstName =
         document
-            .getElementById("firstName")
+            .getElementById(
+                "firstName"
+            )
             ?.value
             .trim();
 
 
     const lastName =
         document
-            .getElementById("lastName")
+            .getElementById(
+                "lastName"
+            )
             ?.value
             .trim();
 
 
     const phone =
         document
-            .getElementById("phone")
+            .getElementById(
+                "phone"
+            )
             ?.value
             .trim();
 
@@ -818,7 +900,7 @@ function validateCustomer() {
 
 
 // ==========================================
-// Phone
+// Phone Input
 // ==========================================
 
 function setupPhoneInput() {
@@ -829,7 +911,11 @@ function setupPhoneInput() {
         );
 
 
-    if (!phone) return;
+    if (!phone) {
+
+        return;
+
+    }
 
 
     phone.addEventListener(
@@ -838,8 +924,14 @@ function setupPhoneInput() {
 
             phone.value =
                 phone.value
-                    .replace(/\D/g, "")
-                    .slice(0, 11);
+                    .replace(
+                        /\D/g,
+                        ""
+                    )
+                    .slice(
+                        0,
+                        11
+                    );
 
         }
     );
@@ -890,6 +982,21 @@ function validateService() {
     }
 
 
+    if (
+        Number(
+            reservationData.serviceDuration
+        ) <= 0
+    ) {
+
+        alert(
+            "مدت خدمت معتبر نیست."
+        );
+
+        return false;
+
+    }
+
+
     return true;
 
 }
@@ -901,10 +1008,15 @@ function validateService() {
 
 function createDays() {
 
-    if (!daysContainer) return;
+    if (!daysContainer) {
+
+        return;
+
+    }
 
 
-    daysContainer.innerHTML = "";
+    daysContainer.innerHTML =
+        "";
 
 
     const today =
@@ -918,7 +1030,9 @@ function createDays() {
     ) {
 
         const date =
-            new Date(today);
+            new Date(
+                today
+            );
 
 
         date.setDate(
@@ -927,11 +1041,15 @@ function createDays() {
 
 
         const isoDate =
-            formatISODate(date);
+            formatISODate(
+                date
+            );
 
 
         const displayDate =
-            formatPersianDate(date);
+            formatPersianDate(
+                date
+            );
 
 
         const dayCard =
@@ -1013,6 +1131,21 @@ function createDays() {
                 reservationData.time =
                     "";
 
+
+                /*
+                 * اگر بعداً مستقیم به
+                 * مرحله ساعت رفتیم،
+                 * ساعت‌ها دوباره ساخته می‌شوند.
+                 */
+
+                if (
+                    currentStep === 5
+                ) {
+
+                    createTimes();
+
+                }
+
             }
         );
 
@@ -1050,16 +1183,22 @@ function validateDate() {
 }
 
 
+
 // ==========================================
-// Create Times
-// =========================================        timesContainer.innerHTML = `
+// Create Time Slots
+// ==========================================
 
 async function createTimes() {
 
-    if (!timesContainer) return;
+    if (!timesContainer) {
+
+        return;
+
+    }
 
 
-    timesContainer.innerHTML = "";
+    timesContainer.innerHTML =
+        "";
 
 
     if (
@@ -1101,6 +1240,25 @@ async function createTimes() {
     }
 
 
+    const serviceDuration =
+        Number(
+            reservationData.serviceDuration
+        );
+
+
+    if (
+        serviceDuration <= 0
+    ) {
+
+        showTimeMessage(
+            "مدت خدمت معتبر نیست."
+        );
+
+        return;
+
+    }
+
+
     timesContainer.innerHTML = `
 
         <div class="time-loading">
@@ -1133,86 +1291,118 @@ async function createTimes() {
     catch (error) {
 
         console.error(
-            "Load booked times error:",
+            "Booked times error:",
             error
         );
 
 
-        timesContainer.innerHTML = `
-
-            <div class="time-message">
-
-                <i class="fa-solid fa-triangle-exclamation"></i>
-
-                <br><br>
-
-                اتصال به سامانه رزرو برقرار نشد.
-
-                <br>
-
-                لطفاً دوباره تلاش کنید.
-
-            </div>
-
-        `;
+        showTimeMessage(
+            "اتصال به سامانه رزرو برقرار نشد. لطفاً دوباره تلاش کنید."
+        );
 
         return;
 
     }
 
 
-    timesContainer.innerHTML = "";
+    timesContainer.innerHTML =
+        "";
 
 
     /*
-     * اینجا مدت واقعی هر خدمت را
-     * هم در نظر می‌گیریم.
-     *
-     * مثلاً:
-     *
-     * رزرو 09:00 با مدت 60 دقیقه
-     *
-     * باعث می‌شود 09:00 و 09:30
-     * برای رزرو جدید قابل انتخاب نباشند.
+     * تمام زمان‌های ممکن را
+     * با گام ۳۰ دقیقه می‌سازیم.
      */
 
+    for (
+        let start = WORK_START_MINUTES;
+        start < WORK_END_MINUTES;
+        start += TIME_STEP_MINUTES
+    ) {
 
-    workingHours.forEach(
-        time => {
-
-            const card =
-                document.createElement(
-                    "div"
-                );
-
-
-            card.className =
-                "time-card";
+        const candidateEnd =
+            start +
+            serviceDuration;
 
 
-            card.dataset.time =
-                time;
+        const time =
+            minutesToTime(
+                start
+            );
 
 
-            const isBooked =
-                isTimeBlocked(
-                    time,
-                    bookedReservations
-                );
+        const card =
+            document.createElement(
+                "div"
+            );
 
 
-            if (isBooked) {
-
-                card.classList.add(
-                    "booked"
-                );
+        card.className =
+            "time-card";
 
 
-                card.setAttribute(
-                    "aria-disabled",
-                    "true"
-                );
+        card.dataset.time =
+            time;
 
+
+        /*
+         * اگر خدمت تا بعد از ساعت پایان
+         * کاری ادامه پیدا کند،
+         * این زمان قابل انتخاب نیست.
+         */
+
+        const outsideWorkingHours =
+            candidateEnd >
+            WORK_END_MINUTES;
+
+
+        const booked =
+            isTimeBlocked(
+                start,
+                candidateEnd,
+                bookedReservations
+            );
+
+
+        const blocked =
+            outsideWorkingHours ||
+            booked;
+
+
+        if (blocked) {
+
+            card.classList.add(
+                "booked"
+            );
+
+
+            card.setAttribute(
+                "aria-disabled",
+                "true"
+            );
+
+
+            if (
+                outsideWorkingHours
+            ) {
+
+                card.innerHTML = `
+
+                    <i class="fa-solid fa-ban"></i>
+
+                    <span>
+                        ${time}
+                    </span>
+
+                    <small>
+                        خارج از ساعت کاری
+                    </small>
+
+                `;
+
+            }
+
+            else {
 
                 card.innerHTML = `
 
@@ -1228,73 +1418,90 @@ async function createTimes() {
 
                 `;
 
-
-                timesContainer.appendChild(
-                    card
-                );
-
-                return;
-
             }
-
-
-            card.innerHTML = `
-
-                <i class="fa-regular fa-clock"></i>
-
-                <span>
-                    ${time}
-                </span>
-
-            `;
-
-
-            if (
-                reservationData.time ===
-                time
-            ) {
-
-                card.classList.add(
-                    "selected"
-                );
-
-            }
-
-
-            card.addEventListener(
-                "click",
-                () => {
-
-                    document
-                        .querySelectorAll(
-                            ".time-card:not(.booked)"
-                        )
-                        .forEach(
-                            item =>
-                                item.classList.remove(
-                                    "selected"
-                                )
-                        );
-
-
-                    card.classList.add(
-                        "selected"
-                    );
-
-
-                    reservationData.time =
-                        time;
-
-                }
-            );
 
 
             timesContainer.appendChild(
                 card
             );
 
+
+            continue;
+
         }
-    );
+
+
+        card.innerHTML = `
+
+            <i class="fa-regular fa-clock"></i>
+
+            <span>
+                ${time}
+            </span>
+
+            <small>
+                ${serviceDuration} دقیقه
+            </small>
+
+        `;
+
+
+        if (
+            reservationData.time ===
+            time
+        ) {
+
+            card.classList.add(
+                "selected"
+            );
+
+        }
+
+
+        card.addEventListener(
+            "click",
+            () => {
+
+                document
+                    .querySelectorAll(
+                        ".time-card:not(.booked)"
+                    )
+                    .forEach(
+                        item =>
+                            item.classList.remove(
+                                "selected"
+                            )
+                    );
+
+
+                card.classList.add(
+                    "selected"
+                );
+
+
+                reservationData.time =
+                    time;
+
+            }
+        );
+
+
+        timesContainer.appendChild(
+            card
+        );
+
+    }
+
+
+    if (
+        !timesContainer.children.length
+    ) {
+
+        showTimeMessage(
+            "در این روز ساعتی برای رزرو وجود ندارد."
+        );
+
+    }
 
 }
 
@@ -1304,26 +1511,10 @@ async function createTimes() {
 // ==========================================
 
 function isTimeBlocked(
-    candidateTime,
+    candidateStart,
+    candidateEnd,
     bookedReservations
 ) {
-
-    const candidateStart =
-        timeToMinutes(
-            candidateTime
-        );
-
-
-    const candidateDuration =
-        Number(
-            reservationData.serviceDuration || 30
-        );
-
-
-    const candidateEnd =
-        candidateStart +
-        candidateDuration;
-
 
     return bookedReservations.some(
         reservation => {
@@ -1332,13 +1523,17 @@ function isTimeBlocked(
                 timeToMinutes(
                     String(
                         reservation.time
-                    ).slice(0, 5)
+                    ).slice(
+                        0,
+                        5
+                    )
                 );
 
 
             const bookedDuration =
                 Number(
-                    reservation.service_duration || 30
+                    reservation.service_duration ||
+                    30
                 );
 
 
@@ -1349,6 +1544,15 @@ function isTimeBlocked(
 
             /*
              * بررسی تداخل دو بازه
+             *
+             * candidate:
+             * |---------|
+             *
+             * booked:
+             *      |---------|
+             *
+             * اگر هم‌پوشانی داشته باشند،
+             * ساعت مسدود می‌شود.
              */
 
             return (
@@ -1363,7 +1567,48 @@ function isTimeBlocked(
 
 
 // ==========================================
-// Time To Minutes
+// Convert Minutes -> HH:MM
+// ==========================================
+
+function minutesToTime(
+    totalMinutes
+) {
+
+    const hour =
+        Math.floor(
+            totalMinutes / 60
+        );
+
+
+    const minute =
+        totalMinutes % 60;
+
+
+    return (
+
+        String(hour)
+            .padStart(
+                2,
+                "0"
+            )
+
+        +
+
+        ":" +
+
+        String(minute)
+            .padStart(
+                2,
+                "0"
+            )
+
+    );
+
+}
+
+
+// ==========================================
+// Convert HH:MM -> Minutes
 // ==========================================
 
 function timeToMinutes(
@@ -1374,9 +1619,15 @@ function timeToMinutes(
         hour,
         minute
     ] =
-        time
-            .split(":")
-            .map(Number);
+        String(
+            time
+        )
+        .slice(
+            0,
+            5
+        )
+        .split(":")
+        .map(Number);
 
 
     return (
@@ -1395,14 +1646,55 @@ function showTimeMessage(
     message
 ) {
 
-    if (!timesContainer) return;
+    if (!timesContainer) {
+
+        return;
+
+    }
 
 
     timesContainer.innerHTML = `
 
         <div class="time-message">
 
-            ${escapeHTML(message)}
+            ${escapeHTML(
+                message
+            )}
+
+        </div>
+
+    `;
+
+}
+
+
+// ==========================================
+// Dynamic Error
+// ==========================================
+
+function showDynamicError(
+    container,
+    message
+) {
+
+    if (!container) {
+
+        return;
+
+    }
+
+
+    container.innerHTML = `
+
+        <div class="time-message">
+
+            <i class="fa-solid fa-triangle-exclamation"></i>
+
+            <br><br>
+
+            ${escapeHTML(
+                message
+            )}
 
         </div>
 
@@ -1501,7 +1793,9 @@ reserveForm?.addEventListener(
 
             /*
              * ذخیره مشتری
-             * عملیات جانبی است.
+             *
+             * اگر ذخیره مشتری شکست بخورد،
+             * رزرو اصلی نباید از بین برود.
              */
 
             try {
@@ -1550,7 +1844,7 @@ reserveForm?.addEventListener(
             ) {
 
                 alert(
-                    "متأسفانه این ساعت همین الان توسط شخص دیگری رزرو شد. لطفاً ساعت دیگری انتخاب کنید."
+                    "این بازه زمانی همین الان توسط شخص دیگری رزرو شد. لطفاً ساعت دیگری انتخاب کنید."
                 );
 
 
@@ -1558,7 +1852,10 @@ reserveForm?.addEventListener(
                     "";
 
 
-                showStep(5);
+                showStep(
+                    5
+                );
+
 
                 return;
 
@@ -1566,7 +1863,7 @@ reserveForm?.addEventListener(
 
 
             alert(
-                "خطا در ثبت رزرو:\n\n" +
+                "خطا در ثبت رزرو.\n\n" +
                 "Code: " +
                 (
                     error.code ||
@@ -1609,7 +1906,7 @@ reserveForm?.addEventListener(
 
 
 // ==========================================
-// Success
+// Success Modal
 // ==========================================
 
 function showSuccess(
@@ -1630,45 +1927,112 @@ function showSuccess(
     successDetails.innerHTML = `
 
         <div>
-            <strong>نام مشتری:</strong>
-            ${escapeHTML(data.firstName)}
-            ${escapeHTML(data.lastName)}
+
+            <strong>
+                نام مشتری:
+            </strong>
+
+            ${escapeHTML(
+                data.firstName
+            )}
+
+            ${escapeHTML(
+                data.lastName
+            )}
+
         </div>
 
-        <div>
-            <strong>شماره موبایل:</strong>
-            ${escapeHTML(data.phone)}
-        </div>
 
         <div>
-            <strong>آرایشگر:</strong>
-            ${escapeHTML(data.barberName)}
+
+            <strong>
+                شماره موبایل:
+            </strong>
+
+            ${escapeHTML(
+                data.phone
+            )}
+
         </div>
 
-        <div>
-            <strong>خدمت:</strong>
-            ${escapeHTML(data.service)}
-        </div>
 
         <div>
-            <strong>مدت خدمت:</strong>
-            ${escapeHTML(data.serviceDuration)}
+
+            <strong>
+                آرایشگر:
+            </strong>
+
+            ${escapeHTML(
+                data.barberName
+            )}
+
+        </div>
+
+
+        <div>
+
+            <strong>
+                خدمت:
+            </strong>
+
+            ${escapeHTML(
+                data.service
+            )}
+
+        </div>
+
+
+        <div>
+
+            <strong>
+                مدت خدمت:
+            </strong>
+
+            ${escapeHTML(
+                data.serviceDuration
+            )}
+
             دقیقه
+
         </div>
 
-        <div>
-            <strong>روز:</strong>
-            ${escapeHTML(data.displayDate)}
-        </div>
 
         <div>
-            <strong>ساعت:</strong>
-            ${escapeHTML(data.time)}
+
+            <strong>
+                روز:
+            </strong>
+
+            ${escapeHTML(
+                data.displayDate
+            )}
+
         </div>
 
+
         <div>
-            <strong>کد رزرو:</strong>
-            ${escapeHTML(reservationId)}
+
+            <strong>
+                ساعت:
+            </strong>
+
+            ${escapeHTML(
+                data.time
+            )}
+
+        </div>
+
+
+        <div>
+
+            <strong>
+                کد رزرو:
+            </strong>
+
+            ${escapeHTML(
+                reservationId
+            )}
+
         </div>
 
     `;
@@ -1757,7 +2121,9 @@ function formatISODate(
         );
 
 
-    return `${year}-${month}-${day}`;
+    return (
+        `${year}-${month}-${day}`
+    );
 
 }
 
@@ -1777,11 +2143,15 @@ function formatPersianDate(
             {
 
                 year: "numeric",
+
                 month: "long",
+
                 day: "numeric"
 
             }
-        ).format(date);
+        ).format(
+            date
+        );
 
     }
 
@@ -1797,7 +2167,7 @@ function formatPersianDate(
 
 
 // ==========================================
-// Prevent Refresh
+// Prevent Accidental Refresh
 // ==========================================
 
 window.addEventListener(
@@ -1829,5 +2199,5 @@ window.addEventListener(
 // ==========================================
 
 console.log(
-    "Salon Mojezeh reservation system ready."
+    "Salon Mojezeh - Final Reservation System Ready"
 );
