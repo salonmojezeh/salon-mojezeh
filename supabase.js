@@ -1,7 +1,7 @@
 // ==========================================
 // Salon Mojezeh
 // supabase.js
-// Central Supabase Client
+// Final Supabase Client & Booking API
 // ==========================================
 
 "use strict";
@@ -22,7 +22,7 @@ const SUPABASE_PUBLISHABLE_KEY =
 
 
 // ==========================================
-// Supabase Client
+// Create Supabase Client
 // ==========================================
 
 const supabase =
@@ -33,15 +33,20 @@ const supabase =
 
 
 // ==========================================
-// Tables
+// Table Names
 // ==========================================
 
 const TABLES = {
 
-    reservations: "reservations",
-    customers: "customers",
-    barbers: "barbers",
-    services: "services"
+    BARBERS: "barbers",
+
+    SERVICES: "services",
+
+    CUSTOMERS: "customers",
+
+    RESERVATIONS: "reservations",
+
+    BOOKING_SETTINGS: "booking_settings"
 
 };
 
@@ -53,8 +58,11 @@ const TABLES = {
 const RESERVATION_STATUS = {
 
     RESERVED: "reserved",
+
     CANCELLED: "cancelled",
+
     COMPLETED: "completed",
+
     NO_SHOW: "no_show"
 
 };
@@ -67,15 +75,22 @@ const RESERVATION_STATUS = {
 async function getBarbers() {
 
     const {
+
         data,
         error
+
     } = await supabase
 
-        .from(TABLES.barbers)
+        .from(TABLES.BARBERS)
 
-        .select(
-            "id,name,role,image_url,active,created_at"
-        )
+        .select(`
+            id,
+            name,
+            role,
+            image_url,
+            active,
+            created_at
+        `)
 
         .eq(
             "active",
@@ -109,15 +124,23 @@ async function getBarbers() {
 async function getServices() {
 
     const {
+
         data,
         error
+
     } = await supabase
 
-        .from(TABLES.services)
+        .from(TABLES.SERVICES)
 
-        .select(
-            "id,service_key,name,duration,image_url,active,created_at"
-        )
+        .select(`
+            id,
+            service_key,
+            name,
+            duration,
+            image_url,
+            active,
+            created_at
+        `)
 
         .eq(
             "active",
@@ -145,33 +168,259 @@ async function getServices() {
 
 
 // ==========================================
-// Get Reservations For Barber + Date
+// Get Booking Settings
 // ==========================================
 
-async function loadBookedTimes(
+async function getBookingSettings() {
+
+    const {
+
+        data,
+        error
+
+    } = await supabase
+
+        .from(TABLES.BOOKING_SETTINGS)
+
+        .select(`
+            id,
+            opening_time,
+            closing_time,
+            slot_interval,
+            booking_days_ahead,
+            active
+        `)
+
+        .eq(
+            "active",
+            true
+        )
+
+        .limit(1)
+
+        .maybeSingle();
+
+
+    if (error) {
+
+        throw error;
+
+    }
+
+
+    /*
+     * تنظیمات پیش‌فرض اضطراری
+     *
+     * اگر بعداً مشکلی در دیتابیس
+     * پیش آمد، سیستم کاملاً خراب نمی‌شود.
+     */
+
+    if (!data) {
+
+        return {
+
+            opening_time: "09:00:00",
+
+            closing_time: "21:00:00",
+
+            slot_interval: 30,
+
+            booking_days_ahead: 30,
+
+            active: true
+
+        };
+
+    }
+
+
+    return data;
+
+}
+
+
+// ==========================================
+// Get Customer By Phone
+// ==========================================
+
+async function getCustomerByPhone(phone) {
+
+    const {
+
+        data,
+        error
+
+    } = await supabase
+
+        .from(TABLES.CUSTOMERS)
+
+        .select("*")
+
+        .eq(
+            "phone",
+            phone
+        )
+
+        .maybeSingle();
+
+
+    if (error) {
+
+        throw error;
+
+    }
+
+
+    return data || null;
+
+}
+
+
+// ==========================================
+// Create Or Update Customer
+// ==========================================
+
+async function saveCustomer(customerData) {
+
+    const existingCustomer =
+        await getCustomerByPhone(
+            customerData.phone
+        );
+
+
+    // ======================================
+    // New Customer
+    // ======================================
+
+    if (!existingCustomer) {
+
+        const {
+
+            data,
+            error
+
+        } = await supabase
+
+            .from(TABLES.CUSTOMERS)
+
+            .insert({
+
+                first_name:
+                    customerData.firstName,
+
+                last_name:
+                    customerData.lastName,
+
+                phone:
+                    customerData.phone,
+
+                visit_count:
+                    0,
+
+                favorite_model:
+                    "",
+
+                free_gift:
+                    false,
+
+                note:
+                    "",
+
+                last_visit:
+                    null,
+
+                last_barber_id:
+                    null,
+
+                last_barber_name:
+                    "",
+
+                last_service:
+                    ""
+
+            })
+
+            .select("id")
+
+            .single();
+
+
+        if (error) {
+
+            throw error;
+
+        }
+
+
+        return data.id;
+
+    }
+
+
+    // ======================================
+    // Existing Customer
+    // ======================================
+
+    const {
+
+        error
+
+    } = await supabase
+
+        .from(TABLES.CUSTOMERS)
+
+        .update({
+
+            first_name:
+                customerData.firstName,
+
+            last_name:
+                customerData.lastName
+
+        })
+
+        .eq(
+            "id",
+            existingCustomer.id
+        );
+
+
+    if (error) {
+
+        throw error;
+
+    }
+
+
+    return existingCustomer.id;
+
+}
+
+
+// ==========================================
+// Get Booked Reservations
+// ==========================================
+
+async function getBookedReservations(
     barberId,
     date
 ) {
 
     const {
+
         data,
         error
+
     } = await supabase
 
-        .from(TABLES.reservations)
+        .from(TABLES.RESERVATIONS)
 
-        .select(
-            `
+        .select(`
             id,
-            barber_id,
-            date,
             time,
-            service_id,
-            service,
             service_duration,
             status
-            `
-        )
+        `)
 
         .eq(
             "barber_id",
@@ -202,80 +451,17 @@ async function loadBookedTimes(
 
 
 // ==========================================
-// Check Reservation Overlap
-// ==========================================
-//
-// این تابع سمت کلاینت برای تجربه کاربری است.
-// کنترل نهایی باید در دیتابیس/RLS نیز انجام شود.
-//
-
-async function checkReservationConflict(
-    barberId,
-    date,
-    time,
-    duration
-) {
-
-    const bookedReservations =
-        await loadBookedTimes(
-            barberId,
-            date
-        );
-
-
-    const candidateStart =
-        timeToMinutes(
-            time
-        );
-
-
-    const candidateEnd =
-        candidateStart +
-        Number(duration || 30);
-
-
-    return bookedReservations.some(
-        reservation => {
-
-            const bookedStart =
-                timeToMinutes(
-                    String(
-                        reservation.time
-                    ).slice(0, 5)
-                );
-
-
-            const bookedDuration =
-                Number(
-                    reservation.service_duration || 30
-                );
-
-
-            const bookedEnd =
-                bookedStart +
-                bookedDuration;
-
-
-            return (
-                candidateStart < bookedEnd &&
-                candidateEnd > bookedStart
-            );
-
-        }
-    );
-
-}
-
-
-// ==========================================
-// Add Reservation
+// Create Reservation
 // ==========================================
 
-async function addReservation(
+async function createReservation(
     reservationData
 ) {
 
     const payload = {
+
+        customer_id:
+            reservationData.customerId,
 
         first_name:
             reservationData.firstName,
@@ -286,11 +472,17 @@ async function addReservation(
         phone:
             reservationData.phone,
 
+
+        // Barber
+
         barber_id:
             reservationData.barberId,
 
         barber_name:
             reservationData.barberName,
+
+
+        // Service
 
         service_id:
             reservationData.serviceId,
@@ -303,6 +495,9 @@ async function addReservation(
                 reservationData.serviceDuration
             ),
 
+
+        // Date & Time
+
         date:
             reservationData.date,
 
@@ -311,6 +506,9 @@ async function addReservation(
 
         time:
             reservationData.time,
+
+
+        // Status
 
         status:
             RESERVATION_STATUS.RESERVED,
@@ -321,49 +519,18 @@ async function addReservation(
     };
 
 
-    /*
-     * قبل از INSERT یک بار دیگر
-     * تداخل را بررسی می‌کنیم.
-     */
-
-    const conflict =
-        await checkReservationConflict(
-            reservationData.barberId,
-            reservationData.date,
-            reservationData.time,
-            reservationData.serviceDuration
-        );
-
-
-    if (conflict) {
-
-        const conflictError =
-            new Error(
-                "این بازه زمانی قبلاً رزرو شده است."
-            );
-
-        conflictError.code =
-            "already-exists";
-
-        throw conflictError;
-
-    }
-
-
     const {
+
         data,
         error
+
     } = await supabase
 
-        .from(TABLES.reservations)
+        .from(TABLES.RESERVATIONS)
 
-        .insert(
-            payload
-        )
+        .insert(payload)
 
-        .select(
-            "id"
-        )
+        .select("id")
 
         .single();
 
@@ -371,17 +538,14 @@ async function addReservation(
     if (error) {
 
         /*
-         * 23505:
-         * duplicate key
+         * PostgreSQL Duplicate Error
          */
 
-        if (
-            error.code === "23505"
-        ) {
+        if (error.code === "23505") {
 
             const duplicateError =
                 new Error(
-                    "این ساعت قبلاً رزرو شده است."
+                    "این زمان قبلاً رزرو شده است."
                 );
 
             duplicateError.code =
@@ -397,154 +561,62 @@ async function addReservation(
     }
 
 
-    return data.id;
+    return data;
 
 }
 
 
 // ==========================================
-// Get Customer
+// Update Customer After Reservation
 // ==========================================
 
-async function getCustomer(
-    phone
-) {
-
-    const {
-        data,
-        error
-    } = await supabase
-
-        .from(TABLES.customers)
-
-        .select("*")
-
-        .eq(
-            "phone",
-            phone
-        )
-
-        .maybeSingle();
-
-
-    if (error) {
-
-        throw error;
-
-    }
-
-
-    return data || null;
-
-}
-
-
-// ==========================================
-// Save Customer
-// ==========================================
-
-async function saveCustomer(
+async function updateCustomerAfterReservation(
+    customerId,
     reservationData
 ) {
 
-    const existing =
-        await getCustomer(
-            reservationData.phone
-        );
+    const existingCustomer =
+        await supabase
 
-
-    // ======================================
-    // New Customer
-    // ======================================
-
-    if (!existing) {
-
-        const {
-            data,
-            error
-        } = await supabase
-
-            .from(TABLES.customers)
-
-            .insert({
-
-                first_name:
-                    reservationData.firstName,
-
-                last_name:
-                    reservationData.lastName,
-
-                phone:
-                    reservationData.phone,
-
-                visit_count:
-                    1,
-
-                favorite_model:
-                    "",
-
-                free_gift:
-                    false,
-
-                note:
-                    "",
-
-                last_visit:
-                    reservationData.date,
-
-                last_barber_id:
-                    reservationData.barberId,
-
-                last_barber_name:
-                    reservationData.barberName,
-
-                last_service:
-                    reservationData.service
-
-            })
+            .from(TABLES.CUSTOMERS)
 
             .select(
-                "id"
+                "visit_count"
+            )
+
+            .eq(
+                "id",
+                customerId
             )
 
             .single();
 
 
-        if (error) {
+    if (existingCustomer.error) {
 
-            throw error;
-
-        }
-
-
-        return data.id;
+        throw existingCustomer.error;
 
     }
 
 
-    // ======================================
-    // Existing Customer
-    // ======================================
-
     const currentVisitCount =
         Number(
-            existing.visit_count || 0
+            existingCustomer.data.visit_count || 0
         );
 
 
     const {
+
         error
+
     } = await supabase
 
-        .from(TABLES.customers)
+        .from(TABLES.CUSTOMERS)
 
         .update({
 
-            first_name:
-                reservationData.firstName,
-
-            last_name:
-                reservationData.lastName,
+            visit_count:
+                currentVisitCount + 1,
 
             last_visit:
                 reservationData.date,
@@ -556,16 +628,13 @@ async function saveCustomer(
                 reservationData.barberName,
 
             last_service:
-                reservationData.service,
-
-            visit_count:
-                currentVisitCount + 1
+                reservationData.service
 
         })
 
         .eq(
             "id",
-            existing.id
+            customerId
         );
 
 
@@ -576,28 +645,121 @@ async function saveCustomer(
     }
 
 
-    return existing.id;
+    return true;
+
+}
+
+
+// ==========================================
+// Cancel Reservation
+// ==========================================
+
+async function cancelReservation(
+    reservationId
+) {
+
+    const {
+
+        error
+
+    } = await supabase
+
+        .from(TABLES.RESERVATIONS)
+
+        .update({
+
+            status:
+                RESERVATION_STATUS.CANCELLED,
+
+            cancelled_at:
+                new Date().toISOString()
+
+        })
+
+        .eq(
+            "id",
+            reservationId
+        );
+
+
+    if (error) {
+
+        throw error;
+
+    }
+
+
+    return true;
+
+}
+
+
+// ==========================================
+// Complete Reservation
+// ==========================================
+
+async function completeReservation(
+    reservationId
+) {
+
+    const {
+
+        error
+
+    } = await supabase
+
+        .from(TABLES.RESERVATIONS)
+
+        .update({
+
+            status:
+                RESERVATION_STATUS.COMPLETED,
+
+            completed_at:
+                new Date().toISOString()
+
+        })
+
+        .eq(
+            "id",
+            reservationId
+        );
+
+
+    if (error) {
+
+        throw error;
+
+    }
+
+
+    return true;
 
 }
 
 
 // ==========================================
 // Get Reservations
+// Admin / Future Panel
 // ==========================================
 
 async function getReservations({
 
     startDate = null,
+
     endDate = null,
+
     barberId = null,
+
     status = null
 
 } = {}) {
 
     let query =
+
         supabase
 
-            .from(TABLES.reservations)
+            .from(TABLES.RESERVATIONS)
 
             .select("*");
 
@@ -647,8 +809,10 @@ async function getReservations({
 
 
     const {
+
         data,
         error
+
     } = await query
 
         .order(
@@ -679,62 +843,25 @@ async function getReservations({
 
 
 // ==========================================
-// Barber Reservations
-// ==========================================
-
-async function getBarberReservations(
-    barberId,
-    startDate,
-    endDate
-) {
-
-    return getReservations({
-
-        barberId,
-        startDate,
-        endDate
-
-    });
-
-}
-
-
-// ==========================================
-// All Reservations
-// ==========================================
-
-async function getAllReservations(
-    startDate,
-    endDate
-) {
-
-    return getReservations({
-
-        startDate,
-        endDate
-
-    });
-
-}
-
-
-// ==========================================
-// All Customers
+// Get All Customers
+// Future Admin Panel
 // ==========================================
 
 async function getAllCustomers() {
 
     const {
+
         data,
         error
+
     } = await supabase
 
-        .from(TABLES.customers)
+        .from(TABLES.CUSTOMERS)
 
         .select("*")
 
         .order(
-            "last_visit",
+            "created_at",
             {
                 ascending: false
             }
@@ -754,116 +881,6 @@ async function getAllCustomers() {
 
 
 // ==========================================
-// Cancel Reservation
-// ==========================================
-
-async function cancelReservation(
-    reservationId
-) {
-
-    const {
-        error
-    } = await supabase
-
-        .from(TABLES.reservations)
-
-        .update({
-
-            status:
-                RESERVATION_STATUS.CANCELLED,
-
-            cancelled_at:
-                new Date().toISOString()
-
-        })
-
-        .eq(
-            "id",
-            reservationId
-        );
-
-
-    if (error) {
-
-        throw error;
-
-    }
-
-
-    return true;
-
-}
-
-
-// ==========================================
-// Complete Reservation
-// ==========================================
-
-async function completeReservation(
-    reservationId
-) {
-
-    const {
-        error
-    } = await supabase
-
-        .from(TABLES.reservations)
-
-        .update({
-
-            status:
-                RESERVATION_STATUS.COMPLETED,
-
-            completed_at:
-                new Date().toISOString()
-
-        })
-
-        .eq(
-            "id",
-            reservationId
-        );
-
-
-    if (error) {
-
-        throw error;
-
-    }
-
-
-    return true;
-
-}
-
-
-// ==========================================
-// Time Helper
-// ==========================================
-
-function timeToMinutes(
-    time
-) {
-
-    const [
-        hour,
-        minute
-    ] =
-        String(time)
-            .slice(0, 5)
-            .split(":")
-            .map(Number);
-
-
-    return (
-        hour * 60 +
-        minute
-    );
-
-}
-
-
-// ==========================================
 // Export
 // ==========================================
 
@@ -875,35 +892,45 @@ export {
 
     RESERVATION_STATUS,
 
+
+    // Dynamic Booking Data
+
     getBarbers,
 
     getServices,
 
-    loadBookedTimes,
+    getBookingSettings,
 
-    checkReservationConflict,
 
-    addReservation,
+    // Customers
+
+    getCustomerByPhone,
 
     saveCustomer,
 
-    getCustomer,
+    updateCustomerAfterReservation,
 
-    getAllCustomers,
+
+    // Reservations
+
+    getBookedReservations,
+
+    createReservation,
 
     getReservations,
 
-    getBarberReservations,
-
-    getAllReservations,
-
     cancelReservation,
 
-    completeReservation
+    completeReservation,
+
+
+    // Admin
+
+    getAllCustomers
 
 };
 
 
 console.log(
-    "Salon Mojezeh - Supabase Client Ready"
+    "Salon Mojezeh Supabase system ready."
 );
