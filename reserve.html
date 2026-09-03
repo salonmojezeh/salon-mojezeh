@@ -1,39 +1,60 @@
 <!DOCTYPE html>
+
 <html lang="fa" dir="rtl">
 
 <head>
 
 <meta charset="UTF-8">
 
-<meta name="viewport"
-      content="width=device-width,initial-scale=1">
+<meta
+name="viewport"
+content="width=device-width, initial-scale=1">
 
-<meta name="theme-color"
-      content="#0f0f0f">
+<meta
+name="theme-color"
+content="#0f0f0f">
+
 
 <title>
 رزرو نوبت | سالن معجزه
 </title>
 
 
-<link rel="stylesheet"
-      href="style.css">
+<!-- Main Styles -->
+
+<link
+rel="stylesheet"
+href="style.css">
 
 
-<link rel="stylesheet"
-      href="booking.css">
+<link
+rel="stylesheet"
+href="booking.css">
 
 
-<link rel="preconnect"
-      href="https://fonts.googleapis.com">
+<!-- Google Font -->
+
+<link
+rel="preconnect"
+href="https://fonts.googleapis.com">
 
 
-<link rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link
+rel="preconnect"
+href="https://fonts.gstatic.com"
+crossorigin>
 
 
-<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap"
-      rel="stylesheet">
+<link
+href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap"
+rel="stylesheet">
+
+
+<!-- Font Awesome -->
+
+<link
+rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
 </head>
 
@@ -41,9 +62,9 @@
 <body>
 
 
-<!-- ====================================== -->
+<!-- ===================================== -->
 <!-- Loader -->
-<!-- ====================================== -->
+<!-- ===================================== -->
 
 <div id="loader">
 
@@ -56,26 +77,24 @@
 </div>
 
 
-<!-- ====================================== -->
+<!-- ===================================== -->
 <!-- Overlay -->
-<!-- ====================================== -->
+<!-- ===================================== -->
 
 <div id="overlay"></div>
 
 
-<!-- ====================================== -->
+<!-- ===================================== -->
 <!-- Sidebar -->
-<!-- ====================================== -->
+<!-- ===================================== -->
 
 <aside id="sidebar">
 
-
     <div class="sidebar-header">
 
-
         <img
-            src="images/logo.png"
-            alt="سالن معجزه">
+        src="images/logo.png"
+        alt="سالن معجزه">
 
 
         <h2>
@@ -84,22 +103,17 @@
 
 
         <button
-            id="closeSidebar"
-            type="button"
-            aria-label="بستن منو">
-
+        id="closeSidebar"
+        type="button">
 
             <i class="fa-solid fa-xmark"></i>
 
-
         </button>
-
 
     </div>
 
 
     <nav>
-
 
         <a href="index.html">
 
@@ -166,41 +180,35 @@
 
         </a>
 
-
     </nav>
 
 </aside>
 
 
-<!-- ====================================== -->
+<!-- ===================================== -->
 <!-- Header -->
-<!-- ====================================== -->
+<!-- ===================================== -->
 
 <header id="header">
 
 
     <button
-        id="menuBtn"
-        type="button"
-        aria-label="باز کردن منو">
-
+    id="menuBtn"
+    type="button">
 
         <i class="fa-solid fa-bars"></i>
-
 
     </button>
 
 
     <div class="logo-box">
 
-
         <img
-            src="images/logo.png"
-            alt="سالن معجزه">
+        src="images/logo.png"
+        alt="Salon">
 
 
         <div>
-
 
             <h2>
                 سالن معجزه
@@ -211,21 +219,16 @@
                 رزرو آنلاین
             </small>
 
-
         </div>
-
 
     </div>
 
 
     <button
-        id="themeToggle"
-        type="button"
-        aria-label="تغییر حالت نمایش">
-
+    id="themeToggle"
+    type="button">
 
         <i class="fa-solid fa-moon"></i>
-
 
     </button>
 
@@ -233,508 +236,485 @@
 </header>
 
 
-<!-- ====================================== -->
-<!-- Reserve Page -->
-<!-- ====================================== -->
+<!-- ===================================== -->
+<!-- Reservation Page -->
+<!-- ===================================== -->
 
 <section class="reserve-page">
 
 
-    <div class="reserve-box">
+<div class="reserve-box">
 
 
-        <!-- ================================= -->
-        <!-- Header -->
-        <!-- ================================= -->
+<!-- ===================================== -->
+<!-- Header -->
+<!-- ===================================== -->
 
+<div class="reserve-header">
 
-        <div class="reserve-header">
+    <h1>
+        رزرو آنلاین نوبت
+    </h1>
 
 
-            <h1>
-                رزرو آنلاین نوبت
-            </h1>
+    <p>
+        لطفاً مراحل زیر را به ترتیب تکمیل کنید.
+    </p>
 
+</div>
 
-            <p>
-                لطفاً مراحل زیر را به ترتیب تکمیل کنید.
-            </p>
 
+<!-- ===================================== -->
+<!-- Progress -->
+<!-- ===================================== -->
 
-        </div>
+<div class="progress">
 
+    <div id="progressBar"></div>
 
-        <!-- ================================= -->
-        <!-- Progress -->
-        <!-- ================================= -->
+</div>
 
 
-        <div
-            class="progress"
-            aria-label="میزان پیشرفت رزرو">
+<!-- ===================================== -->
+<!-- Form -->
+<!-- ===================================== -->
 
+<form
+id="reserveForm"
+novalidate>
 
-            <div
-                id="progressBar">
-            </div>
 
+<!-- ===================================== -->
+<!-- Step 1 -->
+<!-- Customer -->
+<!-- ===================================== -->
 
-        </div>
+<div
+class="step active"
+id="step1">
 
 
-        <!-- ================================= -->
-        <!-- Form -->
-        <!-- ================================= -->
+<h3>
 
+    <i class="fa-solid fa-user"></i>
 
-        <form
-            id="reserveForm"
-            autocomplete="off">
+    اطلاعات مشتری
 
+</h3>
 
-            <!-- ============================= -->
-            <!-- STEP 1 -->
-            <!-- ============================= -->
 
+<div class="form-group">
 
-            <div
-                class="step active"
-                id="step1">
+    <label for="firstName">
 
+        نام
 
-                <h3>
+    </label>
 
 
-                    <i class="fa-solid fa-user"></i>
+    <input
 
+    type="text"
 
-                    اطلاعات مشتری
+    id="firstName"
 
+    autocomplete="given-name"
 
-                </h3>
+    required>
 
+</div>
 
-                <div class="form-group">
 
+<div class="form-group">
 
-                    <label for="firstName">
+    <label for="lastName">
 
-                        نام
+        نام خانوادگی
 
-                    </label>
+    </label>
 
 
-                    <input
-                        type="text"
-                        id="firstName"
-                        autocomplete="given-name"
-                        required>
+    <input
 
+    type="text"
 
-                </div>
+    id="lastName"
 
+    autocomplete="family-name"
 
-                <div class="form-group">
+    required>
 
+</div>
 
-                    <label for="lastName">
 
-                        نام خانوادگی
+<div class="form-group">
 
-                    </label>
+    <label for="phone">
 
+        شماره موبایل
 
-                    <input
-                        type="text"
-                        id="lastName"
-                        autocomplete="family-name"
-                        required>
+    </label>
 
 
-                </div>
+    <input
 
+    type="tel"
 
-                <div class="form-group">
+    id="phone"
 
+    inputmode="numeric"
 
-                    <label for="phone">
+    maxlength="11"
 
-                        شماره موبایل
+    autocomplete="tel"
 
-                    </label>
+    placeholder="09123456789"
 
+    required>
 
-                    <input
-                        type="tel"
-                        id="phone"
-                        maxlength="11"
-                        inputmode="numeric"
-                        placeholder="09123456789"
-                        autocomplete="tel"
-                        required>
+</div>
 
 
-                </div>
+</div>
 
 
-            </div>
+<!-- ===================================== -->
+<!-- Step 2 -->
+<!-- Barbers -->
+<!-- ===================================== -->
 
+<div
+class="step"
+id="step2">
 
-            <!-- ============================= -->
-            <!-- STEP 2 -->
-            <!-- انتخاب آرایشگر -->
-            <!-- ============================= -->
 
+<h3>
 
-            <div
-                class="step"
-                id="step2">
+    <i class="fa-solid fa-user-tie"></i>
 
+    انتخاب آرایشگر
 
-                <h3>
+</h3>
 
 
-                    <i class="fa-solid fa-user-tie"></i>
+<p class="step-info">
 
+    آرایشگر مورد نظر خود را انتخاب کنید.
 
-                    انتخاب آرایشگر
+</p>
 
 
-                </h3>
+<div
+id="barbersContainer"
+class="barbers-grid">
 
 
-                <p class="step-info">
+<div class="time-loading">
 
-                    آرایشگر مورد نظر خود را انتخاب کنید.
+    <i class="fa-solid fa-spinner fa-spin"></i>
 
-                </p>
+    در حال دریافت آرایشگرها...
 
+</div>
 
-                <div class="barbers-grid">
 
+</div>
 
-                    <div class="time-loading">
 
+</div>
 
-                        <i class="fa-solid fa-spinner fa-spin"></i>
 
+<!-- ===================================== -->
+<!-- Step 3 -->
+<!-- Services -->
+<!-- ===================================== -->
 
-                        در حال دریافت آرایشگرها...
+<div
+class="step"
+id="step3">
 
 
-                    </div>
+<h3>
 
+    <i class="fa-solid fa-scissors"></i>
 
-                </div>
+    انتخاب خدمت
 
+</h3>
 
-            </div>
 
+<p class="step-info">
 
-            <!-- ============================= -->
-            <!-- STEP 3 -->
-            <!-- انتخاب خدمت -->
-            <!-- ============================= -->
+    خدمت مورد نظر خود را انتخاب کنید.
 
+</p>
 
-            <div
-                class="step"
-                id="step3">
 
+<div
+id="servicesContainer"
+class="services-grid">
 
-                <h3>
 
+<div class="time-loading">
 
-                    <i class="fa-solid fa-scissors"></i>
+    <i class="fa-solid fa-spinner fa-spin"></i>
 
+    در حال دریافت خدمات...
 
-                    انتخاب خدمت
+</div>
 
 
-                </h3>
+</div>
 
 
-                <p class="step-info">
+</div>
 
-                    خدمت مورد نظر خود را انتخاب کنید.
 
-                </p>
+<!-- ===================================== -->
+<!-- Step 4 -->
+<!-- Date -->
+<!-- ===================================== -->
 
+<div
+class="step"
+id="step4">
 
-                <div class="services-grid">
 
+<h3>
 
-                    <div class="time-loading">
+    <i class="fa-solid fa-calendar-days"></i>
 
+    انتخاب روز
 
-                        <i class="fa-solid fa-spinner fa-spin"></i>
+</h3>
 
 
-                        در حال دریافت خدمات...
+<p class="step-info">
 
+    یکی از روزهای قابل رزرو را انتخاب کنید.
 
-                    </div>
+</p>
 
 
-                </div>
+<div
+id="daysContainer"
+class="days-grid">
 
 
-            </div>
+<!-- Dynamic -->
 
+</div>
 
-            <!-- ============================= -->
-            <!-- STEP 4 -->
-            <!-- انتخاب روز -->
-            <!-- ============================= -->
 
+</div>
 
-            <div
-                class="step"
-                id="step4">
 
+<!-- ===================================== -->
+<!-- Step 5 -->
+<!-- Time -->
+<!-- ===================================== -->
 
-                <h3>
+<div
+class="step"
+id="step5">
 
 
-                    <i class="fa-solid fa-calendar-days"></i>
+<h3>
 
+    <i class="fa-solid fa-clock"></i>
 
-                    انتخاب روز
+    انتخاب ساعت
 
+</h3>
 
-                </h3>
 
+<p class="step-info">
 
-                <p class="step-info">
+    ساعت مورد نظر خود را انتخاب کنید.
 
-                    یکی از روزهای آزاد زیر را انتخاب کنید.
+</p>
 
-                </p>
 
+<div
+id="timesContainer"
+class="times-grid">
 
-                <div
-                    id="daysContainer"
-                    class="days-grid">
 
+<!-- Dynamic -->
 
-                    <!-- JavaScript -->
+</div>
 
-                </div>
 
+</div>
 
-            </div>
 
+<!-- ===================================== -->
+<!-- Navigation -->
+<!-- ===================================== -->
 
-            <!-- ============================= -->
-            <!-- STEP 5 -->
-            <!-- انتخاب ساعت -->
-            <!-- ============================= -->
+<div class="reserve-buttons">
 
 
-            <div
-                class="step"
-                id="step5">
+<button
 
+type="button"
 
-                <h3>
+id="prevBtn"
 
+class="secondary-btn">
 
-                    <i class="fa-solid fa-clock"></i>
 
+<i class="fa-solid fa-arrow-right"></i>
 
-                    انتخاب ساعت
 
+مرحله قبل
 
-                </h3>
 
+</button>
 
-                <p class="step-info">
 
-                    ساعت مورد نظر خود را انتخاب کنید.
+<button
 
-                </p>
+type="button"
 
+id="nextBtn"
 
-                <div
-                    id="timesContainer"
-                    class="times-grid">
+class="primary-btn">
 
 
-                    <!-- JavaScript -->
+مرحله بعد
 
-                </div>
 
+<i class="fa-solid fa-arrow-left"></i>
 
-            </div>
 
+</button>
 
-            <!-- ================================= -->
-            <!-- Navigation Buttons -->
-            <!-- ================================= -->
 
+</div>
 
-            <div class="reserve-buttons">
 
+<!-- ===================================== -->
+<!-- Submit -->
+<!-- ===================================== -->
 
-                <button
-                    type="button"
-                    id="prevBtn"
-                    class="secondary-btn">
+<button
 
+type="submit"
 
-                    <i class="fa-solid fa-arrow-right"></i>
+id="submitBtn"
 
+class="primary-btn submit-btn">
 
-                    مرحله قبل
 
+<i class="fa-solid fa-check"></i>
 
-                </button>
 
+ثبت رزرو
 
-                <button
-                    type="button"
-                    id="nextBtn"
-                    class="primary-btn">
 
+</button>
 
-                    مرحله بعد
 
+</form>
 
-                    <i class="fa-solid fa-arrow-left"></i>
 
-
-                </button>
-
-
-            </div>
-
-
-            <!-- ================================= -->
-            <!-- Submit -->
-            <!-- ================================= -->
-
-
-            <button
-                type="submit"
-                id="submitBtn"
-                class="primary-btn submit-btn">
-
-
-                <i class="fa-solid fa-check"></i>
-
-
-                ثبت رزرو
-
-
-            </button>
-
-
-        </form>
-
-
-    </div>
+</div>
 
 
 </section>
 
 
-<!-- ====================================== -->
+<!-- ===================================== -->
 <!-- Success Modal -->
-<!-- ====================================== -->
+<!-- ===================================== -->
 
-<div
-    id="successModal"
-    role="dialog"
-    aria-modal="true">
+<div id="successModal">
 
 
-    <div class="success-box">
+<div class="success-box">
 
 
-        <div class="success-icon">
+<div class="success-icon">
 
-
-            <i class="fa-solid fa-circle-check"></i>
-
-
-        </div>
-
-
-        <h2>
-
-            رزرو شما با موفقیت ثبت شد
-
-        </h2>
-
-
-        <p>
-
-            اطلاعات رزرو شما به شرح زیر است.
-
-        </p>
-
-
-        <div
-            id="successDetails"
-            class="success-details">
-
-
-        </div>
-
-
-        <div class="success-buttons">
-
-
-            <a
-                href="index.html"
-                class="primary-btn">
-
-
-                <i class="fa-solid fa-house"></i>
-
-
-                صفحه اصلی
-
-
-            </a>
-
-
-            <a
-                href="tel:09380449987"
-                class="secondary-btn">
-
-
-                <i class="fa-solid fa-phone"></i>
-
-
-                تماس با سالن
-
-
-            </a>
-
-
-        </div>
-
-
-    </div>
+    <i class="fa-solid fa-circle-check"></i>
 
 </div>
 
 
-<!-- ====================================== -->
+<h2>
+
+    رزرو شما با موفقیت ثبت شد
+
+</h2>
+
+
+<p>
+
+    اطلاعات نوبت شما به شرح زیر است.
+
+</p>
+
+
+<div
+id="successDetails"
+class="success-details">
+
+
+</div>
+
+
+<div class="success-buttons">
+
+
+<a
+href="index.html"
+class="primary-btn">
+
+
+<i class="fa-solid fa-house"></i>
+
+
+صفحه اصلی
+
+
+</a>
+
+
+<a
+href="tel:09380449987"
+class="secondary-btn">
+
+
+<i class="fa-solid fa-phone"></i>
+
+
+تماس با سالن
+
+
+</a>
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+<!-- ===================================== -->
 <!-- Scripts -->
-<!-- ====================================== -->
+<!-- ===================================== -->
+
+
+<script src="script.js"></script>
 
 
 <script
-    src="script.js">
-</script>
-
-
-<script
-    type="module"
-    src="reserve-script.js">
-</script>
+type="module"
+src="reserve-script.js"></script>
 
 
 </body>
