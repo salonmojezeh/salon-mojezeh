@@ -1,13 +1,16 @@
 // ==========================================
 // Salon Mojezeh
 // supabase.js
-// Final Reservation Database Layer
+// Main Supabase Database + Authentication Layer
 // ==========================================
 
 "use strict";
 
-import { createClient } from
-    "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+import {
+    createClient
+} from
+"https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
 
 // ==========================================
@@ -16,6 +19,7 @@ import { createClient } from
 
 const SUPABASE_URL =
     "https://erfzhyvraenceykiwlci.supabase.co";
+
 
 const SUPABASE_PUBLISHABLE_KEY =
     "sb_publishable_uRbq30GBNHcXwGrinzhx1Q_5-egxs5_";
@@ -26,8 +30,25 @@ const SUPABASE_PUBLISHABLE_KEY =
 // ==========================================
 
 const supabase = createClient(
+
     SUPABASE_URL,
-    SUPABASE_PUBLISHABLE_KEY
+
+    SUPABASE_PUBLISHABLE_KEY,
+
+    {
+
+        auth: {
+
+            persistSession: true,
+
+            autoRefreshToken: true,
+
+            detectSessionInUrl: true
+
+        }
+
+    }
+
 );
 
 
@@ -37,6 +58,8 @@ const supabase = createClient(
 
 const TABLES = {
 
+    // Reservation System
+
     barbers: "barbers",
 
     services: "services",
@@ -45,7 +68,14 @@ const TABLES = {
 
     reservations: "reservations",
 
-    bookingSettings: "booking_settings"
+    bookingSettings: "booking_settings",
+
+
+    // Authentication / Profile System
+
+    userProfiles: "user_profiles",
+
+    clubMembers: "club_members"
 
 };
 
@@ -68,17 +98,365 @@ const RESERVATION_STATUS = {
 
 
 // ==========================================
+// Authentication
+// ==========================================
+
+
+// ==========================================
+// Sign In
+// ==========================================
+
+async function signIn(
+    email,
+    password
+) {
+
+    const {
+
+        data,
+        error
+
+    } = await supabase.auth.signInWithPassword({
+
+        email,
+
+        password
+
+    });
+
+
+    if (error) {
+
+        console.error(
+            "signIn error:",
+            error
+        );
+
+        throw error;
+
+    }
+
+
+    return data;
+
+}
+
+
+// ==========================================
+// Sign Out
+// ==========================================
+
+async function signOutUser() {
+
+    const {
+
+        error
+
+    } = await supabase.auth.signOut();
+
+
+    if (error) {
+
+        console.error(
+            "signOutUser error:",
+            error
+        );
+
+        throw error;
+
+    }
+
+
+    return true;
+
+}
+
+
+// ==========================================
+// Get Current Auth User
+// ==========================================
+
+async function getCurrentUser() {
+
+    const {
+
+        data,
+        error
+
+    } = await supabase.auth.getUser();
+
+
+    if (error) {
+
+        console.error(
+            "getCurrentUser error:",
+            error
+        );
+
+        return null;
+
+    }
+
+
+    return data.user || null;
+
+}
+
+
+// ==========================================
+// Get Current User Profile
+// ==========================================
+
+async function getCurrentUserProfile() {
+
+    const user =
+        await getCurrentUser();
+
+
+    if (!user) {
+
+        return null;
+
+    }
+
+
+    const {
+
+        data,
+        error
+
+    } = await supabase
+
+        .from(
+            TABLES.userProfiles
+        )
+
+        .select(`
+            id,
+            role,
+            is_admin,
+            barber_id,
+            customer_id,
+            active,
+            created_at,
+            updated_at
+        `)
+
+        .eq(
+            "id",
+            user.id
+        )
+
+        .maybeSingle();
+
+
+    if (error) {
+
+        console.error(
+            "getCurrentUserProfile error:",
+            error
+        );
+
+        throw error;
+
+    }
+
+
+    if (!data) {
+
+        return null;
+
+    }
+
+
+    return {
+
+        ...data,
+
+        user
+
+    };
+
+}
+
+
+// ==========================================
+// Get Current Profile
+// Login Compatible Function
+// ==========================================
+
+async function getCurrentProfile() {
+
+    const user =
+        await getCurrentUser();
+
+
+    if (!user) {
+
+        return {
+
+            user: null,
+
+            profile: null
+
+        };
+
+    }
+
+
+    const profile =
+        await getCurrentUserProfile();
+
+
+    return {
+
+        user,
+
+        profile
+
+    };
+
+}
+
+
+// ==========================================
+// Get Current Barber
+// ==========================================
+
+async function getCurrentBarber() {
+
+    const profile =
+        await getCurrentUserProfile();
+
+
+    if (
+
+        !profile ||
+
+        !profile.barber_id
+
+    ) {
+
+        return null;
+
+    }
+
+
+    const {
+
+        data,
+        error
+
+    } = await supabase
+
+        .from(
+            TABLES.barbers
+        )
+
+        .select("*")
+
+        .eq(
+            "id",
+            profile.barber_id
+        )
+
+        .maybeSingle();
+
+
+    if (error) {
+
+        console.error(
+            "getCurrentBarber error:",
+            error
+        );
+
+        throw error;
+
+    }
+
+
+    return data || null;
+
+}
+
+
+// ==========================================
+// Get Current Customer
+// ==========================================
+
+async function getCurrentCustomer() {
+
+    const profile =
+        await getCurrentUserProfile();
+
+
+    if (
+
+        !profile ||
+
+        !profile.customer_id
+
+    ) {
+
+        return null;
+
+    }
+
+
+    const {
+
+        data,
+        error
+
+    } = await supabase
+
+        .from(
+            TABLES.customers
+        )
+
+        .select("*")
+
+        .eq(
+            "id",
+            profile.customer_id
+        )
+
+        .maybeSingle();
+
+
+    if (error) {
+
+        console.error(
+            "getCurrentCustomer error:",
+            error
+        );
+
+        throw error;
+
+    }
+
+
+    return data || null;
+
+}
+
+
+// ==========================================
 // Get Active Barbers
 // ==========================================
 
 async function getBarbers() {
 
     const {
+
         data,
         error
+
     } = await supabase
 
-        .from(TABLES.barbers)
+        .from(
+            TABLES.barbers
+        )
 
         .select(`
             id,
@@ -97,7 +475,9 @@ async function getBarbers() {
         .order(
             "created_at",
             {
+
                 ascending: true
+
             }
         );
 
@@ -126,11 +506,15 @@ async function getBarbers() {
 async function getServices() {
 
     const {
+
         data,
         error
+
     } = await supabase
 
-        .from(TABLES.services)
+        .from(
+            TABLES.services
+        )
 
         .select(`
             id,
@@ -150,7 +534,9 @@ async function getServices() {
         .order(
             "created_at",
             {
+
                 ascending: true
+
             }
         );
 
@@ -179,11 +565,15 @@ async function getServices() {
 async function getBookingSettings() {
 
     const {
+
         data,
         error
+
     } = await supabase
 
-        .from(TABLES.bookingSettings)
+        .from(
+            TABLES.bookingSettings
+        )
 
         .select(`
             id,
@@ -216,7 +606,8 @@ async function getBookingSettings() {
     }
 
 
-    // تنظیمات پیش‌فرض در صورت مشکل
+    // Default Settings
+
     if (!data) {
 
         return {
@@ -245,14 +636,20 @@ async function getBookingSettings() {
 // Get Customer By Phone
 // ==========================================
 
-async function getCustomerByPhone(phone) {
+async function getCustomerByPhone(
+    phone
+) {
 
     const {
+
         data,
         error
+
     } = await supabase
 
-        .from(TABLES.customers)
+        .from(
+            TABLES.customers
+        )
 
         .select("*")
 
@@ -282,14 +679,71 @@ async function getCustomerByPhone(phone) {
 
 
 // ==========================================
+// Get Customer By ID
+// ==========================================
+
+async function getCustomerById(
+    customerId
+) {
+
+    if (!customerId) {
+
+        return null;
+
+    }
+
+
+    const {
+
+        data,
+        error
+
+    } = await supabase
+
+        .from(
+            TABLES.customers
+        )
+
+        .select("*")
+
+        .eq(
+            "id",
+            customerId
+        )
+
+        .maybeSingle();
+
+
+    if (error) {
+
+        console.error(
+            "getCustomerById error:",
+            error
+        );
+
+        throw error;
+
+    }
+
+
+    return data || null;
+
+}
+
+
+// ==========================================
 // Create Or Update Customer
 // ==========================================
 
-async function saveCustomer(customerData) {
+async function saveCustomer(
+    customerData
+) {
 
     const existingCustomer =
         await getCustomerByPhone(
+
             customerData.phone
+
         );
 
 
@@ -300,11 +754,15 @@ async function saveCustomer(customerData) {
     if (!existingCustomer) {
 
         const {
+
             data,
             error
+
         } = await supabase
 
-            .from(TABLES.customers)
+            .from(
+                TABLES.customers
+            )
 
             .insert({
 
@@ -366,11 +824,15 @@ async function saveCustomer(customerData) {
     // ======================================
 
     const {
+
         data,
         error
+
     } = await supabase
 
-        .from(TABLES.customers)
+        .from(
+            TABLES.customers
+        )
 
         .update({
 
@@ -429,16 +891,23 @@ async function saveCustomer(customerData) {
 // ==========================================
 
 async function getBarberDayReservations(
+
     barberId,
+
     date
+
 ) {
 
     const {
+
         data,
         error
+
     } = await supabase
 
-        .from(TABLES.reservations)
+        .from(
+            TABLES.reservations
+        )
 
         .select(`
             id,
@@ -538,13 +1007,19 @@ async function createReservation(
 
 
     const {
+
         data,
         error
+
     } = await supabase
 
-        .from(TABLES.reservations)
+        .from(
+            TABLES.reservations
+        )
 
-        .insert(payload)
+        .insert(
+            payload
+        )
 
         .select("id")
 
@@ -560,8 +1035,11 @@ async function createReservation(
 
 
         // Duplicate / Conflict
+
         if (
+
             error.code === "23505"
+
         ) {
 
             const conflictError =
@@ -569,8 +1047,10 @@ async function createReservation(
                     "این ساعت قبلاً رزرو شده است."
                 );
 
+
             conflictError.code =
                 "reservation-conflict";
+
 
             throw conflictError;
 
@@ -599,82 +1079,134 @@ async function getReservations({
 
     barberId = null,
 
+    customerId = null,
+
     status = null
 
 } = {}) {
 
+
     let query = supabase
 
-        .from(TABLES.reservations)
+        .from(
+            TABLES.reservations
+        )
 
         .select("*");
 
+
+    // Start Date
 
     if (startDate) {
 
         query =
             query.gte(
+
                 "date",
+
                 startDate
+
             );
 
     }
 
+
+    // End Date
 
     if (endDate) {
 
         query =
             query.lte(
+
                 "date",
+
                 endDate
+
             );
 
     }
 
+
+    // Barber
 
     if (barberId) {
 
         query =
             query.eq(
+
                 "barber_id",
+
                 barberId
+
             );
 
     }
 
 
+    // Customer
+
+    if (customerId) {
+
+        query =
+            query.eq(
+
+                "customer_id",
+
+                customerId
+
+            );
+
+    }
+
+
+    // Status
+
     if (status) {
 
         query =
             query.eq(
+
                 "status",
+
                 status
+
             );
 
     }
 
 
     const {
+
         data,
         error
+
     } = await query
 
         .order(
             "date",
             {
+
                 ascending: true
+
             }
         )
 
         .order(
             "time",
             {
+
                 ascending: true
+
             }
         );
 
 
     if (error) {
+
+        console.error(
+            "getReservations error:",
+            error
+        );
 
         throw error;
 
@@ -682,6 +1214,60 @@ async function getReservations({
 
 
     return data || [];
+
+}
+
+
+// ==========================================
+// Get Reservations Of Current Customer
+// ==========================================
+
+async function getCurrentCustomerReservations() {
+
+    const customer =
+        await getCurrentCustomer();
+
+
+    if (!customer) {
+
+        return [];
+
+    }
+
+
+    return await getReservations({
+
+        customerId:
+            customer.id
+
+    });
+
+}
+
+
+// ==========================================
+// Get Reservations Of Current Barber
+// ==========================================
+
+async function getCurrentBarberReservations() {
+
+    const barber =
+        await getCurrentBarber();
+
+
+    if (!barber) {
+
+        return [];
+
+    }
+
+
+    return await getReservations({
+
+        barberId:
+            barber.id
+
+    });
 
 }
 
@@ -695,10 +1281,14 @@ async function cancelReservation(
 ) {
 
     const {
+
         error
+
     } = await supabase
 
-        .from(TABLES.reservations)
+        .from(
+            TABLES.reservations
+        )
 
         .update({
 
@@ -717,6 +1307,11 @@ async function cancelReservation(
 
 
     if (error) {
+
+        console.error(
+            "cancelReservation error:",
+            error
+        );
 
         throw error;
 
@@ -737,10 +1332,14 @@ async function completeReservation(
 ) {
 
     const {
+
         error
+
     } = await supabase
 
-        .from(TABLES.reservations)
+        .from(
+            TABLES.reservations
+        )
 
         .update({
 
@@ -760,191 +1359,8 @@ async function completeReservation(
 
     if (error) {
 
-        throw error;
-
-    }
-
-
-    return true;
-
-}
-
-// ==========================================
-// Authentication
-// ==========================================
-
-// دریافت کاربر وارد شده
-
-async function getCurrentUser() {
-
-    const {
-        data,
-        error
-    } = await supabase.auth.getUser();
-
-
-    if (error) {
-
         console.error(
-            "getCurrentUser error:",
-            error
-        );
-
-        return null;
-
-    }
-
-
-    return data.user || null;
-
-}
-
-
-
-// ==========================================
-// دریافت پروفایل کاربر
-// ==========================================
-
-async function getCurrentUserProfile() {
-
-    const user =
-        await getCurrentUser();
-
-
-    if (!user) {
-
-        return null;
-
-    }
-
-
-    const {
-        data,
-        error
-    } = await supabase
-
-        .from("user_profiles")
-
-        .select(`
-            id,
-            role,
-            is_admin,
-            barber_id,
-            customer_id,
-            active,
-            created_at,
-            updated_at
-        `)
-
-        .eq(
-            "id",
-            user.id
-        )
-
-        .maybeSingle();
-
-
-    if (error) {
-
-        console.error(
-            "getCurrentUserProfile error:",
-            error
-        );
-
-        throw error;
-
-    }
-
-
-    if (!data) {
-
-        return null;
-
-    }
-
-
-    return {
-
-        ...data,
-
-        user
-
-    };
-
-}
-
-
-
-// ==========================================
-// دریافت اطلاعات آرایشگر فعلی
-// ==========================================
-
-async function getCurrentBarber() {
-
-    const profile =
-        await getCurrentUserProfile();
-
-
-    if (
-        !profile ||
-        !profile.barber_id
-    ) {
-
-        return null;
-
-    }
-
-
-    const {
-        data,
-        error
-    } = await supabase
-
-        .from(TABLES.barbers)
-
-        .select("*")
-
-        .eq(
-            "id",
-            profile.barber_id
-        )
-
-        .maybeSingle();
-
-
-    if (error) {
-
-        console.error(
-            "getCurrentBarber error:",
-            error
-        );
-
-        throw error;
-
-    }
-
-
-    return data || null;
-
-}
-
-
-
-// ==========================================
-// خروج از حساب
-// ==========================================
-
-async function signOutUser() {
-
-    const {
-        error
-    } = await supabase.auth.signOut();
-
-
-    if (error) {
-
-        console.error(
-            "signOut error:",
+            "completeReservation error:",
             error
         );
 
@@ -956,57 +1372,157 @@ async function signOutUser() {
     return true;
 
 }
+
+
+// ==========================================
+// Mark Reservation No Show
+// ==========================================
+
+async function markReservationNoShow(
+    reservationId
+) {
+
+    const {
+
+        error
+
+    } = await supabase
+
+        .from(
+            TABLES.reservations
+        )
+
+        .update({
+
+            status:
+                RESERVATION_STATUS.NO_SHOW
+
+        })
+
+        .eq(
+            "id",
+            reservationId
+        );
+
+
+    if (error) {
+
+        console.error(
+            "markReservationNoShow error:",
+            error
+        );
+
+        throw error;
+
+    }
+
+
+    return true;
+
+}
+
+
 // ==========================================
 // Export
 // ==========================================
+
 export {
 
+
+    // ======================================
     // Supabase
+    // ======================================
+
     supabase,
 
+
+    // ======================================
     // Constants
+    // ======================================
+
     TABLES,
 
     RESERVATION_STATUS,
 
 
+    // ======================================
     // Authentication
+    // ======================================
+
+    signIn,
+
+    signOutUser,
+
     getCurrentUser,
 
     getCurrentUserProfile,
 
+    getCurrentProfile,
+
     getCurrentBarber,
 
-    signOutUser,
+    getCurrentCustomer,
 
 
+    // ======================================
     // Barbers
+    // ======================================
+
     getBarbers,
 
 
+    // ======================================
     // Services
+    // ======================================
+
     getServices,
 
 
-    // Settings
+    // ======================================
+    // Booking Settings
+    // ======================================
+
     getBookingSettings,
 
 
+    // ======================================
     // Customers
+    // ======================================
+
     getCustomerByPhone,
+
+    getCustomerById,
 
     saveCustomer,
 
 
+    // ======================================
     // Reservations
+    // ======================================
+
     getBarberDayReservations,
 
     createReservation,
 
     getReservations,
 
+    getCurrentCustomerReservations,
+
+    getCurrentBarberReservations,
+
     cancelReservation,
 
-    completeReservation
+    completeReservation,
+
+    markReservationNoShow
 
 };
+
+
+// ==========================================
+// Ready
+// ==========================================
+
+console.log(
+    "Salon Mojezeh Supabase system ready."
+);
