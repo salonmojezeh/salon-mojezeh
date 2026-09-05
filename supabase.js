@@ -769,29 +769,236 @@ async function completeReservation(
 
 }
 
+// ==========================================
+// Authentication
+// ==========================================
 
+// دریافت کاربر وارد شده
+
+async function getCurrentUser() {
+
+    const {
+        data,
+        error
+    } = await supabase.auth.getUser();
+
+
+    if (error) {
+
+        console.error(
+            "getCurrentUser error:",
+            error
+        );
+
+        return null;
+
+    }
+
+
+    return data.user || null;
+
+}
+
+
+
+// ==========================================
+// دریافت پروفایل کاربر
+// ==========================================
+
+async function getCurrentUserProfile() {
+
+    const user =
+        await getCurrentUser();
+
+
+    if (!user) {
+
+        return null;
+
+    }
+
+
+    const {
+        data,
+        error
+    } = await supabase
+
+        .from("user_profiles")
+
+        .select(`
+            id,
+            role,
+            is_admin,
+            barber_id,
+            customer_id,
+            active,
+            created_at,
+            updated_at
+        `)
+
+        .eq(
+            "id",
+            user.id
+        )
+
+        .maybeSingle();
+
+
+    if (error) {
+
+        console.error(
+            "getCurrentUserProfile error:",
+            error
+        );
+
+        throw error;
+
+    }
+
+
+    if (!data) {
+
+        return null;
+
+    }
+
+
+    return {
+
+        ...data,
+
+        user
+
+    };
+
+}
+
+
+
+// ==========================================
+// دریافت اطلاعات آرایشگر فعلی
+// ==========================================
+
+async function getCurrentBarber() {
+
+    const profile =
+        await getCurrentUserProfile();
+
+
+    if (
+        !profile ||
+        !profile.barber_id
+    ) {
+
+        return null;
+
+    }
+
+
+    const {
+        data,
+        error
+    } = await supabase
+
+        .from(TABLES.barbers)
+
+        .select("*")
+
+        .eq(
+            "id",
+            profile.barber_id
+        )
+
+        .maybeSingle();
+
+
+    if (error) {
+
+        console.error(
+            "getCurrentBarber error:",
+            error
+        );
+
+        throw error;
+
+    }
+
+
+    return data || null;
+
+}
+
+
+
+// ==========================================
+// خروج از حساب
+// ==========================================
+
+async function signOutUser() {
+
+    const {
+        error
+    } = await supabase.auth.signOut();
+
+
+    if (error) {
+
+        console.error(
+            "signOut error:",
+            error
+        );
+
+        throw error;
+
+    }
+
+
+    return true;
+
+}
 // ==========================================
 // Export
 // ==========================================
-
 export {
 
+    // Supabase
     supabase,
 
+    // Constants
     TABLES,
 
     RESERVATION_STATUS,
 
+
+    // Authentication
+    getCurrentUser,
+
+    getCurrentUserProfile,
+
+    getCurrentBarber,
+
+    signOutUser,
+
+
+    // Barbers
     getBarbers,
 
+
+    // Services
     getServices,
 
+
+    // Settings
     getBookingSettings,
 
+
+    // Customers
     getCustomerByPhone,
 
     saveCustomer,
 
+
+    // Reservations
     getBarberDayReservations,
 
     createReservation,
@@ -803,8 +1010,3 @@ export {
     completeReservation
 
 };
-
-
-console.log(
-    "Salon Mojezeh Supabase system ready."
-);
