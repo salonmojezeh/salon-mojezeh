@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>پروفایل کاربری | سالن معجزه</title>
+
+    <link rel="stylesheet" href="profile.css">
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+</head>
+
+<body>
+
+    <!-- ================= Loading ================= -->
+
+    <div id="profileLoading" class="profile-loading">
+
+        <div class="loader"></div>
+
+        <p>
+            در حال بارگذاری اطلاعات...
+        </p>
+
+    </div>
+
+
+    <!-- ================= Access Error ================= -->
+
+    <div id="profileAccessError"
+         class="access-error hidden">
+
+        <div class="access-error-box">
+
+            <i class="fas fa-lock"></i>
+
+            <h2>
+                ورود به حساب کاربری
+            </h2>
+
+            <p>
+                برای مشاهده اطلاعات حساب خود باید وارد شوید.
+            </p>
+
+            <a href="index.html"
+               class="primary-button">
+
+                بازگشت به سایت
+
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================= Main Profile ================= -->
+
+    <div id="profileApp"
+         class="profile-app hidden">
+
+
+        <!-- ================= Header ================= -->
+
+        <header class="profile-header">
+
+            <div class="profile-header-inner">
+
+
+                <a href="index.html"
+                   class="back-home">
+
+                    <i class="fas fa-arrow-right"></i>
+
+                    <span>
+                        بازگشت به سایت
+                    </span>
+
+                </a>
+
+
+                <div class="profile-brand">
+
+                    <img src="images/logo.png"
+                         alt="سالن معجزه">
+
+                    <div>
+
+                        <h2>
+                            سالن معجزه
+                        </h2>
+
+                        <p id="profileRoleLabel">
+
+                            حساب کاربری
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <button id="logoutButton"
+                        class="logout-button">
+
+                    <i class="fas fa-sign-out-alt"></i>
+
+                    خروج
+
+                </button>
+
+
+            </div>
+
+        </header>
+
+
+
+        <!-- ================= Profile Hero ================= -->
+
+        <section class="profile-hero">
+
+            <div class="profile-hero-content">
+
+
+                <div class="profile-avatar">
+
+                    <i class="fas fa-user"></i>
+
+                </div>
+
+
+                <div class="profile-main-info">
+
+                    <span id="roleBadge"
+                          class="role-badge">
+
+                        کاربر
+
+                    </span>
+
+
+                    <h1 id="profileName">
+
+                        در حال بارگذاری...
+
+                    </h1>
+
+
+                    <p id="profilePhone">
+
+                        -
+
+                    </p>
+
+
+                    <p id="profileEmail"
+                       class="profile-email">
+
+                        -
+
+                    </p>
+
+
+                </div>
+
+
+            </div>
+
+        </section>
+
+
+
+        <!-- ================= Customer Dashboard ================= -->
+
+        <main id="customerDashboard"
+              class="dashboard hidden">
+
+
+            <!-- Stats -->
+
+            <section class="stats-grid">
+
+
+                <div class="stat-card">
+
+                    <div class="stat-icon">
+
+                        <i class="fas fa-scissors"></i>
+
+                    </div>
+
+                    <div>
+
+                        <span>
+                            تعداد مراجعات
+                        </span>
+
+                        <strong id="customerVisitCount">
+
+                            0
+
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-icon">
+
+                        <i class="fas fa-star"></i>
+
+                    </div>
+
+                    <div>
+
+                        <span>
+                            امتیاز باشگاه
+                        </span>
+
+                        <strong id="customerPoints">
+
+                            0
+
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-icon">
+
+                        <i class="fas fa-gift"></i>
+
+                    </div>
+
+                    <div>
+
+                        <span>
+                            هدیه آماده
+                        </span>
+
+                        <strong id="customerGift">
+
+                            خیر
+
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-icon">
+
+                        <i class="fas fa-calendar-check"></i>
+
+                    </div>
+
+                    <div>
+
+                        <span>
+                            رزروهای آینده
+                        </span>
+
+                        <strong id="customerUpcomingReservations">
+
+                            0
+
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+            </section>
+
+
+
+            <!-- Next Reservation -->
+
+            <section class="profile-panel">
+
+                <div class="panel-title">
+
+                    <h2>
+
+                        <i class="fas fa-calendar-day"></i>
+
+                        رزرو بعدی من
+
+                    </h2>
+
+                </div>
+
+
+                <div id="customerNextReservation"
+                     class="empty-state">
+
+                    رزرو آینده‌ای وجود ندارد.
+
+                </div>
+
+
+            </section>
+
+
+
+            <!-- Reservation History -->
+
+            <section class="profile-panel">
+
+                <div class="panel-title">
+
+                    <h2>
+
+                        <i class="fas fa-clock-rotate-left"></i>
+
+                        تاریخچه رزروها
+
+                    </h2>
+
+                </div>
+
+
+                <div id="customerReservationHistory"
+                     class="reservation-history">
+
+                </div>
+
+
+            </section>
+
+
+
+            <!-- Club -->
+
+            <section class="profile-panel">
+
+                <div class="panel-title">
+
+                    <h2>
+
+                        <i class="fas fa-crown"></i>
+
+                        باشگاه مشتریان
+
+                    </h2>
+
+                </div>
+
+
+                <div class="club-summary">
+
+
+                    <div class="club-level">
+
+                        <span>
+                            سطح عضویت
+                        </span>
+
+                        <strong id="customerLevel">
+
+                            Bronze
+
+                        </strong>
+
+                    </div>
+
+
+                    <div class="club-progress">
+
+                        <div class="progress-bar">
+
+                            <div id="clubProgress"
+                                 class="progress-fill">
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <p id="clubProgressText">
+
+                        در حال محاسبه...
+
+                    </p>
+
+
+                </div>
+
+
+            </section>
+
+
+        </main>
+
+
+
+        <!-- ================= Barber Dashboard ================= -->
+
+        <main id="barberDashboard"
+              class="dashboard hidden">
+
+
+            <!-- Barber Stats -->
+
+            <section class="stats-grid">
+
+
+                <div class="stat-card">
+
+                    <div class="stat-icon">
+
+                        <i class="fas fa-calendar-day"></i>
+
+                    </div>
+
+                    <div>
+
+                        <span>
+                            رزرو امروز
+                        </span>
+
+                        <strong id="barberTodayReservations">
+
+                            0
+
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-icon">
+
+                        <i class="fas fa-calendar-check"></i>
+
+                    </div>
+
+                    <div>
+
+                        <span>
+                            رزروهای آینده
+                        </span>
+
+                        <strong id="barberUpcomingReservations">
+
+                            0
+
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-icon">
+
+                        <i class="fas fa-users"></i>
+
+                    </div>
+
+                    <div>
+
+                        <span>
+                            مشتریان من
+                        </span>
+
+                        <strong id="barberCustomersCount">
+
+                            0
+
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-icon">
+
+                        <i class="fas fa-scissors"></i>
+
+                    </div>
+
+                    <div>
+
+                        <span>
+                            کل رزروها
+                        </span>
+
+                        <strong id="barberTotalReservations">
+
+                            0
+
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+            </section>
+
+
+
+            <!-- Today's Reservations -->
+
+            <section class="profile-panel">
+
+                <div class="panel-title">
+
+                    <h2>
+
+                        <i class="fas fa-calendar-day"></i>
+
+                        رزروهای امروز من
+
+                    </h2>
+
+                </div>
+
+
+                <div id="barberTodayList"
+                     class="reservation-history">
+
+                </div>
+
+
+            </section>
+
+
+
+            <!-- Upcoming Reservations -->
+
+            <section class="profile-panel">
+
+                <div class="panel-title">
+
+                    <h2>
+
+                        <i class="fas fa-calendar-plus"></i>
+
+                        رزروهای آینده
+
+                    </h2>
+
+                </div>
+
+
+                <div id="barberUpcomingList"
+                     class="reservation-history">
+
+                </div>
+
+
+            </section>
+
+
+
+            <!-- My Customers -->
+
+            <section class="profile-panel">
+
+                <div class="panel-title">
+
+                    <h2>
+
+                        <i class="fas fa-users"></i>
+
+                        مشتریان من
+
+                    </h2>
+
+                </div>
+
+
+                <div id="barberCustomersList"
+                     class="customers-list">
+
+                </div>
+
+
+            </section>
+
+
+        </main>
+
+
+
+        <!-- ================= Admin Dashboard ================= -->
+
+        <main id="adminDashboard"
+              class="dashboard hidden">
+
+
+            <section class="admin-welcome">
+
+                <i class="fas fa-shield-halved"></i>
+
+                <div>
+
+                    <h2>
+
+                        پنل مدیریت سالن
+
+                    </h2>
+
+                    <p>
+
+                        شما به تمام اطلاعات سیستم دسترسی دارید.
+
+                    </p>
+
+                </div>
+
+            </section>
+
+
+
+            <section class="stats-grid">
+
+
+                <div class="stat-card">
+
+                    <div class="stat-icon">
+
+                        <i class="fas fa-users"></i>
+
+                    </div>
+
+                    <div>
+
+                        <span>
+                            کل مشتریان
+                        </span>
+
+                        <strong id="adminCustomersCount">
+
+                            0
+
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-icon">
+
+                        <i class="fas fa-calendar-check"></i>
+
+                    </div>
+
+                    <div>
+
+                        <span>
+                            کل رزروها
+                        </span>
+
+                        <strong id="adminReservationsCount">
+
+                            0
+
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-icon">
+
+                        <i class="fas fa-scissors"></i>
+
+                    </div>
+
+                    <div>
+
+                        <span>
+                            آرایشگران فعال
+                        </span>
+
+                        <strong id="adminBarbersCount">
+
+                            0
+
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-icon">
+
+                        <i class="fas fa-gift"></i>
+
+                    </div>
+
+                    <div>
+
+                        <span>
+                            اعضای باشگاه
+                        </span>
+
+                        <strong id="adminClubMembersCount">
+
+                            0
+
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+            </section>
+
+
+
+            <section class="profile-panel">
+
+                <div class="panel-title">
+
+                    <h2>
+
+                        <i class="fas fa-tools"></i>
+
+                        مدیریت سیستم
+
+                    </h2>
+
+                </div>
+
+
+                <div class="admin-actions">
+
+
+                    <a href="admin.html"
+                       class="admin-action">
+
+                        <i class="fas fa-chart-line"></i>
+
+                        <span>
+                            پنل مدیریت
+                        </span>
+
+                    </a>
+
+
+                    <a href="admin.html#reservations"
+                       class="admin-action">
+
+                        <i class="fas fa-calendar-check"></i>
+
+                        <span>
+                            مدیریت رزروها
+                        </span>
+
+                    </a>
+
+
+                    <a href="admin.html#customers"
+                       class="admin-action">
+
+                        <i class="fas fa-users"></i>
+
+                        <span>
+                            مدیریت مشتریان
+                        </span>
+
+                    </a>
+
+
+                    <a href="admin.html#settings"
+                       class="admin-action">
+
+                        <i class="fas fa-gear"></i>
+
+                        <span>
+                            تنظیمات سالن
+                        </span>
+
+                    </a>
+
+
+                </div>
+
+
+            </section>
+
+
+        </main>
+
+
+    </div>
+
+
+    <script type="module"
+            src="profile.js">
+
+    </script>
+
+</body>
+
+</html>
