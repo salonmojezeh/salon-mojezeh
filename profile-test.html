@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+
+<html lang="fa" dir="rtl">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
+
+<title>تست پروفایل</title>
+
+<style>
+
+body{
+
+font-family:Tahoma;
+
+background:#111;
+
+color:white;
+
+padding:30px;
+
+}
+
+.box{
+
+background:#222;
+
+padding:25px;
+
+border-radius:15px;
+
+max-width:600px;
+
+margin:auto;
+
+}
+
+pre{
+
+background:#000;
+
+padding:20px;
+
+border-radius:10px;
+
+overflow:auto;
+
+color:#00ff88;
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<div class="box">
+
+<h1>تست سیستم کاربری</h1>
+
+<p id="status">
+
+در حال بررسی...
+
+</p>
+
+<pre id="result"></pre>
+
+</div>
+
+
+<script type="module">
+
+import {
+
+getCurrentUser,
+
+getCurrentUserProfile,
+
+getCurrentBarber
+
+} from "./supabase.js";
+
+
+const status =
+document.getElementById("status");
+
+const result =
+document.getElementById("result");
+
+
+try{
+
+
+const user =
+await getCurrentUser();
+
+
+if(!user){
+
+status.innerText =
+"هیچ کاربری وارد نشده است.";
+
+result.innerText =
+"ابتدا باید وارد حساب شوید.";
+
+}
+
+else{
+
+
+const profile =
+await getCurrentUserProfile();
+
+
+const barber =
+await getCurrentBarber();
+
+
+status.innerText =
+"کاربر با موفقیت شناسایی شد.";
+
+
+result.innerText =
+JSON.stringify({
+
+user,
+
+profile,
+
+barber
+
+},null,2);
+
+
+}
+
+
+}
+
+
+catch(error){
+
+console.error(error);
+
+status.innerText =
+"خطا در دریافت اطلاعات";
+
+result.innerText =
+error.message;
+
+}
+
+
+</script>
+
+
+</body>
+
+</html>
