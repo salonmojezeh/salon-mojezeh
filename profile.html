@@ -5,18 +5,35 @@
 
     <meta charset="UTF-8">
 
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
 
-    <title>پروفایل من | سالن معجزه</title>
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-    <link rel="stylesheet" href="profile.css">
 
-    <link rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap">
+    <title>
+        پروفایل من | سالن معجزه
+    </title>
 
-    <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <link
+        rel="stylesheet"
+        href="profile.css"
+    >
+
+
+    <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap"
+    >
+
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+
 
 </head>
 
@@ -24,136 +41,314 @@
 <body>
 
 
-<!-- Loading -->
 
-<div id="profileLoader" class="profile-loader">
-
-    <div class="loader-circle"></div>
-
-    <p>در حال دریافت اطلاعات...</p>
-
-</div>
-
-
+<!-- ====================================== -->
 <!-- Header -->
+<!-- ====================================== -->
 
-<header class="profile-header">
+<header class="site-header">
 
-    <a href="index.html"
-       class="back-btn">
 
-        <i class="fa-solid fa-arrow-right"></i>
+    <a
+        href="index.html"
+        class="header-logo"
+    >
+
+
+        <div class="header-logo-icon">
+
+            <i class="fa-solid fa-scissors"></i>
+
+        </div>
+
+
+        <div>
+
+
+            <strong>
+
+                سالن معجزه
+
+            </strong>
+
+
+            <span>
+
+                Salon Mojezeh
+
+            </span>
+
+
+        </div>
+
 
     </a>
 
 
-    <div class="header-title">
 
-        <h1>پروفایل من</h1>
+    <nav class="header-nav">
 
-        <p id="profileRoleText">
 
-            سالن معجزه
+        <a href="index.html">
 
-        </p>
+            صفحه اصلی
+
+        </a>
+
+
+        <a href="reserve.html">
+
+            رزرو نوبت
+
+        </a>
+
+
+        <a href="profile.html"
+           class="active">
+
+            پروفایل من
+
+        </a>
+
+
+    </nav>
+
+
+
+    <div class="header-actions">
+
+
+        <button
+            id="themeToggle"
+            class="theme-toggle"
+            type="button"
+            aria-label="تغییر حالت شب و روز"
+        >
+
+            <i
+                id="themeIcon"
+                class="fa-solid fa-moon"
+            ></i>
+
+        </button>
+
+
+        <button
+            id="logoutBtn"
+            class="logout-btn"
+            type="button"
+        >
+
+            <i class="fa-solid fa-right-from-bracket"></i>
+
+            <span>
+
+                خروج
+
+            </span>
+
+        </button>
+
 
     </div>
 
-
-    <button id="logoutBtn"
-            class="logout-btn">
-
-        <i class="fa-solid fa-right-from-bracket"></i>
-
-    </button>
 
 </header>
 
 
 
+<!-- ====================================== -->
+<!-- Loader -->
+<!-- ====================================== -->
+
+<div
+    id="profileLoader"
+    class="profile-loader"
+>
+
+
+    <div class="loader-circle"></div>
+
+
+    <p>
+
+        در حال دریافت اطلاعات...
+
+    </p>
+
+
+</div>
+
+
+
+<!-- ====================================== -->
+<!-- Main -->
+<!-- ====================================== -->
+
 <main class="profile-page">
 
 
-    <!-- اطلاعات اصلی کاربر -->
+
+    <!-- ================================== -->
+    <!-- Profile Hero -->
+    <!-- ================================== -->
 
     <section class="profile-hero">
 
+
         <div class="profile-avatar">
 
-            <i id="profileAvatarIcon"
-               class="fa-solid fa-user"></i>
+
+            <i
+                id="profileAvatarIcon"
+                class="fa-solid fa-user"
+            ></i>
+
 
         </div>
 
 
+
         <div class="profile-main-info">
 
-            <h2 id="profileName">
+
+            <span
+                id="profileBadge"
+                class="profile-badge"
+            >
+
+                ...
+
+            </span>
+
+
+            <h1
+                id="profileName"
+            >
 
                 در حال بارگذاری...
 
-            </h2>
+            </h1>
 
 
-            <p id="profileSubtitle">
+            <p
+                id="profileSubtitle"
+            >
 
                 لطفاً صبر کنید
 
             </p>
 
 
-            <span id="profileBadge"
-                  class="profile-badge">
+        </div>
 
-                ...
 
-            </span>
+
+        <div class="profile-hero-action">
+
+
+            <a
+                href="reserve.html"
+                class="reserve-now-btn"
+            >
+
+
+                <i class="fa-solid fa-calendar-plus"></i>
+
+
+                رزرو نوبت
+
+
+            </a>
+
 
         </div>
+
 
     </section>
 
 
 
-    <!-- ========================= -->
+    <!-- ================================== -->
     <!-- CUSTOMER DASHBOARD -->
-    <!-- ========================= -->
+    <!-- ================================== -->
 
-    <section id="customerDashboard"
-             class="dashboard-section hidden">
+    <section
+        id="customerDashboard"
+        class="dashboard-section hidden"
+    >
 
 
-        <div class="section-title">
+        <div class="section-heading">
+
 
             <div>
 
-                <span>Customer Dashboard</span>
 
-                <h2>اطلاعات حساب من</h2>
+                <span>
+
+                    Customer Dashboard
+
+                </span>
+
+
+                <h2>
+
+                    حساب کاربری من
+
+                </h2>
+
+
+                <p>
+
+                    اطلاعات، سوابق و رزروهای خود را مشاهده کنید.
+
+                </p>
+
 
             </div>
 
+
         </div>
 
+
+
+        <!-- Stats -->
 
         <div class="stats-grid">
 
 
             <div class="stat-card">
 
-                <i class="fa-solid fa-scissors"></i>
+
+                <div class="stat-icon">
+
+                    <i class="fa-solid fa-scissors"></i>
+
+                </div>
+
 
                 <div>
 
-                    <span>تعداد مراجعات</span>
 
-                    <strong id="customerVisits">
+                    <span>
+
+                        تعداد مراجعات
+
+                    </span>
+
+
+                    <strong
+                        id="customerVisits"
+                    >
 
                         0
 
                     </strong>
 
+
                 </div>
+
 
             </div>
 
@@ -161,19 +356,35 @@
 
             <div class="stat-card">
 
-                <i class="fa-solid fa-star"></i>
+
+                <div class="stat-icon">
+
+                    <i class="fa-solid fa-star"></i>
+
+                </div>
+
 
                 <div>
 
-                    <span>امتیاز باشگاه</span>
 
-                    <strong id="customerPoints">
+                    <span>
+
+                        امتیاز باشگاه
+
+                    </span>
+
+
+                    <strong
+                        id="customerPoints"
+                    >
 
                         0
 
                     </strong>
 
+
                 </div>
+
 
             </div>
 
@@ -181,19 +392,35 @@
 
             <div class="stat-card">
 
-                <i class="fa-solid fa-gift"></i>
+
+                <div class="stat-icon">
+
+                    <i class="fa-solid fa-gift"></i>
+
+                </div>
+
 
                 <div>
 
-                    <span>هدیه</span>
 
-                    <strong id="customerGift">
+                    <span>
+
+                        هدیه
+
+                    </span>
+
+
+                    <strong
+                        id="customerGift"
+                    >
 
                         ندارد
 
                     </strong>
 
+
                 </div>
+
 
             </div>
 
@@ -201,19 +428,35 @@
 
             <div class="stat-card">
 
-                <i class="fa-solid fa-calendar"></i>
+
+                <div class="stat-icon">
+
+                    <i class="fa-solid fa-calendar"></i>
+
+                </div>
+
 
                 <div>
 
-                    <span>آخرین مراجعه</span>
 
-                    <strong id="customerLastVisit">
+                    <span>
+
+                        آخرین مراجعه
+
+                    </span>
+
+
+                    <strong
+                        id="customerLastVisit"
+                    >
 
                         ---
 
                     </strong>
 
+
                 </div>
+
 
             </div>
 
@@ -222,21 +465,32 @@
 
 
 
-        <!-- اطلاعات شخصی -->
+        <!-- Personal Information -->
 
         <div class="profile-panel">
 
+
             <div class="panel-title">
 
-                <h3>
+
+                <div>
+
 
                     <i class="fa-solid fa-user"></i>
 
-                    اطلاعات شخصی
 
-                </h3>
+                    <h3>
+
+                        اطلاعات شخصی
+
+                    </h3>
+
+
+                </div>
+
 
             </div>
+
 
 
             <div class="info-grid">
@@ -244,85 +498,151 @@
 
                 <div class="info-item">
 
-                    <span>نام و نام خانوادگی</span>
 
-                    <strong id="customerFullName">
+                    <span>
 
-                        ---
+                        نام و نام خانوادگی
 
-                    </strong>
-
-                </div>
+                    </span>
 
 
-                <div class="info-item">
-
-                    <span>شماره موبایل</span>
-
-                    <strong id="customerPhone">
+                    <strong
+                        id="customerFullName"
+                    >
 
                         ---
 
                     </strong>
 
+
                 </div>
+
 
 
                 <div class="info-item">
 
-                    <span>مدل موی مورد علاقه</span>
 
-                    <strong id="customerFavoriteModel">
+                    <span>
+
+                        شماره موبایل
+
+                    </span>
+
+
+                    <strong
+                        id="customerPhone"
+                    >
+
+                        ---
+
+                    </strong>
+
+
+                </div>
+
+
+
+                <div class="info-item">
+
+
+                    <span>
+
+                        مدل موی مورد علاقه
+
+                    </span>
+
+
+                    <strong
+                        id="customerFavoriteModel"
+                    >
 
                         ثبت نشده
 
                     </strong>
 
+
                 </div>
+
 
 
                 <div class="info-item">
 
-                    <span>آخرین آرایشگر</span>
 
-                    <strong id="customerLastBarber">
+                    <span>
+
+                        آخرین آرایشگر
+
+                    </span>
+
+
+                    <strong
+                        id="customerLastBarber"
+                    >
 
                         ---
 
                     </strong>
 
+
                 </div>
 
 
             </div>
 
+
         </div>
 
 
 
-        <!-- رزروهای اخیر -->
+        <!-- Reservations -->
 
         <div class="profile-panel">
 
+
             <div class="panel-title">
 
-                <h3>
+
+                <div>
+
 
                     <i class="fa-solid fa-calendar-check"></i>
 
-                    رزروهای من
 
-                </h3>
+                    <h3>
+
+                        رزروهای من
+
+                    </h3>
+
+
+                </div>
+
+
+                <a
+                    href="reserve.html"
+                    class="panel-link"
+                >
+
+                    رزرو جدید
+
+                    <i class="fa-solid fa-arrow-left"></i>
+
+                </a>
+
 
             </div>
 
 
-            <div id="customerReservations"
-                 class="reservation-list">
+
+            <div
+                id="customerReservations"
+                class="reservation-list"
+            >
 
                 در حال دریافت اطلاعات...
 
             </div>
+
 
         </div>
 
@@ -331,25 +651,48 @@
 
 
 
-    <!-- ========================= -->
+    <!-- ================================== -->
     <!-- BARBER DASHBOARD -->
-    <!-- ========================= -->
+    <!-- ================================== -->
 
-    <section id="barberDashboard"
-             class="dashboard-section hidden">
+    <section
+        id="barberDashboard"
+        class="dashboard-section hidden"
+    >
 
 
-        <div class="section-title">
+        <div class="section-heading">
+
 
             <div>
 
-                <span>Barber Dashboard</span>
 
-                <h2>پنل آرایشگر</h2>
+                <span>
+
+                    Barber Dashboard
+
+                </span>
+
+
+                <h2>
+
+                    پنل آرایشگر
+
+                </h2>
+
+
+                <p>
+
+                    رزروها و مشتریان خود را مدیریت کنید.
+
+                </p>
+
 
             </div>
 
+
         </div>
+
 
 
         <div class="stats-grid">
@@ -357,19 +700,35 @@
 
             <div class="stat-card">
 
-                <i class="fa-solid fa-calendar-day"></i>
+
+                <div class="stat-icon">
+
+                    <i class="fa-solid fa-calendar-day"></i>
+
+                </div>
+
 
                 <div>
 
-                    <span>رزرو امروز</span>
 
-                    <strong id="barberTodayReservations">
+                    <span>
+
+                        رزرو امروز
+
+                    </span>
+
+
+                    <strong
+                        id="barberTodayReservations"
+                    >
 
                         0
 
                     </strong>
 
+
                 </div>
+
 
             </div>
 
@@ -377,19 +736,35 @@
 
             <div class="stat-card">
 
-                <i class="fa-solid fa-calendar-week"></i>
+
+                <div class="stat-icon">
+
+                    <i class="fa-solid fa-calendar-week"></i>
+
+                </div>
+
 
                 <div>
 
-                    <span>کل رزروها</span>
 
-                    <strong id="barberTotalReservations">
+                    <span>
+
+                        کل رزروها
+
+                    </span>
+
+
+                    <strong
+                        id="barberTotalReservations"
+                    >
 
                         0
 
                     </strong>
 
+
                 </div>
+
 
             </div>
 
@@ -397,98 +772,154 @@
 
             <div class="stat-card">
 
-                <i class="fa-solid fa-users"></i>
 
-                <div>
-
-                    <span>مشتریان من</span>
-
-                    <strong id="barberCustomers">
-
-                        0
-
-                    </strong>
-
-                </div>
-
-            </div>
-
-
-
-            <div class="stat-card">
-
-                <i class="fa-solid fa-check-circle"></i>
-
-                <div>
-
-                    <span>اصلاح انجام شده</span>
-
-                    <strong id="barberCompleted">
-
-                        0
-
-                    </strong>
-
-                </div>
-
-            </div>
-
-
-        </div>
-
-
-
-        <!-- رزروهای آرایشگر -->
-
-        <div class="profile-panel">
-
-            <div class="panel-title">
-
-                <h3>
-
-                    <i class="fa-solid fa-calendar-days"></i>
-
-                    رزروهای من
-
-                </h3>
-
-            </div>
-
-
-            <div id="barberReservations"
-                 class="reservation-list">
-
-                در حال دریافت اطلاعات...
-
-            </div>
-
-        </div>
-
-
-
-        <!-- مشتریان آرایشگر -->
-
-        <div class="profile-panel">
-
-            <div class="panel-title">
-
-                <h3>
+                <div class="stat-icon">
 
                     <i class="fa-solid fa-users"></i>
 
-                    مشتریان من
+                </div>
 
-                </h3>
+
+                <div>
+
+
+                    <span>
+
+                        مشتریان من
+
+                    </span>
+
+
+                    <strong
+                        id="barberCustomers"
+                    >
+
+                        0
+
+                    </strong>
+
+
+                </div>
+
 
             </div>
 
 
-            <div id="barberCustomerList"
-                 class="customer-list">
+
+            <div class="stat-card">
+
+
+                <div class="stat-icon">
+
+                    <i class="fa-solid fa-circle-check"></i>
+
+                </div>
+
+
+                <div>
+
+
+                    <span>
+
+                        رزروهای انجام شده
+
+                    </span>
+
+
+                    <strong
+                        id="barberCompleted"
+                    >
+
+                        0
+
+                    </strong>
+
+
+                </div>
+
+
+            </div>
+
+
+        </div>
+
+
+
+        <div class="profile-panel">
+
+
+            <div class="panel-title">
+
+
+                <div>
+
+
+                    <i class="fa-solid fa-calendar-days"></i>
+
+
+                    <h3>
+
+                        رزروهای من
+
+                    </h3>
+
+
+                </div>
+
+
+            </div>
+
+
+
+            <div
+                id="barberReservations"
+                class="reservation-list"
+            >
 
                 در حال دریافت اطلاعات...
 
             </div>
+
+
+        </div>
+
+
+
+        <div class="profile-panel">
+
+
+            <div class="panel-title">
+
+
+                <div>
+
+
+                    <i class="fa-solid fa-users"></i>
+
+
+                    <h3>
+
+                        مشتریان من
+
+                    </h3>
+
+
+                </div>
+
+
+            </div>
+
+
+
+            <div
+                id="barberCustomerList"
+                class="customer-list"
+            >
+
+                در حال دریافت اطلاعات...
+
+            </div>
+
 
         </div>
 
@@ -497,30 +928,54 @@
 
 
 
-    <!-- ========================= -->
+    <!-- ================================== -->
     <!-- ADMIN DASHBOARD -->
-    <!-- ========================= -->
+    <!-- ================================== -->
 
-    <section id="adminDashboard"
-             class="dashboard-section hidden">
+    <section
+        id="adminDashboard"
+        class="dashboard-section hidden"
+    >
 
 
-        <div class="section-title">
+        <div class="section-heading">
+
 
             <div>
 
-                <span>Administrator</span>
 
-                <h2>مدیریت سالن معجزه</h2>
+                <span>
+
+                    Administrator
+
+                </span>
+
+
+                <h2>
+
+                    مدیریت سالن معجزه
+
+                </h2>
+
+
+                <p>
+
+                    نمای کلی مدیریت سالن، مشتریان و رزروها.
+
+                </p>
+
 
             </div>
+
 
         </div>
 
 
+
         <div class="admin-welcome">
 
-            <div>
+
+            <div class="admin-welcome-icon">
 
                 <i class="fa-solid fa-crown"></i>
 
@@ -529,20 +984,23 @@
 
             <div>
 
+
                 <h2>
 
-                    خوش آمدی سبحان 👋
+                    خوش آمدید 👋
 
                 </h2>
 
 
                 <p>
 
-                    شما به تمام بخش‌های مدیریت سالن دسترسی دارید.
+                    شما به بخش‌های مدیریتی سالن دسترسی دارید.
 
                 </p>
 
+
             </div>
+
 
         </div>
 
@@ -553,76 +1011,143 @@
 
             <div class="stat-card">
 
-                <i class="fa-solid fa-calendar-day"></i>
+
+                <div class="stat-icon">
+
+                    <i class="fa-solid fa-calendar-day"></i>
+
+                </div>
+
 
                 <div>
 
-                    <span>رزرو امروز</span>
 
-                    <strong id="adminTodayReservations">
+                    <span>
+
+                        رزرو امروز
+
+                    </span>
+
+
+                    <strong
+                        id="adminTodayReservations"
+                    >
 
                         0
 
                     </strong>
 
+
                 </div>
+
 
             </div>
 
 
+
             <div class="stat-card">
 
-                <i class="fa-solid fa-calendar-check"></i>
+
+                <div class="stat-icon">
+
+                    <i class="fa-solid fa-calendar-check"></i>
+
+                </div>
+
 
                 <div>
 
-                    <span>کل رزروها</span>
 
-                    <strong id="adminTotalReservations">
+                    <span>
+
+                        کل رزروها
+
+                    </span>
+
+
+                    <strong
+                        id="adminTotalReservations"
+                    >
 
                         0
 
                     </strong>
 
+
                 </div>
+
 
             </div>
 
 
+
             <div class="stat-card">
 
-                <i class="fa-solid fa-users"></i>
+
+                <div class="stat-icon">
+
+                    <i class="fa-solid fa-users"></i>
+
+                </div>
+
 
                 <div>
 
-                    <span>کل مشتریان</span>
 
-                    <strong id="adminTotalCustomers">
+                    <span>
+
+                        کل مشتریان
+
+                    </span>
+
+
+                    <strong
+                        id="adminTotalCustomers"
+                    >
 
                         0
 
                     </strong>
 
+
                 </div>
+
 
             </div>
 
 
+
             <div class="stat-card">
 
-                <i class="fa-solid fa-user-scissors"></i>
+
+                <div class="stat-icon">
+
+                    <i class="fa-solid fa-user-scissors"></i>
+
+                </div>
+
 
                 <div>
 
-                    <span>آرایشگران فعال</span>
 
-                    <strong id="adminTotalBarbers">
+                    <span>
+
+                        آرایشگران فعال
+
+                    </span>
+
+
+                    <strong
+                        id="adminTotalBarbers"
+                    >
 
                         0
 
                     </strong>
 
+
                 </div>
+
 
             </div>
 
@@ -630,48 +1155,73 @@
         </div>
 
 
-
-        <!-- دسترسی های مدیریت -->
 
         <div class="admin-actions">
 
 
-            <a href="admin.html"
-               class="admin-action">
+            <a
+                href="admin.html"
+                class="admin-action"
+            >
 
                 <i class="fa-solid fa-gauge-high"></i>
 
-                <span>پنل مدیریت کامل</span>
+                <span>
+
+                    پنل مدیریت
+
+                </span>
 
             </a>
 
 
-            <a href="reserve.html"
-               class="admin-action">
+
+            <a
+                href="reserve.html"
+                class="admin-action"
+            >
 
                 <i class="fa-solid fa-calendar-plus"></i>
 
-                <span>مدیریت رزروها</span>
+                <span>
+
+                    رزرو جدید
+
+                </span>
 
             </a>
 
 
-            <a href="gallery.html"
-               class="admin-action">
+
+            <a
+                href="gallery.html"
+                class="admin-action"
+            >
 
                 <i class="fa-solid fa-images"></i>
 
-                <span>مدیریت نمونه کارها</span>
+                <span>
+
+                    نمونه کارها
+
+                </span>
 
             </a>
 
 
-            <a href="news.html"
-               class="admin-action">
+
+            <a
+                href="news.html"
+                class="admin-action"
+            >
 
                 <i class="fa-solid fa-newspaper"></i>
 
-                <span>مدیریت اخبار</span>
+                <span>
+
+                    اخبار
+
+                </span>
 
             </a>
 
@@ -680,29 +1230,41 @@
 
 
 
-        <!-- همه رزروها -->
-
         <div class="profile-panel">
+
 
             <div class="panel-title">
 
-                <h3>
+
+                <div>
+
 
                     <i class="fa-solid fa-calendar-check"></i>
 
-                    آخرین رزروهای سالن
 
-                </h3>
+                    <h3>
+
+                        آخرین رزروهای سالن
+
+                    </h3>
+
+
+                </div>
+
 
             </div>
 
 
-            <div id="adminReservations"
-                 class="reservation-list">
+
+            <div
+                id="adminReservations"
+                class="reservation-list"
+            >
 
                 در حال دریافت اطلاعات...
 
             </div>
+
 
         </div>
 
@@ -713,8 +1275,11 @@
 </main>
 
 
-<script type="module"
-        src="profile.js"></script>
+
+<script
+    type="module"
+    src="profile.js"
+></script>
 
 
 </body>
