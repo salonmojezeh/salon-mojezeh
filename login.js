@@ -3,16 +3,14 @@
 // Login System
 // ==========================================
 
-
 "use strict";
-
 
 
 import {
 
     signIn,
 
-    getCurrentProfile
+    getCurrentUserProfile
 
 } from "./supabase.js";
 
@@ -21,7 +19,6 @@ import {
 // ==========================================
 // Elements
 // ==========================================
-
 
 const loginForm =
     document.getElementById("loginForm");
@@ -43,12 +40,138 @@ const loginMessage =
     document.getElementById("loginMessage");
 
 
+const passwordToggle =
+    document.getElementById("passwordToggle");
+
+
+const passwordToggleIcon =
+    document.getElementById("passwordToggleIcon");
+
+
+const themeToggle =
+    document.getElementById("themeToggle");
+
+
+const themeIcon =
+    document.getElementById("themeIcon");
+
+
+
+// ==========================================
+// Theme
+// ==========================================
+
+function loadTheme() {
+
+
+    const savedTheme =
+        localStorage.getItem(
+            "salon-theme"
+        );
+
+
+    if (
+        savedTheme === "light"
+    ) {
+
+        document.body.classList.add(
+            "light-mode"
+        );
+
+        themeIcon.className =
+            "fa-solid fa-sun";
+
+    }
+
+}
+
+
+function toggleTheme() {
+
+
+    document.body.classList.toggle(
+        "light-mode"
+    );
+
+
+    const isLight =
+        document.body.classList.contains(
+            "light-mode"
+        );
+
+
+    localStorage.setItem(
+
+        "salon-theme",
+
+        isLight
+            ? "light"
+            : "dark"
+
+    );
+
+
+    themeIcon.className =
+        isLight
+            ? "fa-solid fa-sun"
+            : "fa-solid fa-moon";
+
+}
+
+
+loadTheme();
+
+
+themeToggle.addEventListener(
+
+    "click",
+
+    toggleTheme
+
+);
+
+
+
+// ==========================================
+// Password Toggle
+// ==========================================
+
+passwordToggle.addEventListener(
+
+    "click",
+
+    () => {
+
+
+        const isPassword =
+
+            passwordInput.type ===
+            "password";
+
+
+        passwordInput.type =
+
+            isPassword
+                ? "text"
+                : "password";
+
+
+        passwordToggleIcon.className =
+
+            isPassword
+                ? "fa-solid fa-eye-slash"
+                : "fa-solid fa-eye";
+
+
+    }
+
+);
+
 
 
 // ==========================================
 // Show Message
 // ==========================================
-
 
 function showMessage(
     message,
@@ -74,6 +197,56 @@ function showMessage(
 
     }
 
+}
+
+
+
+// ==========================================
+// Set Loading
+// ==========================================
+
+function setLoading(
+    loading
+) {
+
+
+    loginBtn.disabled =
+        loading;
+
+
+    if (
+        loading
+    ) {
+
+        loginBtn.innerHTML = `
+
+            <i class="fa-solid fa-spinner fa-spin"></i>
+
+            <span>
+
+                در حال ورود...
+
+            </span>
+
+        `;
+
+    }
+
+    else {
+
+        loginBtn.innerHTML = `
+
+            <i class="fa-solid fa-right-to-bracket"></i>
+
+            <span>
+
+                ورود به حساب
+
+            </span>
+
+        `;
+
+    }
 
 }
 
@@ -82,7 +255,6 @@ function showMessage(
 // ==========================================
 // Login Submit
 // ==========================================
-
 
 loginForm.addEventListener(
 
@@ -95,13 +267,18 @@ loginForm.addEventListener(
 
 
         const email =
+
             emailInput.value
-                .trim();
+                .trim()
+                .toLowerCase();
 
 
         const password =
+
             passwordInput.value;
 
+
+        // Validation
 
         if (
             !email ||
@@ -120,16 +297,9 @@ loginForm.addEventListener(
         try {
 
 
-            loginBtn.disabled = true;
-
-
-            loginBtn.innerHTML = `
-
-                <i class="fa-solid fa-spinner fa-spin"></i>
-
-                در حال ورود...
-
-            `;
+            setLoading(
+                true
+            );
 
 
             showMessage(
@@ -137,30 +307,53 @@ loginForm.addEventListener(
             );
 
 
-            // Login
-
-            await signIn(
-                email,
-                password
-            );
-
-
-            // Get Profile
+            // ==================================
+            // Sign In
+            // ==================================
 
             const result =
-                await getCurrentProfile();
+
+                await signIn(
+                    email,
+                    password
+                );
 
 
             if (
                 !result ||
-                !result.profile
+                !result.user
             ) {
 
                 throw new Error(
-                    "پروفایل کاربری پیدا نشد."
+                    "ورود به حساب انجام نشد."
                 );
 
             }
+
+
+            // ==================================
+            // Get Profile
+            // ==================================
+
+            const profile =
+
+                await getCurrentUserProfile();
+
+
+            // اگر هنوز پروفایل ساخته نشده
+            // ورود موفق است ولی پروفایل باید
+            // در صفحه پروفایل مدیریت شود
+
+            console.log(
+                "Login user:",
+                result.user
+            );
+
+
+            console.log(
+                "User profile:",
+                profile
+            );
 
 
             showMessage(
@@ -172,19 +365,31 @@ loginForm.addEventListener(
             );
 
 
+            // ==================================
             // Redirect
+            // ==================================
 
-            setTimeout(() => {
+            setTimeout(
 
-
-                window.location.href =
-                    "profile.html";
-
-
-            }, 700);
+                () => {
 
 
-        } catch (error) {
+                    window.location.href =
+                        "profile.html";
+
+
+                },
+
+                700
+
+            );
+
+
+        }
+
+        catch (
+            error
+        ) {
 
 
             console.error(
@@ -197,11 +402,16 @@ loginForm.addEventListener(
                 "خطا در ورود به حساب.";
 
 
+            const errorText =
+                error.message || "";
+
+
             if (
-                error.message
-                    .includes(
-                        "Invalid login credentials"
-                    )
+
+                errorText.includes(
+                    "Invalid login credentials"
+                )
+
             ) {
 
                 message =
@@ -210,15 +420,40 @@ loginForm.addEventListener(
             }
 
 
-            if (
-                error.message
-                    .includes(
-                        "Email not confirmed"
-                    )
+            else if (
+
+                errorText.includes(
+                    "Email not confirmed"
+                )
+
             ) {
 
                 message =
                     "ایمیل هنوز تأیید نشده است.";
+
+            }
+
+
+            else if (
+
+                errorText.includes(
+                    "User not found"
+                )
+
+            ) {
+
+                message =
+                    "کاربری با این اطلاعات پیدا نشد.";
+
+            }
+
+
+            else if (
+                errorText
+            ) {
+
+                message =
+                    errorText;
 
             }
 
@@ -228,19 +463,14 @@ loginForm.addEventListener(
             );
 
 
-        } finally {
+        }
+
+        finally {
 
 
-            loginBtn.disabled = false;
-
-
-            loginBtn.innerHTML = `
-
-                <i class="fa-solid fa-right-to-bracket"></i>
-
-                ورود به حساب
-
-            `;
+            setLoading(
+                false
+            );
 
 
         }
