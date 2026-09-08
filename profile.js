@@ -1,12 +1,25 @@
 /* ==========================================
    Salon Mojezeh
    Smart Profile System
-   profile.js
 ========================================== */
 
+"use strict";
+
+
 import {
-    supabase
+
+    supabase,
+
+    RESERVATION_STATUS,
+
+    getCurrentUser,
+
+    getCurrentUserProfile,
+
+    signOutUser
+
 } from "./supabase.js";
+
 
 
 /* ==========================================
@@ -14,149 +27,452 @@ import {
 ========================================== */
 
 const loader =
-document.getElementById("profileLoader");
+    document.getElementById(
+        "profileLoader"
+    );
+
 
 const profileName =
-document.getElementById("profileName");
+    document.getElementById(
+        "profileName"
+    );
+
 
 const profileSubtitle =
-document.getElementById("profileSubtitle");
+    document.getElementById(
+        "profileSubtitle"
+    );
+
 
 const profileBadge =
-document.getElementById("profileBadge");
+    document.getElementById(
+        "profileBadge"
+    );
+
 
 const profileAvatarIcon =
-document.getElementById("profileAvatarIcon");
+    document.getElementById(
+        "profileAvatarIcon"
+    );
+
 
 const customerDashboard =
-document.getElementById("customerDashboard");
+    document.getElementById(
+        "customerDashboard"
+    );
+
 
 const barberDashboard =
-document.getElementById("barberDashboard");
+    document.getElementById(
+        "barberDashboard"
+    );
+
 
 const adminDashboard =
-document.getElementById("adminDashboard");
+    document.getElementById(
+        "adminDashboard"
+    );
+
 
 const logoutBtn =
-document.getElementById("logoutBtn");
+    document.getElementById(
+        "logoutBtn"
+    );
+
+
+const themeToggle =
+    document.getElementById(
+        "themeToggle"
+    );
+
+
+const themeIcon =
+    document.getElementById(
+        "themeIcon"
+    );
+
 
 
 /* ==========================================
-   Status Helper
+   Theme System
 ========================================== */
 
-function getStatusClass(status){
+function loadTheme() {
 
-    if(status === "انجام شد"){
-        return "status-done";
+
+    const savedTheme =
+        localStorage.getItem(
+            "salon-theme"
+        );
+
+
+    if (
+        savedTheme === "light"
+    ) {
+
+        document.body.classList.add(
+            "light-mode"
+        );
+
+
+        themeIcon.className =
+            "fa-solid fa-sun";
+
     }
-
-    if(status === "لغو شده"){
-        return "status-cancel";
-    }
-
-    return "status-wait";
 
 }
+
+
+function toggleTheme() {
+
+
+    document.body.classList.toggle(
+        "light-mode"
+    );
+
+
+    const isLight =
+        document.body.classList.contains(
+            "light-mode"
+        );
+
+
+    localStorage.setItem(
+
+        "salon-theme",
+
+        isLight
+            ? "light"
+            : "dark"
+
+    );
+
+
+    themeIcon.className =
+        isLight
+            ? "fa-solid fa-sun"
+            : "fa-solid fa-moon";
+
+}
+
+
+loadTheme();
+
+
+themeToggle.addEventListener(
+
+    "click",
+
+    toggleTheme
+
+);
+
+
+
+
+/* ==========================================
+   Reservation Status Helpers
+========================================== */
+
+function getStatusInfo(
+    status
+) {
+
+
+    const statuses = {
+
+
+        [RESERVATION_STATUS.RESERVED]: {
+
+            label:
+                "رزرو شده",
+
+            className:
+                "status-reserved"
+
+        },
+
+
+        [RESERVATION_STATUS.COMPLETED]: {
+
+            label:
+                "انجام شده",
+
+            className:
+                "status-completed"
+
+        },
+
+
+        [RESERVATION_STATUS.CANCELLED]: {
+
+            label:
+                "لغو شده",
+
+            className:
+                "status-cancelled"
+
+        },
+
+
+        [RESERVATION_STATUS.NO_SHOW]: {
+
+            label:
+                "عدم مراجعه",
+
+            className:
+                "status-no-show"
+
+        }
+
+
+    };
+
+
+    return (
+
+        statuses[status]
+
+        ||
+
+        {
+
+            label:
+                status || "نامشخص",
+
+            className:
+                "status-no-show"
+
+        }
+
+    );
+
+}
+
 
 
 /* ==========================================
    Date Helper
 ========================================== */
 
-function getTodayDate(){
+function getTodayDate() {
 
-    const today = new Date();
 
-    return today.toISOString().split("T")[0];
+    const today =
+        new Date();
+
+
+    const year =
+        today.getFullYear();
+
+
+    const month =
+        String(
+            today.getMonth() + 1
+        ).padStart(
+            2,
+            "0"
+        );
+
+
+    const day =
+        String(
+            today.getDate()
+        ).padStart(
+            2,
+            "0"
+        );
+
+
+    return `${year}-${month}-${day}`;
 
 }
 
 
+
 /* ==========================================
-   Load User Profile
+   Full Name Helper
 ========================================== */
 
-async function loadProfile(){
-
-    try{
-
-
-        /* =========================
-           Get Auth User
-        ========================= */
-
-        const {
-
-            data: authData,
-            error: authError
-
-        } = await supabase.auth.getUser();
+function getCustomerFullName(
+    customer
+) {
 
 
-        if(authError){
+    if (
+        !customer
+    ) {
 
-            throw authError;
+        return "";
 
-        }
+    }
 
+
+    return [
+
+        customer.first_name,
+
+        customer.last_name
+
+    ]
+
+        .filter(Boolean)
+
+        .join(" ")
+
+        .trim();
+
+}
+
+
+
+/* ==========================================
+   Hide All Dashboards
+========================================== */
+
+function hideAllDashboards() {
+
+
+    customerDashboard.classList.add(
+        "hidden"
+    );
+
+
+    barberDashboard.classList.add(
+        "hidden"
+    );
+
+
+    adminDashboard.classList.add(
+        "hidden"
+    );
+
+}
+
+
+
+/* ==========================================
+   Render Error
+========================================== */
+
+function showProfileError(
+    message
+) {
+
+
+    profileName.textContent =
+        "خطا در دریافت اطلاعات";
+
+
+    profileSubtitle.textContent =
+        message;
+
+
+    profileBadge.textContent =
+        "خطا";
+
+
+    profileAvatarIcon.className =
+        "fa-solid fa-triangle-exclamation";
+
+}
+
+
+
+/* ==========================================
+   Main Profile Loader
+========================================== */
+
+async function loadProfile() {
+
+
+    try {
+
+
+        hideAllDashboards();
+
+
+        // ================================
+        // Get Auth User
+        // ================================
 
         const user =
-        authData.user;
+            await getCurrentUser();
 
 
-        /* =========================
-           User Not Logged In
-        ========================= */
-
-        if(!user){
+        if (
+            !user
+        ) {
 
             window.location.href =
-            "index.html";
+                "login.html";
 
             return;
 
         }
 
 
-        /* =========================
-           Get User Profile
-        ========================= */
+        // ================================
+        // Get User Profile
+        // ================================
 
-        const {
-
-            data: profile,
-            error: profileError
-
-        } = await supabase
-
-        .from("user_profiles")
-
-        .select("*")
-
-        .eq("id", user.id)
-
-        .single();
+        let profile =
+            await getCurrentUserProfile();
 
 
-        if(profileError){
+        /*
+            اگر user_profiles وجود نداشت
+            کاربر همچنان می‌تواند وارد شود.
+            به عنوان مشتری عمومی نمایش داده می‌شود.
+        */
 
-            throw profileError;
+        if (
+            !profile
+        ) {
+
+            await loadGuestCustomerProfile(
+                user
+            );
+
+            return;
 
         }
 
 
         console.log(
-            "USER PROFILE:",
+            "USER:",
+            user
+        );
+
+
+        console.log(
+            "PROFILE:",
             profile
         );
 
 
-        /* =========================
-           Admin
-        ========================= */
+        // ================================
+        // Inactive User
+        // ================================
 
-        if(profile.is_admin === true){
+        if (
+            profile.active === false
+        ) {
+
+            throw new Error(
+                "این حساب کاربری غیرفعال شده است."
+            );
+
+        }
+
+
+        // ================================
+        // Admin
+        // ================================
+
+        if (
+            profile.is_admin === true
+        ) {
 
             await loadAdminProfile(
                 profile,
@@ -168,15 +484,19 @@ async function loadProfile(){
         }
 
 
-        /* =========================
-           Barber
-        ========================= */
+        // ================================
+        // Barber
+        // ================================
 
-        if(
+        if (
+
             profile.role === "barber"
+
             &&
+
             profile.barber_id
-        ){
+
+        ) {
 
             await loadBarberProfile(
                 profile,
@@ -188,9 +508,9 @@ async function loadProfile(){
         }
 
 
-        /* =========================
-           Customer
-        ========================= */
+        // ================================
+        // Customer
+        // ================================
 
         await loadCustomerProfile(
             profile,
@@ -200,7 +520,10 @@ async function loadProfile(){
 
     }
 
-    catch(error){
+    catch (
+        error
+    ) {
+
 
         console.error(
             "Profile Error:",
@@ -208,22 +531,88 @@ async function loadProfile(){
         );
 
 
-        profileName.textContent =
-        "خطا در دریافت اطلاعات";
-
-
-        profileSubtitle.textContent =
-        error.message;
+        showProfileError(
+            error.message ||
+            "خطایی در دریافت اطلاعات رخ داد."
+        );
 
 
     }
 
-    finally{
+    finally {
+
 
         loader.style.display =
-        "none";
+            "none";
+
 
     }
+
+}
+
+
+
+/* ==========================================
+   Fallback Customer
+========================================== */
+
+async function loadGuestCustomerProfile(
+    user
+) {
+
+
+    customerDashboard.classList.remove(
+        "hidden"
+    );
+
+
+    profileAvatarIcon.className =
+        "fa-solid fa-user";
+
+
+    profileBadge.textContent =
+        "مشتری سالن";
+
+
+    profileName.textContent =
+        user.email ||
+        "مشتری سالن معجزه";
+
+
+    profileSubtitle.textContent =
+        "پروفایل کاربری";
+
+
+    document.getElementById(
+        "customerFullName"
+    ).textContent =
+        "اطلاعات تکمیل نشده";
+
+
+    document.getElementById(
+        "customerPhone"
+    ).textContent =
+        "---";
+
+
+    document.getElementById(
+        "customerReservations"
+    ).innerHTML = `
+
+        <div class="empty-state">
+
+            <i class="fa-solid fa-user-plus"></i>
+
+            <p>
+
+                هنوز اطلاعات مشتری شما به پروفایل متصل نشده است.
+
+            </p>
+
+        </div>
+
+    `;
+
 
 }
 
@@ -236,220 +625,317 @@ async function loadProfile(){
 async function loadCustomerProfile(
     profile,
     user
-){
+) {
 
 
-    customerDashboard.classList
-    .remove("hidden");
+    customerDashboard.classList.remove(
+        "hidden"
+    );
 
 
     profileAvatarIcon.className =
-    "fa-solid fa-user";
+        "fa-solid fa-user";
 
 
     profileBadge.textContent =
-    "مشتری سالن";
+        "مشتری سالن";
 
 
     profileSubtitle.textContent =
-    "پروفایل مشتری";
+        "پروفایل مشتری";
 
 
-    let customer = null;
+    let customer =
+        null;
 
 
-    /* =========================
-       Customer by ID
-    ========================= */
+    // ================================
+    // Get Customer by customer_id
+    // ================================
 
-    if(profile.customer_id){
+    if (
+        profile.customer_id
+    ) {
+
 
         const {
 
-            data
+            data,
+
+            error
 
         } = await supabase
 
-        .from("customers")
+            .from("customers")
 
-        .select("*")
+            .select("*")
 
-        .eq(
-            "id",
-            profile.customer_id
-        )
+            .eq(
+                "id",
+                profile.customer_id
+            )
 
-        .single();
+            .maybeSingle();
 
 
-        customer = data;
+        if (
+            error
+        ) {
+
+            console.error(
+                "Customer load error:",
+                error
+            );
+
+        }
+
+
+        customer =
+            data || null;
+
 
     }
 
 
-    /* =========================
-       Customer by phone/email
-       fallback
-    ========================= */
+    // ================================
+    // Profile Name
+    // ================================
 
-    if(!customer){
-
-        profileName.textContent =
-        user.email ||
-        "مشتری سالن معجزه";
-
-    }
-
-
-    else{
+    if (
+        customer
+    ) {
 
 
         const fullName =
-        `${customer.first_name || ""}
-        ${customer.last_name || ""}`
-        .trim();
+            getCustomerFullName(
+                customer
+            );
 
 
         profileName.textContent =
-        fullName ||
-        "مشتری سالن معجزه";
+
+            fullName ||
+
+            user.email ||
+
+            "مشتری سالن معجزه";
 
 
         document.getElementById(
             "customerFullName"
         ).textContent =
-        fullName;
+
+            fullName || "---";
 
 
         document.getElementById(
             "customerPhone"
         ).textContent =
-        customer.phone ||
-        "---";
+
+            customer.phone || "---";
 
 
         document.getElementById(
             "customerVisits"
         ).textContent =
-        customer.visit_count || 0;
+
+            customer.visit_count || 0;
 
 
         document.getElementById(
             "customerLastVisit"
         ).textContent =
-        customer.last_visit ||
-        "---";
+
+            customer.last_visit || "---";
 
 
         document.getElementById(
             "customerFavoriteModel"
         ).textContent =
-        customer.favorite_model ||
-        "ثبت نشده";
+
+            customer.favorite_model ||
+            "ثبت نشده";
 
 
         document.getElementById(
             "customerLastBarber"
         ).textContent =
-        customer.last_barber_name ||
-        "---";
+
+            customer.last_barber_name ||
+            "---";
+
+
+    }
+
+    else {
+
+
+        profileName.textContent =
+            user.email ||
+            "مشتری سالن معجزه";
 
 
     }
 
 
-    /* =========================
-       Club Data
-    ========================= */
+    // ================================
+    // Club Data
+    // ================================
 
-    if(customer){
+    if (
+        customer
+    ) {
+
 
         const {
 
-            data: club
+            data: club,
+
+            error: clubError
 
         } = await supabase
 
-        .from("club_members")
+            .from("club_members")
 
-        .select("*")
+            .select("*")
 
-        .eq(
-            "customer_id",
-            customer.id
-        )
+            .eq(
+                "customer_id",
+                customer.id
+            )
 
-        .single();
+            .maybeSingle();
 
 
-        if(club){
+        if (
+            clubError
+        ) {
+
+            console.warn(
+                "Club data unavailable:",
+                clubError
+            );
+
+        }
+
+
+        if (
+            club
+        ) {
+
 
             document.getElementById(
                 "customerPoints"
             ).textContent =
-            club.points || 0;
+
+                club.points || 0;
 
 
             document.getElementById(
                 "customerGift"
             ).textContent =
-            club.available_gift
-            ?
-            "🎁 آماده"
-            :
-            "ندارد";
+
+                club.available_gift
+                    ? "آماده 🎁"
+                    : "ندارد";
+
 
         }
+
 
     }
 
 
-    /* =========================
-       Customer Reservations
-    ========================= */
+    // ================================
+    // Customer Reservations
+    // ================================
 
-    if(customer){
+    if (
+        customer
+    ) {
+
 
         const {
 
             data: reservations,
+
             error
 
         } = await supabase
 
-        .from("reservations")
+            .from("reservations")
 
-        .select("*")
+            .select("*")
 
-        .eq(
-            "customer_id",
-            customer.id
-        )
+            .eq(
+                "customer_id",
+                customer.id
+            )
 
-        .order(
-            "date",
-            {
-                ascending:false
-            }
-        );
+            .order(
+                "date",
+                {
+                    ascending: false
+                }
+            )
+
+            .order(
+                "time",
+                {
+                    ascending: false
+                }
+            );
 
 
-        if(error){
+        if (
+            error
+        ) {
 
-            console.error(error);
+            console.error(
+                "Customer reservations error:",
+                error
+            );
 
-            return;
+
+            renderReservations(
+
+                "customerReservations",
+
+                []
+
+            );
+
 
         }
+
+        else {
+
+
+            renderReservations(
+
+                "customerReservations",
+
+                reservations || []
+
+            );
+
+
+        }
+
+
+    }
+
+    else {
 
 
         renderReservations(
 
             "customerReservations",
 
-            reservations || []
+            []
 
         );
+
 
     }
 
@@ -465,49 +951,53 @@ async function loadCustomerProfile(
 async function loadBarberProfile(
     profile,
     user
-){
+) {
 
 
-    barberDashboard.classList
-    .remove("hidden");
+    barberDashboard.classList.remove(
+        "hidden"
+    );
 
 
     profileAvatarIcon.className =
-    "fa-solid fa-user-scissors";
+        "fa-solid fa-user-scissors";
 
 
     profileBadge.textContent =
-    "آرایشگر سالن";
+        "آرایشگر سالن";
 
 
     profileSubtitle.textContent =
-    "پنل شخصی آرایشگر";
+        "پنل شخصی آرایشگر";
 
 
-    /* =========================
-       Get Barber
-    ========================= */
+    // ================================
+    // Get Barber
+    // ================================
 
     const {
 
         data: barber,
+
         error: barberError
 
     } = await supabase
 
-    .from("barbers")
+        .from("barbers")
 
-    .select("*")
+        .select("*")
 
-    .eq(
-        "id",
-        profile.barber_id
-    )
+        .eq(
+            "id",
+            profile.barber_id
+        )
 
-    .single();
+        .maybeSingle();
 
 
-    if(barberError){
+    if (
+        barberError
+    ) {
 
         throw barberError;
 
@@ -515,38 +1005,53 @@ async function loadBarberProfile(
 
 
     profileName.textContent =
-    barber.name;
+
+        barber?.name ||
+
+        user.email ||
+
+        "آرایشگر سالن";
 
 
-    /* =========================
-       Get Reservations
-    ========================= */
+    // ================================
+    // Get Reservations
+    // ================================
 
     const {
 
         data: reservations,
+
         error: reservationError
 
     } = await supabase
 
-    .from("reservations")
+        .from("reservations")
 
-    .select("*")
+        .select("*")
 
-    .eq(
-        "barber_id",
-        profile.barber_id
-    )
+        .eq(
+            "barber_id",
+            profile.barber_id
+        )
 
-    .order(
-        "date",
-        {
-            ascending:false
-        }
-    );
+        .order(
+            "date",
+            {
+                ascending: false
+            }
+        )
+
+        .order(
+            "time",
+            {
+                ascending: false
+            }
+        );
 
 
-    if(reservationError){
+    if (
+        reservationError
+    ) {
 
         throw reservationError;
 
@@ -554,70 +1059,93 @@ async function loadBarberProfile(
 
 
     const allReservations =
-    reservations || [];
+        reservations || [];
 
 
     const today =
-    getTodayDate();
+        getTodayDate();
 
 
-    /* =========================
-       Statistics
-    ========================= */
+    // ================================
+    // Statistics
+    // ================================
 
     const todayReservations =
-    allReservations.filter(item =>
-        item.date === today
-    );
+
+        allReservations.filter(
+
+            item =>
+
+                item.date === today
+
+                &&
+
+                item.status ===
+                RESERVATION_STATUS.RESERVED
+
+        );
 
 
     const completed =
-    allReservations.filter(item =>
-        item.status === "انجام شد"
-    );
+
+        allReservations.filter(
+
+            item =>
+
+                item.status ===
+                RESERVATION_STATUS.COMPLETED
+
+        );
 
 
-    const uniqueCustomers =
-    new Set(
+    const uniqueCustomerIds =
 
-        allReservations
-        .filter(item =>
-            item.customer_id
-        )
-        .map(item =>
-            item.customer_id
-        )
+        [
 
-    );
+            ...new Set(
+
+                allReservations
+
+                    .filter(
+                        item => item.customer_id
+                    )
+
+                    .map(
+                        item => item.customer_id
+                    )
+
+            )
+
+        ];
 
 
     document.getElementById(
         "barberTodayReservations"
     ).textContent =
-    todayReservations.length;
+        todayReservations.length;
 
 
     document.getElementById(
         "barberTotalReservations"
     ).textContent =
-    allReservations.length;
+        allReservations.length;
 
 
     document.getElementById(
         "barberCustomers"
     ).textContent =
-    uniqueCustomers.size;
+        uniqueCustomerIds.length;
 
 
     document.getElementById(
         "barberCompleted"
     ).textContent =
-    completed.length;
+        completed.length;
 
 
-    /* =========================
-       Render Reservations
-    ========================= */
+    // ================================
+    // Render Reservations
+    // ================================
 
     renderReservations(
 
@@ -628,36 +1156,40 @@ async function loadBarberProfile(
     );
 
 
-    /* =========================
-       Get Customers
-    ========================= */
+    // ================================
+    // Get Customers
+    // ================================
 
-    if(uniqueCustomers.size > 0){
-
-        const customerIds =
-        [...uniqueCustomers];
+    if (
+        uniqueCustomerIds.length > 0
+    ) {
 
 
         const {
 
             data: customers,
+
             error: customerError
 
         } = await supabase
 
-        .from("customers")
+            .from("customers")
 
-        .select("*")
+            .select("*")
 
-        .in(
-            "id",
-            customerIds
-        );
+            .in(
+                "id",
+                uniqueCustomerIds
+            );
 
 
-        if(customerError){
+        if (
+            customerError
+        ) {
 
-            console.error(customerError);
+            console.error(
+                customerError
+            );
 
         }
 
@@ -666,14 +1198,30 @@ async function loadBarberProfile(
             customers || []
         );
 
+
     }
 
-    else{
+    else {
+
 
         document.getElementById(
             "barberCustomerList"
-        ).innerHTML =
-        "هنوز مشتری ثبت نشده است.";
+        ).innerHTML = `
+
+            <div class="empty-state">
+
+                <i class="fa-solid fa-users"></i>
+
+                <p>
+
+                    هنوز مشتری ثبت نشده است.
+
+                </p>
+
+            </div>
+
+        `;
+
 
     }
 
@@ -689,30 +1237,39 @@ async function loadBarberProfile(
 async function loadAdminProfile(
     profile,
     user
-){
+) {
 
 
-    adminDashboard.classList
-    .remove("hidden");
+    adminDashboard.classList.remove(
+        "hidden"
+    );
 
 
     profileAvatarIcon.className =
-    "fa-solid fa-crown";
+        "fa-solid fa-crown";
 
 
     profileBadge.textContent =
-    "مدیر سالن";
+        "مدیر سالن";
 
 
     profileSubtitle.textContent =
-    "دسترسی کامل مدیریت";
+        "دسترسی کامل مدیریت";
 
 
-    /* =========================
-       Get Barber Name
-    ========================= */
+    profileName.textContent =
+        user.email ||
+        "مدیر سالن";
 
-    if(profile.barber_id){
+
+    // ================================
+    // Optional Barber Name
+    // ================================
+
+    if (
+        profile.barber_id
+    ) {
+
 
         const {
 
@@ -720,156 +1277,201 @@ async function loadAdminProfile(
 
         } = await supabase
 
-        .from("barbers")
+            .from("barbers")
 
-        .select("*")
+            .select("name")
 
-        .eq(
-            "id",
-            profile.barber_id
-        )
+            .eq(
+                "id",
+                profile.barber_id
+            )
 
-        .single();
+            .maybeSingle();
 
 
-        if(barber){
+        if (
+            barber?.name
+        ) {
 
             profileName.textContent =
-            barber.name;
+                barber.name;
 
         }
 
-    }
-
-
-    if(!profileName.textContent){
-
-        profileName.textContent =
-        user.email;
 
     }
 
 
-    /* =========================
-       Load Reservations
-    ========================= */
+    // ================================
+    // Reservations
+    // ================================
 
     const {
 
-        data: reservations
+        data: reservations,
+
+        error: reservationsError
 
     } = await supabase
 
-    .from("reservations")
+        .from("reservations")
 
-    .select("*")
+        .select("*")
 
-    .order(
-        "created_at",
-        {
-            ascending:false
-        }
-    );
+        .order(
+            "created_at",
+            {
+                ascending: false
+            }
+        );
+
+
+    if (
+        reservationsError
+    ) {
+
+        throw reservationsError;
+
+    }
 
 
     const allReservations =
-    reservations || [];
+        reservations || [];
 
-
-    /* =========================
-       Today
-    ========================= */
 
     const today =
-    getTodayDate();
+        getTodayDate();
 
 
     const todayCount =
-    allReservations.filter(item =>
-        item.date === today
-    ).length;
+
+        allReservations.filter(
+
+            item =>
+
+                item.date === today
+
+        ).length;
 
 
     document.getElementById(
         "adminTodayReservations"
     ).textContent =
-    todayCount;
+        todayCount;
 
 
     document.getElementById(
         "adminTotalReservations"
     ).textContent =
-    allReservations.length;
+        allReservations.length;
 
 
-    /* =========================
-       Customers Count
-    ========================= */
+    // ================================
+    // Customers Count
+    // ================================
 
     const {
 
-        count: customerCount
+        count: customerCount,
+
+        error: customerCountError
 
     } = await supabase
 
-    .from("customers")
+        .from("customers")
 
-    .select(
-        "*",
-        {
-            count:"exact",
-            head:true
-        }
-    );
+        .select(
+
+            "*",
+
+            {
+
+                count: "exact",
+
+                head: true
+
+            }
+
+        );
+
+
+    if (
+        customerCountError
+    ) {
+
+        console.error(
+            customerCountError
+        );
+
+    }
 
 
     document.getElementById(
         "adminTotalCustomers"
     ).textContent =
-    customerCount || 0;
+        customerCount || 0;
 
 
-    /* =========================
-       Barbers Count
-    ========================= */
+    // ================================
+    // Active Barbers Count
+    // ================================
 
     const {
 
-        count: barberCount
+        count: barberCount,
+
+        error: barberCountError
 
     } = await supabase
 
-    .from("barbers")
+        .from("barbers")
 
-    .select(
-        "*",
-        {
-            count:"exact",
-            head:true
-        }
-    )
+        .select(
 
-    .eq(
-        "active",
-        true
-    );
+            "*",
+
+            {
+
+                count: "exact",
+
+                head: true
+
+            }
+
+        )
+
+        .eq(
+            "active",
+            true
+        );
+
+
+    if (
+        barberCountError
+    ) {
+
+        console.error(
+            barberCountError
+        );
+
+    }
 
 
     document.getElementById(
         "adminTotalBarbers"
     ).textContent =
-    barberCount || 0;
+        barberCount || 0;
 
 
-    /* =========================
-       Render Latest Reservations
-    ========================= */
+    // ================================
+    // Latest Reservations
+    // ================================
 
     renderReservations(
 
         "adminReservations",
 
-        allReservations.slice(0,15)
+        allReservations.slice(0, 15)
 
     );
 
@@ -885,116 +1487,188 @@ async function loadAdminProfile(
 function renderReservations(
     containerId,
     reservations
-){
+) {
 
 
     const container =
-    document.getElementById(
-        containerId
-    );
-
-
-    if(!container){
-
-        return;
-
-    }
-
-
-    if(!reservations.length){
-
-        container.innerHTML = `
-
-            <p style="color:#888">
-
-                هنوز رزروی ثبت نشده است.
-
-            </p>
-
-        `;
-
-        return;
-
-    }
-
-
-    container.innerHTML = "";
-
-
-    reservations.forEach(item => {
-
-
-        const statusClass =
-        getStatusClass(
-            item.status
+        document.getElementById(
+            containerId
         );
 
 
-        const fullName =
-        `${item.first_name || ""}
-        ${item.last_name || ""}`
-        .trim();
+    if (
+        !container
+    ) {
+
+        return;
+
+    }
 
 
-        const div =
-        document.createElement("div");
+    // ================================
+    // Empty
+    // ================================
+
+    if (
+        !reservations ||
+        reservations.length === 0
+    ) {
 
 
-        div.className =
-        "reservation-item";
+        container.innerHTML = `
 
+            <div class="empty-state">
 
-        div.innerHTML = `
-
-            <div class="reservation-main">
-
-                <h4>
-
-                    ${fullName}
-
-                </h4>
-
-
-                <p>
-
-                    ✂ ${item.service || "---"}
-
-                </p>
-
+                <i class="fa-solid fa-calendar-xmark"></i>
 
                 <p>
 
-                    📅 ${item.date || "---"}
-
-                    |
-
-                    🕒 ${item.time || "---"}
-
-                </p>
-
-
-                <p>
-
-                    👤 ${item.barber_name || ""}
+                    هنوز رزروی ثبت نشده است.
 
                 </p>
 
             </div>
 
-
-            <span class="reservation-status ${statusClass}">
-
-                ${item.status || "در انتظار"}
-
-            </span>
-
         `;
 
 
-        container.appendChild(div);
+        return;
+
+    }
 
 
-    });
+    container.innerHTML =
+        "";
+
+
+    reservations.forEach(
+        item => {
+
+
+            const statusInfo =
+                getStatusInfo(
+                    item.status
+                );
+
+
+            const fullName =
+
+                [
+
+                    item.first_name,
+
+                    item.last_name
+
+                ]
+
+                    .filter(Boolean)
+
+                    .join(" ")
+
+                    .trim()
+
+                ||
+
+                "مشتری";
+
+
+            const dateText =
+
+                item.display_date ||
+
+                item.date ||
+
+                "---";
+
+
+            const barberText =
+
+                item.barber_name ||
+
+                "---";
+
+
+            const serviceText =
+
+                item.service ||
+
+                "---";
+
+
+            const div =
+                document.createElement(
+                    "div"
+                );
+
+
+            div.className =
+                "reservation-item";
+
+
+            div.innerHTML = `
+
+                <div class="reservation-main">
+
+                    <h4>
+
+                        ${escapeHtml(fullName)}
+
+                    </h4>
+
+
+                    <p>
+
+                        ✂️
+                        ${escapeHtml(serviceText)}
+
+                    </p>
+
+
+                    <p>
+
+                        📅
+                        ${escapeHtml(dateText)}
+
+                        |
+
+                        🕒
+                        ${escapeHtml(item.time || "---")}
+
+                    </p>
+
+
+                    <p>
+
+                        👤
+                        ${escapeHtml(barberText)}
+
+                    </p>
+
+                </div>
+
+
+                <span
+                    class="
+                        reservation-status
+                        ${statusInfo.className}
+                    "
+                >
+
+                    ${statusInfo.label}
+
+                </span>
+
+            `;
+
+
+            container.appendChild(
+                div
+            );
+
+
+        }
+
+    );
 
 
 }
@@ -1002,91 +1676,158 @@ function renderReservations(
 
 
 /* ==========================================
-   Render Barber Customers
+   Render Customers
 ========================================== */
 
-function renderCustomers(customers){
+function renderCustomers(
+    customers
+) {
 
 
     const container =
-    document.getElementById(
-        "barberCustomerList"
-    );
+        document.getElementById(
+            "barberCustomerList"
+        );
 
 
-    if(!container){
-
-        return;
-
-    }
-
-
-    if(!customers.length){
-
-        container.innerHTML =
-        "مشتری پیدا نشد.";
+    if (
+        !container
+    ) {
 
         return;
 
     }
 
 
-    container.innerHTML = "";
+    if (
+        !customers ||
+        customers.length === 0
+    ) {
 
 
-    customers.forEach(customer => {
+        container.innerHTML = `
 
+            <div class="empty-state">
 
-        const div =
-        document.createElement("div");
+                <i class="fa-solid fa-users"></i>
 
+                <p>
 
-        div.className =
-        "customer-item";
+                    مشتری پیدا نشد.
 
+                </p>
 
-        div.innerHTML = `
-
-            <h4>
-
-                ${customer.first_name || ""}
-                ${customer.last_name || ""}
-
-            </h4>
-
-
-            <p>
-
-                📞 ${customer.phone || "---"}
-
-            </p>
-
-
-            <p>
-
-                ✂ تعداد مراجعات:
-
-                ${customer.visit_count || 0}
-
-            </p>
-
-
-            <p>
-
-                آخرین مراجعه:
-
-                ${customer.last_visit || "---"}
-
-            </p>
+            </div>
 
         `;
 
 
-        container.appendChild(div);
+        return;
+
+    }
 
 
-    });
+    container.innerHTML =
+        "";
 
+
+    customers.forEach(
+        customer => {
+
+
+            const fullName =
+                getCustomerFullName(
+                    customer
+                );
+
+
+            const div =
+                document.createElement(
+                    "div"
+                );
+
+
+            div.className =
+                "customer-item";
+
+
+            div.innerHTML = `
+
+                <h4>
+
+                    ${escapeHtml(
+                        fullName || "مشتری"
+                    )}
+
+                </h4>
+
+
+                <p>
+
+                    📞
+                    ${escapeHtml(
+                        customer.phone || "---"
+                    )}
+
+                </p>
+
+
+                <p>
+
+                    ✂️ تعداد مراجعات:
+
+                    ${customer.visit_count || 0}
+
+                </p>
+
+
+                <p>
+
+                    آخرین مراجعه:
+
+                    ${escapeHtml(
+                        customer.last_visit || "---"
+                    )}
+
+                </p>
+
+            `;
+
+
+            container.appendChild(
+                div
+            );
+
+
+        }
+
+    );
+
+
+}
+
+
+
+/* ==========================================
+   Security Helper
+========================================== */
+
+function escapeHtml(
+    value
+) {
+
+
+    const div =
+        document.createElement(
+            "div"
+        );
+
+
+    div.textContent =
+        String(value ?? "");
+
+
+    return div.innerHTML;
 
 }
 
@@ -1097,51 +1838,75 @@ function renderCustomers(customers){
 ========================================== */
 
 logoutBtn.addEventListener(
+
     "click",
 
     async () => {
 
 
         const confirmLogout =
-        confirm(
-            "آیا می‌خواهید از حساب خود خارج شوید؟"
-        );
-
-
-        if(!confirmLogout){
-
-            return;
-
-        }
-
-
-        const {
-
-            error
-
-        } = await supabase.auth.signOut();
-
-
-        if(error){
-
-            alert(
-                "خطا در خروج از حساب"
+            confirm(
+                "آیا مطمئن هستید که می‌خواهید از حساب خود خارج شوید؟"
             );
 
-            console.error(error);
+
+        if (
+            !confirmLogout
+        ) {
 
             return;
 
         }
 
 
-        window.location.href =
-        "index.html";
+        try {
+
+
+            logoutBtn.disabled =
+                true;
+
+
+            await signOutUser();
+
+
+            window.location.href =
+                "index.html";
+
+
+        }
+
+        catch (
+            error
+        ) {
+
+
+            console.error(
+                "Logout error:",
+                error
+            );
+
+
+            alert(
+                "خطایی در خروج از حساب رخ داد."
+            );
+
+
+        }
+
+        finally {
+
+
+            logoutBtn.disabled =
+                false;
+
+
+        }
 
 
     }
 
 );
+
 
 
 
