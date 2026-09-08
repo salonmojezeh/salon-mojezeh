@@ -11,7 +11,7 @@
     >
 
     <title>
-        ورود | سالن معجزه
+        ورود به حساب | سالن معجزه
     </title>
 
 
@@ -38,6 +38,78 @@
 <body>
 
 
+<!-- Header -->
+
+<header class="site-header">
+
+
+    <a
+        href="index.html"
+        class="header-logo"
+    >
+
+        <div class="header-logo-icon">
+
+            <i class="fa-solid fa-scissors"></i>
+
+        </div>
+
+
+        <div>
+
+            <strong>
+                سالن معجزه
+            </strong>
+
+            <span>
+                Salon Mojezeh
+            </span>
+
+        </div>
+
+    </a>
+
+
+
+    <div class="header-actions">
+
+
+        <button
+            id="themeToggle"
+            class="theme-toggle"
+            type="button"
+            aria-label="تغییر حالت شب و روز"
+        >
+
+            <i
+                id="themeIcon"
+                class="fa-solid fa-moon"
+            ></i>
+
+        </button>
+
+
+        <a
+            href="index.html"
+            class="back-home"
+        >
+
+            <i class="fa-solid fa-house"></i>
+
+            <span>
+                صفحه اصلی
+            </span>
+
+        </a>
+
+
+    </div>
+
+
+</header>
+
+
+
 <main class="login-page">
 
 
@@ -46,23 +118,24 @@
 
         <div class="login-logo">
 
+
             <div class="logo-icon">
 
-                <i class="fa-solid fa-scissors"></i>
+                <i class="fa-solid fa-user-lock"></i>
 
             </div>
 
 
             <h1>
 
-                سالن معجزه
+                ورود به حساب کاربری
 
             </h1>
 
 
             <p>
 
-                ورود به حساب کاربری
+                برای ورود به پروفایل خود ایمیل و رمز عبور را وارد کنید.
 
             </p>
 
@@ -74,6 +147,7 @@
         <form
             id="loginForm"
             class="login-form"
+            novalidate
         >
 
 
@@ -82,7 +156,7 @@
             <div class="input-group">
 
 
-                <label>
+                <label for="email">
 
                     ایمیل
 
@@ -91,15 +165,19 @@
 
                 <div class="input-box">
 
+
                     <i class="fa-solid fa-envelope"></i>
 
 
                     <input
                         type="email"
                         id="email"
+                        name="email"
                         placeholder="example@email.com"
+                        autocomplete="email"
                         required
                     >
+
 
                 </div>
 
@@ -113,7 +191,7 @@
             <div class="input-group">
 
 
-                <label>
+                <label for="password">
 
                     رمز عبور
 
@@ -122,15 +200,34 @@
 
                 <div class="input-box">
 
+
                     <i class="fa-solid fa-lock"></i>
 
 
                     <input
                         type="password"
                         id="password"
+                        name="password"
                         placeholder="رمز عبور"
+                        autocomplete="current-password"
                         required
                     >
+
+
+                    <button
+                        type="button"
+                        id="passwordToggle"
+                        class="password-toggle"
+                        aria-label="نمایش رمز عبور"
+                    >
+
+                        <i
+                            id="passwordToggleIcon"
+                            class="fa-solid fa-eye"
+                        ></i>
+
+                    </button>
+
 
                 </div>
 
@@ -139,11 +236,12 @@
 
 
 
-            <!-- Error -->
+            <!-- Message -->
 
             <div
                 id="loginMessage"
                 class="login-message"
+                role="alert"
             ></div>
 
 
@@ -160,7 +258,11 @@
                 <i class="fa-solid fa-right-to-bracket"></i>
 
 
-                ورود به حساب
+                <span>
+
+                    ورود به حساب
+
+                </span>
 
 
             </button>
@@ -173,14 +275,16 @@
         <div class="login-footer">
 
 
-            <a href="index.html">
+            <p>
+
+                هنوز حساب کاربری ندارید؟
+
+            </p>
 
 
-                <i class="fa-solid fa-arrow-right"></i>
+            <a href="index.html#reservation">
 
-
-                بازگشت به سایت
-
+                ابتدا از طریق رزرو سالن اطلاعات خود را ثبت کنید.
 
             </a>
 
