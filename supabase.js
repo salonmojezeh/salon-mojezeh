@@ -200,25 +200,80 @@ function normalizePhoneE164(phone = "") {
 
 // ==========================================
 // Sign In
+// Supports:
+// - Email + Password
+// - Phone + Password
 // ==========================================
 
 async function signIn(
-    email,
+    identifier,
     password
 ) {
+
+    const value =
+        String(identifier || "").trim();
+
+
+    if (!value || !password) {
+
+        throw new Error(
+            "اطلاعات ورود ناقص است."
+        );
+
+    }
+
+
+    let credentials;
+
+
+    // ======================================
+    // Email Login
+    // ======================================
+
+    if (value.includes("@")) {
+
+        credentials = {
+
+            email:
+                value.toLowerCase(),
+
+            password
+
+        };
+
+    }
+
+
+    // ======================================
+    // Phone Login
+    // ======================================
+
+    else {
+
+        const phone =
+            normalizePhoneE164(value);
+
+
+        credentials = {
+
+            phone,
+
+            password
+
+        };
+
+    }
+
 
     const {
 
         data,
         error
 
-    } = await supabase.auth.signInWithPassword({
-
-        email,
-
-        password
-
-    });
+    } =
+        await supabase.auth.signInWithPassword(
+            credentials
+        );
 
 
     if (error) {
@@ -236,8 +291,6 @@ async function signIn(
     return data;
 
 }
-
-
 // ==========================================
 // Sign Out
 // ==========================================
