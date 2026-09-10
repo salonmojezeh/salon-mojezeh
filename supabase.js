@@ -96,7 +96,103 @@ const RESERVATION_STATUS = {
 
 };
 
+// ==========================================
+// Phone Helpers
+// ==========================================
 
+function normalizeDigits(value = "") {
+
+    return String(value)
+        .replace(/[۰-۹]/g, digit =>
+            String("۰۱۲۳۴۵۶۷۸۹".indexOf(digit))
+        )
+        .replace(/[٠-٩]/g, digit =>
+            String("٠١٢٣٤٥٦٧٨٩".indexOf(digit))
+        );
+
+}
+
+
+// ==========================================
+// Normalize Iranian Phone - Local Format
+// Example: 09388000000
+// ==========================================
+
+function normalizePhoneLocal(phone = "") {
+
+    let value = normalizeDigits(phone)
+        .trim()
+        .replace(/[^\d+]/g, "");
+
+    // 0098xxxxxxxxxx
+    if (value.startsWith("0098")) {
+
+        value =
+            "0" +
+            value.substring(4);
+
+    }
+
+    // +98xxxxxxxxxx
+    else if (value.startsWith("+98")) {
+
+        value =
+            "0" +
+            value.substring(3);
+
+    }
+
+    // 98xxxxxxxxxx
+    else if (
+        value.startsWith("98") &&
+        !value.startsWith("980")
+    ) {
+
+        value =
+            "0" +
+            value.substring(2);
+
+    }
+
+    // 9xxxxxxxxxx
+    else if (
+        value.startsWith("9") &&
+        value.length === 10
+    ) {
+
+        value =
+            "0" +
+            value;
+
+    }
+
+    return value;
+
+}
+
+
+// ==========================================
+// Normalize Iranian Phone - E.164
+// Example: +989388000000
+// ==========================================
+
+function normalizePhoneE164(phone = "") {
+
+    const local =
+        normalizePhoneLocal(phone);
+
+    if (
+        local.startsWith("09") &&
+        local.length === 11
+    ) {
+
+        return "+98" + local.substring(1);
+
+    }
+
+    return local;
+
+}
 // ==========================================
 // Authentication
 // ==========================================
