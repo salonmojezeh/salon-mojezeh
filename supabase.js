@@ -6,7 +6,6 @@
 
 "use strict";
 
-
 import {
     createClient
 } from
@@ -96,36 +95,62 @@ const RESERVATION_STATUS = {
 
 };
 
+
 // ==========================================
 // Phone Helpers
+// ==========================================
+
+
+// ==========================================
+// Convert Persian / Arabic Digits To English
 // ==========================================
 
 function normalizeDigits(value = "") {
 
     return String(value)
-        .replace(/[۰-۹]/g, digit =>
-            String("۰۱۲۳۴۵۶۷۸۹".indexOf(digit))
+
+        .replace(
+            /[۰-۹]/g,
+            digit =>
+                String(
+                    "۰۱۲۳۴۵۶۷۸۹"
+                        .indexOf(digit)
+                )
         )
-        .replace(/[٠-٩]/g, digit =>
-            String("٠١٢٣٤٥٦٧٨٩".indexOf(digit))
+
+        .replace(
+            /[٠-٩]/g,
+            digit =>
+                String(
+                    "٠١٢٣٤٥٦٧٨٩"
+                        .indexOf(digit)
+                )
         );
 
 }
 
 
 // ==========================================
-// Normalize Iranian Phone - Local Format
-// Example: 09388000000
+// Normalize Iranian Phone
+// Local Format
+//
+// Example:
+// 09388000000
 // ==========================================
 
 function normalizePhoneLocal(phone = "") {
 
-    let value = normalizeDigits(phone)
-        .trim()
-        .replace(/[^\d+]/g, "");
+    let value =
+        normalizeDigits(phone)
+            .trim()
+            .replace(/[^\d+]/g, "");
+
 
     // 0098xxxxxxxxxx
-    if (value.startsWith("0098")) {
+
+    if (
+        value.startsWith("0098")
+    ) {
 
         value =
             "0" +
@@ -133,8 +158,12 @@ function normalizePhoneLocal(phone = "") {
 
     }
 
+
     // +98xxxxxxxxxx
-    else if (value.startsWith("+98")) {
+
+    else if (
+        value.startsWith("+98")
+    ) {
 
         value =
             "0" +
@@ -142,7 +171,9 @@ function normalizePhoneLocal(phone = "") {
 
     }
 
+
     // 98xxxxxxxxxx
+
     else if (
         value.startsWith("98") &&
         !value.startsWith("980")
@@ -154,7 +185,9 @@ function normalizePhoneLocal(phone = "") {
 
     }
 
+
     // 9xxxxxxxxxx
+
     else if (
         value.startsWith("9") &&
         value.length === 10
@@ -166,33 +199,44 @@ function normalizePhoneLocal(phone = "") {
 
     }
 
+
     return value;
 
 }
 
 
 // ==========================================
-// Normalize Iranian Phone - E.164
-// Example: +989388000000
+// Normalize Iranian Phone
+// E.164 Format
+//
+// Example:
+// +989388000000
 // ==========================================
 
 function normalizePhoneE164(phone = "") {
 
-    const local =
+    const localPhone =
         normalizePhoneLocal(phone);
 
+
     if (
-        local.startsWith("09") &&
-        local.length === 11
+        localPhone.startsWith("09") &&
+        localPhone.length === 11
     ) {
 
-        return "+98" + local.substring(1);
+        return (
+            "+98" +
+            localPhone.substring(1)
+        );
 
     }
 
-    return local;
+
+    return localPhone;
 
 }
+
+
 // ==========================================
 // Authentication
 // ==========================================
@@ -200,6 +244,7 @@ function normalizePhoneE164(phone = "") {
 
 // ==========================================
 // Sign In
+//
 // Supports:
 // - Email + Password
 // - Phone + Password
@@ -211,10 +256,14 @@ async function signIn(
 ) {
 
     const value =
-        String(identifier || "").trim();
+        String(identifier || "")
+            .trim();
 
 
-    if (!value || !password) {
+    if (
+        !value ||
+        !password
+    ) {
 
         throw new Error(
             "اطلاعات ورود ناقص است."
@@ -230,7 +279,9 @@ async function signIn(
     // Email Login
     // ======================================
 
-    if (value.includes("@")) {
+    if (
+        value.includes("@")
+    ) {
 
         credentials = {
 
@@ -271,9 +322,10 @@ async function signIn(
         error
 
     } =
-        await supabase.auth.signInWithPassword(
-            credentials
-        );
+        await supabase.auth
+            .signInWithPassword(
+                credentials
+            );
 
 
     if (error) {
@@ -291,6 +343,135 @@ async function signIn(
     return data;
 
 }
+
+
+// ==========================================
+// Register Customer
+//
+// Phone = Login Identifier
+// Email = Stored In User Metadata
+// ==========================================
+
+async function signUpCustomer({
+
+    firstName = "",
+
+    lastName = "",
+
+    phone = "",
+
+    email = "",
+
+    password = ""
+
+} = {}) {
+
+
+    const normalizedPhone =
+        normalizePhoneE164(phone);
+
+
+    const normalizedEmail =
+        String(email || "")
+            .trim()
+            .toLowerCase();
+
+
+    if (
+        !normalizedPhone
+    ) {
+
+        throw new Error(
+            "شماره موبایل وارد نشده است."
+        );
+
+    }
+
+
+    if (
+        !normalizedEmail
+    ) {
+
+        throw new Error(
+            "ایمیل وارد نشده است."
+        );
+
+    }
+
+
+    if (
+        !password
+    ) {
+
+        throw new Error(
+            "رمز عبور وارد نشده است."
+        );
+
+    }
+
+
+    // ======================================
+    // Supabase Phone Authentication
+    // ======================================
+
+    const {
+
+        data,
+        error
+
+    } =
+        await supabase.auth
+            .signUp({
+
+                phone:
+                    normalizedPhone,
+
+                password,
+
+                options: {
+
+                    data: {
+
+                        first_name:
+                            firstName.trim(),
+
+                        last_name:
+                            lastName.trim(),
+
+                        email:
+                            normalizedEmail,
+
+                        full_name:
+                            `${firstName} ${lastName}`
+                                .trim(),
+
+                        role:
+                            "customer"
+
+                    }
+
+                }
+
+            });
+
+
+    if (error) {
+
+        console.error(
+            "signUpCustomer error:",
+            error
+        );
+
+        throw error;
+
+    }
+
+
+    return data;
+
+}
+
+
 // ==========================================
 // Sign Out
 // ==========================================
@@ -755,21 +936,28 @@ async function getBookingSettings() {
     }
 
 
+    // ======================================
     // Default Settings
+    // ======================================
 
     if (!data) {
 
         return {
 
-            opening_time: "09:00:00",
+            opening_time:
+                "09:00:00",
 
-            closing_time: "21:00:00",
+            closing_time:
+                "21:00:00",
 
-            slot_interval: 30,
+            slot_interval:
+                30,
 
-            booking_days_ahead: 30,
+            booking_days_ahead:
+                30,
 
-            active: true
+            active:
+                true
 
         };
 
@@ -783,11 +971,45 @@ async function getBookingSettings() {
 
 // ==========================================
 // Get Customer By Phone
+// Supports Multiple Iranian Formats
 // ==========================================
 
 async function getCustomerByPhone(
     phone
 ) {
+
+    const rawPhone =
+        normalizeDigits(phone)
+            .trim();
+
+
+    const localPhone =
+        normalizePhoneLocal(phone);
+
+
+    const e164Phone =
+        normalizePhoneE164(phone);
+
+
+    const variants =
+        [
+            rawPhone,
+            localPhone,
+            e164Phone
+        ]
+
+        .filter(Boolean)
+
+        .filter(
+            (
+                value,
+                index,
+                array
+            ) =>
+                array.indexOf(value)
+                === index
+        );
+
 
     const {
 
@@ -802,12 +1024,12 @@ async function getCustomerByPhone(
 
         .select("*")
 
-        .eq(
+        .in(
             "phone",
-            phone
+            variants
         )
 
-        .maybeSingle();
+        .limit(1);
 
 
     if (error) {
@@ -822,7 +1044,7 @@ async function getCustomerByPhone(
     }
 
 
-    return data || null;
+    return data?.[0] || null;
 
 }
 
@@ -888,11 +1110,16 @@ async function saveCustomer(
     customerData
 ) {
 
+
+    const normalizedPhone =
+        normalizePhoneLocal(
+            customerData.phone
+        );
+
+
     const existingCustomer =
         await getCustomerByPhone(
-
-            customerData.phone
-
+            normalizedPhone
         );
 
 
@@ -922,15 +1149,19 @@ async function saveCustomer(
                     customerData.lastName,
 
                 phone:
-                    customerData.phone,
+                    normalizedPhone,
 
-                visit_count: 0,
+                visit_count:
+                    0,
 
-                favorite_model: "",
+                favorite_model:
+                    "",
 
-                free_gift: false,
+                free_gift:
+                    false,
 
-                note: "",
+                note:
+                    "",
 
                 last_visit:
                     customerData.date || null,
@@ -1183,12 +1414,12 @@ async function createReservation(
         );
 
 
+        // ==================================
         // Duplicate / Conflict
+        // ==================================
 
         if (
-
             error.code === "23505"
-
         ) {
 
             const conflictError =
@@ -1235,90 +1466,86 @@ async function getReservations({
 } = {}) {
 
 
-    let query = supabase
+    let query =
+        supabase
 
-        .from(
-            TABLES.reservations
-        )
+            .from(
+                TABLES.reservations
+            )
 
-        .select("*");
+            .select("*");
 
 
+    // ======================================
     // Start Date
+    // ======================================
 
     if (startDate) {
 
         query =
             query.gte(
-
                 "date",
-
                 startDate
-
             );
 
     }
 
 
+    // ======================================
     // End Date
+    // ======================================
 
     if (endDate) {
 
         query =
             query.lte(
-
                 "date",
-
                 endDate
-
             );
 
     }
 
 
+    // ======================================
     // Barber
+    // ======================================
 
     if (barberId) {
 
         query =
             query.eq(
-
                 "barber_id",
-
                 barberId
-
             );
 
     }
 
 
+    // ======================================
     // Customer
+    // ======================================
 
     if (customerId) {
 
         query =
             query.eq(
-
                 "customer_id",
-
                 customerId
-
             );
 
     }
 
 
+    // ======================================
     // Status
+    // ======================================
 
     if (status) {
 
         query =
             query.eq(
-
                 "status",
-
                 status
-
             );
 
     }
@@ -1600,6 +1827,8 @@ export {
 
     signIn,
 
+    signUpCustomer,
+
     signOutUser,
 
     getCurrentUser,
@@ -1611,6 +1840,17 @@ export {
     getCurrentBarber,
 
     getCurrentCustomer,
+
+
+    // ======================================
+    // Phone Helpers
+    // ======================================
+
+    normalizeDigits,
+
+    normalizePhoneLocal,
+
+    normalizePhoneE164,
 
 
     // ======================================
