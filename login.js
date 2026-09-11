@@ -1,481 +1,235 @@
-// ==========================================
-// Salon Mojezeh
-// Login System
-// ==========================================
-
-"use strict";
-
-
 import {
-
     signIn,
-
-    getCurrentUserProfile
-
+    getCurrentProfile
 } from "./supabase.js";
 
 
-
-// ==========================================
-// Elements
-// ==========================================
-
-const loginForm =
-    document.getElementById("loginForm");
-
-
-const emailInput =
-    document.getElementById("email");
+const loginForm = document.getElementById("loginForm");
+const identifierInput = document.getElementById("identifier");
+const passwordInput = document.getElementById("password");
+const loginBtn = document.getElementById("loginBtn");
+const loginMessage = document.getElementById("loginMessage");
+const togglePassword = document.getElementById("togglePassword");
 
 
-const passwordInput =
-    document.getElementById("password");
+/* =========================================
+   Message
+   ========================================= */
 
-
-const loginBtn =
-    document.getElementById("loginBtn");
-
-
-const loginMessage =
-    document.getElementById("loginMessage");
-
-
-const passwordToggle =
-    document.getElementById("passwordToggle");
-
-
-const passwordToggleIcon =
-    document.getElementById("passwordToggleIcon");
-
-
-const themeToggle =
-    document.getElementById("themeToggle");
-
-
-const themeIcon =
-    document.getElementById("themeIcon");
-
-
-
-// ==========================================
-// Theme
-// ==========================================
-
-function loadTheme() {
-
-
-    const savedTheme =
-        localStorage.getItem(
-            "salon-theme"
-        );
-
-
-    if (
-        savedTheme === "light"
-    ) {
-
-        document.body.classList.add(
-            "light-mode"
-        );
-
-        themeIcon.className =
-            "fa-solid fa-sun";
-
-    }
-
+function showMessage(message, type = "error") {
+    loginMessage.textContent = message;
+    loginMessage.className = `login-message show ${type}`;
 }
 
 
-function toggleTheme() {
-
-
-    document.body.classList.toggle(
-        "light-mode"
-    );
-
-
-    const isLight =
-        document.body.classList.contains(
-            "light-mode"
-        );
-
-
-    localStorage.setItem(
-
-        "salon-theme",
-
-        isLight
-            ? "light"
-            : "dark"
-
-    );
-
-
-    themeIcon.className =
-        isLight
-            ? "fa-solid fa-sun"
-            : "fa-solid fa-moon";
-
+function clearMessage() {
+    loginMessage.textContent = "";
+    loginMessage.className = "login-message";
 }
 
 
-loadTheme();
+/* =========================================
+   Loading
+   ========================================= */
 
+function setLoading(isLoading) {
+    loginBtn.disabled = isLoading;
 
-themeToggle.addEventListener(
-
-    "click",
-
-    toggleTheme
-
-);
-
-
-
-// ==========================================
-// Password Toggle
-// ==========================================
-
-passwordToggle.addEventListener(
-
-    "click",
-
-    () => {
-
-
-        const isPassword =
-
-            passwordInput.type ===
-            "password";
-
-
-        passwordInput.type =
-
-            isPassword
-                ? "text"
-                : "password";
-
-
-        passwordToggleIcon.className =
-
-            isPassword
-                ? "fa-solid fa-eye-slash"
-                : "fa-solid fa-eye";
-
-
-    }
-
-);
-
-
-
-// ==========================================
-// Show Message
-// ==========================================
-
-function showMessage(
-    message,
-    type = "error"
-) {
-
-
-    loginMessage.textContent =
-        message;
-
-
-    loginMessage.className =
-        "login-message";
-
-
-    if (
-        type === "success"
-    ) {
-
-        loginMessage.classList.add(
-            "success"
-        );
-
-    }
-
-}
-
-
-
-// ==========================================
-// Set Loading
-// ==========================================
-
-function setLoading(
-    loading
-) {
-
-
-    loginBtn.disabled =
-        loading;
-
-
-    if (
-        loading
-    ) {
-
+    if (isLoading) {
         loginBtn.innerHTML = `
-
             <i class="fa-solid fa-spinner fa-spin"></i>
-
-            <span>
-
-                در حال ورود...
-
-            </span>
-
+            <span>در حال ورود...</span>
         `;
-
-    }
-
-    else {
-
+    } else {
         loginBtn.innerHTML = `
-
-            <i class="fa-solid fa-right-to-bracket"></i>
-
-            <span>
-
-                ورود به حساب
-
-            </span>
-
+            <span class="login-btn-text">ورود</span>
+            <i class="fa-solid fa-arrow-left"></i>
         `;
-
     }
-
 }
 
 
+/* =========================================
+   Password visibility
+   ========================================= */
 
-// ==========================================
-// Login Submit
-// ==========================================
+togglePassword?.addEventListener("click", () => {
 
-loginForm.addEventListener(
+    const isPassword = passwordInput.type === "password";
 
-    "submit",
+    passwordInput.type = isPassword ? "text" : "password";
 
-    async (event) => {
+    togglePassword.innerHTML = isPassword
+        ? `<i class="fa-solid fa-eye-slash"></i>`
+        : `<i class="fa-solid fa-eye"></i>`;
 
-
-        event.preventDefault();
-
-
-        const email =
-
-            emailInput.value
-                .trim()
-                .toLowerCase();
-
-
-        const password =
-
-            passwordInput.value;
+    togglePassword.setAttribute(
+        "aria-label",
+        isPassword ? "مخفی کردن رمز عبور" : "نمایش رمز عبور"
+    );
+});
 
 
-        // Validation
+/* =========================================
+   Enter key / validation
+   ========================================= */
 
-        if (
-            !email ||
-            !password
-        ) {
+function validateForm() {
 
-            showMessage(
-                "لطفاً ایمیل و رمز عبور را وارد کنید."
-            );
+    const identifier = identifierInput.value.trim();
+    const password = passwordInput.value;
 
-            return;
+    if (!identifier) {
+        showMessage("لطفاً شماره موبایل یا ایمیل خود را وارد کنید.");
+        identifierInput.focus();
+        return false;
+    }
 
-        }
+    if (!password) {
+        showMessage("لطفاً رمز عبور خود را وارد کنید.");
+        passwordInput.focus();
+        return false;
+    }
 
+    if (password.length < 6) {
+        showMessage("رمز عبور باید حداقل ۶ کاراکتر باشد.");
+        passwordInput.focus();
+        return false;
+    }
+
+    return true;
+}
+
+
+/* =========================================
+   Supabase error handling
+   ========================================= */
+
+function getLoginErrorMessage(error) {
+
+    const message = String(error?.message || "").toLowerCase();
+
+    if (
+        message.includes("invalid login credentials") ||
+        message.includes("invalid credentials")
+    ) {
+        return "شماره موبایل/ایمیل یا رمز عبور اشتباه است.";
+    }
+
+    if (
+        message.includes("email not confirmed") ||
+        message.includes("email_not_confirmed")
+    ) {
+        return "ایمیل هنوز تأیید نشده است.";
+    }
+
+    if (
+        message.includes("phone not confirmed") ||
+        message.includes("phone_not_confirmed")
+    ) {
+        return "شماره موبایل هنوز تأیید نشده است.";
+    }
+
+    if (
+        message.includes("phone provider") ||
+        message.includes("phone sign-ins are disabled")
+    ) {
+        return "ورود با شماره موبایل در تنظیمات Supabase فعال نشده است.";
+    }
+
+    if (
+        message.includes("email provider") ||
+        message.includes("email sign-ins are disabled")
+    ) {
+        return "ورود با ایمیل در تنظیمات Supabase فعال نشده است.";
+    }
+
+    if (
+        message.includes("rate limit") ||
+        message.includes("too many requests")
+    ) {
+        return "تعداد تلاش‌های ورود زیاد است. کمی بعد دوباره امتحان کنید.";
+    }
+
+    if (
+        message.includes("network") ||
+        message.includes("fetch")
+    ) {
+        return "ارتباط با سرور برقرار نشد. اتصال اینترنت را بررسی کنید.";
+    }
+
+    return "ورود انجام نشد. لطفاً اطلاعات واردشده را بررسی کنید.";
+}
+
+
+/* =========================================
+   Login
+   ========================================= */
+
+loginForm?.addEventListener("submit", async (event) => {
+
+    event.preventDefault();
+
+    clearMessage();
+
+    if (!validateForm()) {
+        return;
+    }
+
+    const identifier = identifierInput.value.trim();
+    const password = passwordInput.value;
+
+    setLoading(true);
+
+    try {
+
+        await signIn(identifier, password);
+
+        /*
+         * Profile is read after successful authentication.
+         * This also confirms that the user's profile is available.
+         */
+        let profile = null;
 
         try {
-
-
-            setLoading(
-                true
+            profile = await getCurrentProfile();
+        } catch (profileError) {
+            console.warn(
+                "Profile could not be loaded immediately:",
+                profileError
             );
-
-
-            showMessage(
-                ""
-            );
-
-
-            // ==================================
-            // Sign In
-            // ==================================
-
-            const result =
-
-                await signIn(
-                    email,
-                    password
-                );
-
-
-            if (
-                !result ||
-                !result.user
-            ) {
-
-                throw new Error(
-                    "ورود به حساب انجام نشد."
-                );
-
-            }
-
-
-            // ==================================
-            // Get Profile
-            // ==================================
-
-            const profile =
-
-                await getCurrentUserProfile();
-
-
-            // اگر هنوز پروفایل ساخته نشده
-            // ورود موفق است ولی پروفایل باید
-            // در صفحه پروفایل مدیریت شود
-
-            console.log(
-                "Login user:",
-                result.user
-            );
-
-
-            console.log(
-                "User profile:",
-                profile
-            );
-
-
-            showMessage(
-
-                "ورود موفق بود. در حال انتقال...",
-
-                "success"
-
-            );
-
-
-            // ==================================
-            // Redirect
-            // ==================================
-
-            setTimeout(
-
-                () => {
-
-
-                    window.location.href =
-                        "profile.html";
-
-
-                },
-
-                700
-
-            );
-
-
         }
 
-        catch (
-            error
-        ) {
+        showMessage("ورود با موفقیت انجام شد.", "success");
 
+        /*
+         * Small delay so the success message can be seen.
+         */
+        setTimeout(() => {
 
-            console.error(
-                "Login error:",
-                error
-            );
+            /*
+             * All authenticated users enter the unified profile page.
+             * profile.html decides whether the user is customer,
+             * barber or admin.
+             */
+            window.location.href = "profile.html";
 
+        }, 450);
 
-            let message =
-                "خطا در ورود به حساب.";
+    } catch (error) {
 
+        console.error("Login error:", error);
 
-            const errorText =
-                error.message || "";
+        showMessage(getLoginErrorMessage(error));
 
-
-            if (
-
-                errorText.includes(
-                    "Invalid login credentials"
-                )
-
-            ) {
-
-                message =
-                    "ایمیل یا رمز عبور اشتباه است.";
-
-            }
-
-
-            else if (
-
-                errorText.includes(
-                    "Email not confirmed"
-                )
-
-            ) {
-
-                message =
-                    "ایمیل هنوز تأیید نشده است.";
-
-            }
-
-
-            else if (
-
-                errorText.includes(
-                    "User not found"
-                )
-
-            ) {
-
-                message =
-                    "کاربری با این اطلاعات پیدا نشد.";
-
-            }
-
-
-            else if (
-                errorText
-            ) {
-
-                message =
-                    errorText;
-
-            }
-
-
-            showMessage(
-                message
-            );
-
-
-        }
-
-        finally {
-
-
-            setLoading(
-                false
-            );
-
-
-        }
-
-
+        setLoading(false);
     }
+});
 
-);
+
+/* =========================================
+   Clear message while typing
+   ========================================= */
+
+identifierInput?.addEventListener("input", clearMessage);
+passwordInput?.addEventListener("input", clearMessage);
