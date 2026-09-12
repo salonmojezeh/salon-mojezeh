@@ -1,6 +1,6 @@
 /* ==========================================
    Salon Mojezeh
-   Smart Profile System
+   Unified Smart Profile
 ========================================== */
 
 "use strict";
@@ -16,218 +16,185 @@ import {
 
     getCurrentUserProfile,
 
-    signOutUser
+    signOutUser,
+
+    completeReservation,
+
+    cancelReservation,
+
+    markReservationNoShow
 
 } from "./supabase.js";
-
 
 
 /* ==========================================
    Elements
 ========================================== */
 
-const loader =
-    document.getElementById(
-        "profileLoader"
-    );
-
+const profileLoader =
+    document.getElementById("profileLoader");
 
 const profileName =
-    document.getElementById(
-        "profileName"
-    );
-
+    document.getElementById("profileName");
 
 const profileSubtitle =
-    document.getElementById(
-        "profileSubtitle"
-    );
-
+    document.getElementById("profileSubtitle");
 
 const profileBadge =
-    document.getElementById(
-        "profileBadge"
-    );
-
+    document.getElementById("profileBadge");
 
 const profileAvatarIcon =
-    document.getElementById(
-        "profileAvatarIcon"
-    );
-
+    document.getElementById("profileAvatarIcon");
 
 const customerDashboard =
-    document.getElementById(
-        "customerDashboard"
-    );
-
+    document.getElementById("customerDashboard");
 
 const barberDashboard =
-    document.getElementById(
-        "barberDashboard"
-    );
-
+    document.getElementById("barberDashboard");
 
 const adminDashboard =
-    document.getElementById(
-        "adminDashboard"
-    );
-
+    document.getElementById("adminDashboard");
 
 const logoutBtn =
-    document.getElementById(
-        "logoutBtn"
-    );
-
-
-const themeToggle =
-    document.getElementById(
-        "themeToggle"
-    );
-
-
-const themeIcon =
-    document.getElementById(
-        "themeIcon"
-    );
-
+    document.getElementById("logoutBtn");
 
 
 /* ==========================================
-   Theme System
+   State
 ========================================== */
 
-function loadTheme() {
+let currentUser = null;
+
+let currentProfile = null;
+
+let currentRole = null;
+
+let currentBarberId = null;
 
 
-    const savedTheme =
-        localStorage.getItem(
-            "salon-theme"
+/* ==========================================
+   Helpers
+========================================== */
+
+function getTodayDate() {
+
+    const now = new Date();
+
+    const y =
+        now.getFullYear();
+
+    const m =
+        String(
+            now.getMonth() + 1
+        ).padStart(2, "0");
+
+    const d =
+        String(
+            now.getDate()
+        ).padStart(2, "0");
+
+    return `${y}-${m}-${d}`;
+
+}
+
+
+function escapeHtml(value) {
+
+    const div =
+        document.createElement("div");
+
+    div.textContent =
+        String(value ?? "");
+
+    return div.innerHTML;
+
+}
+
+
+function getCustomerFullName(customer) {
+
+    return [
+
+        customer?.first_name,
+
+        customer?.last_name
+
+    ]
+
+        .filter(Boolean)
+
+        .join(" ")
+
+        .trim();
+
+}
+
+
+function formatDate(date) {
+
+    if (!date) {
+        return "---";
+    }
+
+    try {
+
+        return new Intl.DateTimeFormat(
+            "fa-IR-u-ca-persian",
+            {
+                year: "numeric",
+                month: "long",
+                day: "numeric"
+            }
+        ).format(
+            new Date(`${date}T12:00:00`)
         );
 
+    } catch {
 
-    if (
-        savedTheme === "light"
-    ) {
-
-        document.body.classList.add(
-            "light-mode"
-        );
-
-
-        themeIcon.className =
-            "fa-solid fa-sun";
+        return date;
 
     }
 
 }
 
 
-function toggleTheme() {
-
-
-    document.body.classList.toggle(
-        "light-mode"
-    );
-
-
-    const isLight =
-        document.body.classList.contains(
-            "light-mode"
-        );
-
-
-    localStorage.setItem(
-
-        "salon-theme",
-
-        isLight
-            ? "light"
-            : "dark"
-
-    );
-
-
-    themeIcon.className =
-        isLight
-            ? "fa-solid fa-sun"
-            : "fa-solid fa-moon";
-
-}
-
-
-loadTheme();
-
-
-themeToggle.addEventListener(
-
-    "click",
-
-    toggleTheme
-
-);
-
-
-
-
-/* ==========================================
-   Reservation Status Helpers
-========================================== */
-
-function getStatusInfo(
-    status
-) {
-
+function getStatusInfo(status) {
 
     const statuses = {
 
-
         [RESERVATION_STATUS.RESERVED]: {
 
-            label:
-                "رزرو شده",
+            label: "رزرو شده",
 
-            className:
-                "status-reserved"
+            className: "status-reserved"
 
         },
-
 
         [RESERVATION_STATUS.COMPLETED]: {
 
-            label:
-                "انجام شده",
+            label: "انجام شده",
 
-            className:
-                "status-completed"
+            className: "status-completed"
 
         },
-
 
         [RESERVATION_STATUS.CANCELLED]: {
 
-            label:
-                "لغو شده",
+            label: "لغو شده",
 
-            className:
-                "status-cancelled"
+            className: "status-cancelled"
 
         },
 
-
         [RESERVATION_STATUS.NO_SHOW]: {
 
-            label:
-                "عدم مراجعه",
+            label: "عدم مراجعه",
 
-            className:
-                "status-no-show"
+            className: "status-no-show"
 
         }
 
-
     };
-
 
     return (
 
@@ -250,159 +217,100 @@ function getStatusInfo(
 }
 
 
+function showMessage(element, message, type = "") {
 
-/* ==========================================
-   Date Helper
-========================================== */
-
-function getTodayDate() {
-
-
-    const today =
-        new Date();
-
-
-    const year =
-        today.getFullYear();
-
-
-    const month =
-        String(
-            today.getMonth() + 1
-        ).padStart(
-            2,
-            "0"
-        );
-
-
-    const day =
-        String(
-            today.getDate()
-        ).padStart(
-            2,
-            "0"
-        );
-
-
-    return `${year}-${month}-${day}`;
-
-}
-
-
-
-/* ==========================================
-   Full Name Helper
-========================================== */
-
-function getCustomerFullName(
-    customer
-) {
-
-
-    if (
-        !customer
-    ) {
-
-        return "";
-
+    if (!element) {
+        return;
     }
 
+    element.textContent = message;
 
-    return [
-
-        customer.first_name,
-
-        customer.last_name
-
-    ]
-
-        .filter(Boolean)
-
-        .join(" ")
-
-        .trim();
+    element.className =
+        `form-message ${type}`.trim();
 
 }
 
-
-
-/* ==========================================
-   Hide All Dashboards
-========================================== */
 
 function hideAllDashboards() {
 
+    customerDashboard?.classList.add("hidden");
 
-    customerDashboard.classList.add(
-        "hidden"
-    );
+    barberDashboard?.classList.add("hidden");
 
-
-    barberDashboard.classList.add(
-        "hidden"
-    );
-
-
-    adminDashboard.classList.add(
-        "hidden"
-    );
+    adminDashboard?.classList.add("hidden");
 
 }
 
 
-
 /* ==========================================
-   Render Error
+   Availability helpers
 ========================================== */
 
-function showProfileError(
-    message
-) {
+const availabilityTypeLabels = {
+
+    closed: "تعطیلی کامل",
+
+    busy: "ساعت شلوغ / بسته",
+
+    holiday: "تعطیلی مناسبتی",
+
+    leave: "مرخصی"
+
+};
 
 
-    profileName.textContent =
-        "خطا در دریافت اطلاعات";
+function getAvailabilityLabel(type) {
 
+    return (
 
-    profileSubtitle.textContent =
-        message;
+        availabilityTypeLabels[type]
 
+        ||
 
-    profileBadge.textContent =
-        "خطا";
+        "محدودیت"
 
-
-    profileAvatarIcon.className =
-        "fa-solid fa-triangle-exclamation";
+    );
 
 }
 
 
+function formatAvailabilityTime(item) {
+
+    if (!item.start_time || !item.end_time) {
+
+        return "کل روز";
+
+    }
+
+    return `${item.start_time} تا ${item.end_time}`;
+
+}
+
+
+function isWholeDayAvailability(item) {
+
+    return !item.start_time &&
+        !item.end_time;
+
+}
+
 
 /* ==========================================
-   Main Profile Loader
+   Load Profile
 ========================================== */
 
 async function loadProfile() {
 
-
     try {
-
 
         hideAllDashboards();
 
 
-        // ================================
-        // Get Auth User
-        // ================================
-
-        const user =
+        currentUser =
             await getCurrentUser();
 
 
-        if (
-            !user
-        ) {
+        if (!currentUser) {
 
             window.location.href =
                 "login.html";
@@ -412,51 +320,21 @@ async function loadProfile() {
         }
 
 
-        // ================================
-        // Get User Profile
-        // ================================
-
-        let profile =
+        currentProfile =
             await getCurrentUserProfile();
 
 
-        /*
-            اگر user_profiles وجود نداشت
-            کاربر همچنان می‌تواند وارد شود.
-            به عنوان مشتری عمومی نمایش داده می‌شود.
-        */
+        if (!currentProfile) {
 
-        if (
-            !profile
-        ) {
-
-            await loadGuestCustomerProfile(
-                user
-            );
+            await loadFallbackCustomer();
 
             return;
 
         }
 
 
-        console.log(
-            "USER:",
-            user
-        );
-
-
-        console.log(
-            "PROFILE:",
-            profile
-        );
-
-
-        // ================================
-        // Inactive User
-        // ================================
-
         if (
-            profile.active === false
+            currentProfile.active === false
         ) {
 
             throw new Error(
@@ -466,118 +344,119 @@ async function loadProfile() {
         }
 
 
-        // ================================
-        // Admin
-        // ================================
-
         if (
-            profile.is_admin === true
+            currentProfile.is_admin === true
         ) {
 
-            await loadAdminProfile(
-                profile,
-                user
-            );
+            currentRole =
+                "admin";
+
+            await loadAdminProfile();
 
             return;
 
         }
 
 
-        // ================================
-        // Barber
-        // ================================
-
         if (
-
-            profile.role === "barber"
+            currentProfile.role === "barber"
 
             &&
 
-            profile.barber_id
-
+            currentProfile.barber_id
         ) {
 
-            await loadBarberProfile(
-                profile,
-                user
-            );
+            currentRole =
+                "barber";
+
+            currentBarberId =
+                currentProfile.barber_id;
+
+            await loadBarberProfile();
 
             return;
 
         }
 
 
-        // ================================
-        // Customer
-        // ================================
+        currentRole =
+            "customer";
 
-        await loadCustomerProfile(
-            profile,
-            user
-        );
-
+        await loadCustomerProfile();
 
     }
 
-    catch (
-        error
-    ) {
-
+    catch (error) {
 
         console.error(
             "Profile Error:",
             error
         );
 
-
         showProfileError(
-            error.message ||
+            error?.message
+            ||
             "خطایی در دریافت اطلاعات رخ داد."
         );
-
 
     }
 
     finally {
 
+        if (profileLoader) {
 
-        loader.style.display =
-            "none";
+            profileLoader.style.display =
+                "none";
 
+        }
 
     }
 
 }
 
 
-
 /* ==========================================
-   Fallback Customer
+   Error
 ========================================== */
 
-async function loadGuestCustomerProfile(
-    user
-) {
+function showProfileError(message) {
+
+    profileName.textContent =
+        "خطا در دریافت اطلاعات";
+
+    profileSubtitle.textContent =
+        message;
+
+    profileBadge.textContent =
+        "خطا";
+
+    profileAvatarIcon.className =
+        "fa-solid fa-triangle-exclamation";
+
+}
 
 
-    customerDashboard.classList.remove(
-        "hidden"
-    );
+/* ==========================================
+   Fallback
+========================================== */
 
+async function loadFallbackCustomer() {
+
+    customerDashboard
+        ?.classList.remove("hidden");
 
     profileAvatarIcon.className =
         "fa-solid fa-user";
 
-
     profileBadge.textContent =
         "مشتری سالن";
 
-
     profileName.textContent =
-        user.email ||
+        currentUser.user_metadata?.full_name
+        ||
+        currentUser.email
+        ||
         "مشتری سالن معجزه";
-
 
     profileSubtitle.textContent =
         "پروفایل کاربری";
@@ -586,84 +465,63 @@ async function loadGuestCustomerProfile(
     document.getElementById(
         "customerFullName"
     ).textContent =
+        currentUser.user_metadata?.full_name
+        ||
         "اطلاعات تکمیل نشده";
 
 
     document.getElementById(
         "customerPhone"
     ).textContent =
+        currentUser.phone
+        ||
         "---";
 
 
     document.getElementById(
-        "customerReservations"
-    ).innerHTML = `
+        "customerEmail"
+    ).textContent =
+        currentUser.email
+        ||
+        "---";
 
-        <div class="empty-state">
 
-            <i class="fa-solid fa-user-plus"></i>
-
-            <p>
-
-                هنوز اطلاعات مشتری شما به پروفایل متصل نشده است.
-
-            </p>
-
-        </div>
-
-    `;
-
+    renderReservations(
+        "customerReservations",
+        []
+    );
 
 }
 
 
-
 /* ==========================================
-   CUSTOMER PROFILE
+   Customer
 ========================================== */
 
-async function loadCustomerProfile(
-    profile,
-    user
-) {
+async function loadCustomerProfile() {
 
-
-    customerDashboard.classList.remove(
-        "hidden"
-    );
+    customerDashboard
+        ?.classList.remove("hidden");
 
 
     profileAvatarIcon.className =
         "fa-solid fa-user";
 
-
     profileBadge.textContent =
         "مشتری سالن";
-
 
     profileSubtitle.textContent =
         "پروفایل مشتری";
 
 
-    let customer =
-        null;
+    let customer = null;
 
 
-    // ================================
-    // Get Customer by customer_id
-    // ================================
-
-    if (
-        profile.customer_id
-    ) {
-
+    if (currentProfile?.customer_id) {
 
         const {
-
             data,
-
             error
-
         } = await supabase
 
             .from("customers")
@@ -672,357 +530,137 @@ async function loadCustomerProfile(
 
             .eq(
                 "id",
-                profile.customer_id
+                currentProfile.customer_id
             )
 
             .maybeSingle();
 
 
-        if (
-            error
-        ) {
+        if (error) {
 
             console.error(
-                "Customer load error:",
+                "Customer error:",
                 error
             );
 
         }
-
 
         customer =
             data || null;
 
+    }
+
+
+    if (!customer) {
+
+        await loadFallbackCustomer();
+
+        return;
 
     }
 
 
-    // ================================
-    // Profile Name
-    // ================================
+    const fullName =
+        getCustomerFullName(customer);
 
-    if (
-        customer
-    ) {
 
+    profileName.textContent =
+        fullName
+        ||
+        currentUser.user_metadata?.full_name
+        ||
+        currentUser.email
+        ||
+        "مشتری سالن معجزه";
 
-        const fullName =
-            getCustomerFullName(
-                customer
-            );
 
+    document.getElementById(
+        "customerFullName"
+    ).textContent =
+        fullName || "---";
 
-        profileName.textContent =
 
-            fullName ||
+    document.getElementById(
+        "customerPhone"
+    ).textContent =
+        customer.phone || currentUser.phone || "---";
 
-            user.email ||
 
-            "مشتری سالن معجزه";
+    document.getElementById(
+        "customerEmail"
+    ).textContent =
+        currentUser.email || "---";
 
 
-        document.getElementById(
-            "customerFullName"
-        ).textContent =
+    document.getElementById(
+        "customerVisits"
+    ).textContent =
+        customer.visit_count || 0;
 
-            fullName || "---";
 
+    document.getElementById(
+        "customerLastVisit"
+    ).textContent =
+        customer.last_visit || "---";
 
-        document.getElementById(
-            "customerPhone"
-        ).textContent =
 
-            customer.phone || "---";
+    document.getElementById(
+        "customerFavoriteModel"
+    ).textContent =
+        customer.favorite_model
+        ||
+        "ثبت نشده";
 
 
-        document.getElementById(
-            "customerVisits"
-        ).textContent =
+    document.getElementById(
+        "customerLastBarber"
+    ).textContent =
+        customer.last_barber_name
+        ||
+        "---";
 
-            customer.visit_count || 0;
 
+    /*
+       club_members عمداً حذف شده.
+       چون وجود این جدول در پروژه تأیید نشده.
+    */
 
-        document.getElementById(
-            "customerLastVisit"
-        ).textContent =
+    document.getElementById(
+        "customerPoints"
+    ).textContent =
+        customer.club_points
+        ??
+        customer.points
+        ??
+        0;
 
-            customer.last_visit || "---";
 
+    document.getElementById(
+        "customerGift"
+    ).textContent =
+        customer.available_gift
+        ? "آماده 🎁"
+        : "ندارد";
 
-        document.getElementById(
-            "customerFavoriteModel"
-        ).textContent =
 
-            customer.favorite_model ||
-            "ثبت نشده";
-
-
-        document.getElementById(
-            "customerLastBarber"
-        ).textContent =
-
-            customer.last_barber_name ||
-            "---";
-
-
-    }
-
-    else {
-
-
-        profileName.textContent =
-            user.email ||
-            "مشتری سالن معجزه";
-
-
-    }
-
-
-    // ================================
-    // Club Data
-    // ================================
-
-    if (
-        customer
-    ) {
-
-
-        const {
-
-            data: club,
-
-            error: clubError
-
-        } = await supabase
-
-            .from("club_members")
-
-            .select("*")
-
-            .eq(
-                "customer_id",
-                customer.id
-            )
-
-            .maybeSingle();
-
-
-        if (
-            clubError
-        ) {
-
-            console.warn(
-                "Club data unavailable:",
-                clubError
-            );
-
-        }
-
-
-        if (
-            club
-        ) {
-
-
-            document.getElementById(
-                "customerPoints"
-            ).textContent =
-
-                club.points || 0;
-
-
-            document.getElementById(
-                "customerGift"
-            ).textContent =
-
-                club.available_gift
-                    ? "آماده 🎁"
-                    : "ندارد";
-
-
-        }
-
-
-    }
-
-
-    // ================================
-    // Customer Reservations
-    // ================================
-
-    if (
-        customer
-    ) {
-
-
-        const {
-
-            data: reservations,
-
-            error
-
-        } = await supabase
-
-            .from("reservations")
-
-            .select("*")
-
-            .eq(
-                "customer_id",
-                customer.id
-            )
-
-            .order(
-                "date",
-                {
-                    ascending: false
-                }
-            )
-
-            .order(
-                "time",
-                {
-                    ascending: false
-                }
-            );
-
-
-        if (
-            error
-        ) {
-
-            console.error(
-                "Customer reservations error:",
-                error
-            );
-
-
-            renderReservations(
-
-                "customerReservations",
-
-                []
-
-            );
-
-
-        }
-
-        else {
-
-
-            renderReservations(
-
-                "customerReservations",
-
-                reservations || []
-
-            );
-
-
-        }
-
-
-    }
-
-    else {
-
-
-        renderReservations(
-
-            "customerReservations",
-
-            []
-
-        );
-
-
-    }
-
+    await loadCustomerReservations(
+        customer.id
+    );
 
 }
 
 
-
 /* ==========================================
-   BARBER PROFILE
+   Customer Reservations
 ========================================== */
 
-async function loadBarberProfile(
-    profile,
-    user
+async function loadCustomerReservations(
+    customerId
 ) {
 
-
-    barberDashboard.classList.remove(
-        "hidden"
-    );
-
-
-    profileAvatarIcon.className =
-        "fa-solid fa-user-scissors";
-
-
-    profileBadge.textContent =
-        "آرایشگر سالن";
-
-
-    profileSubtitle.textContent =
-        "پنل شخصی آرایشگر";
-
-
-    // ================================
-    // Get Barber
-    // ================================
-
     const {
-
-        data: barber,
-
-        error: barberError
-
-    } = await supabase
-
-        .from("barbers")
-
-        .select("*")
-
-        .eq(
-            "id",
-            profile.barber_id
-        )
-
-        .maybeSingle();
-
-
-    if (
-        barberError
-    ) {
-
-        throw barberError;
-
-    }
-
-
-    profileName.textContent =
-
-        barber?.name ||
-
-        user.email ||
-
-        "آرایشگر سالن";
-
-
-    // ================================
-    // Get Reservations
-    // ================================
-
-    const {
-
-        data: reservations,
-
-        error: reservationError
-
+        data,
+        error
     } = await supabase
 
         .from("reservations")
@@ -1030,8 +668,8 @@ async function loadBarberProfile(
         .select("*")
 
         .eq(
-            "barber_id",
-            profile.barber_id
+            "customer_id",
+            customerId
         )
 
         .order(
@@ -1049,30 +687,147 @@ async function loadBarberProfile(
         );
 
 
-    if (
-        reservationError
-    ) {
+    if (error) {
 
-        throw reservationError;
+        console.error(
+            "Customer reservations:",
+            error
+        );
+
+        renderReservations(
+            "customerReservations",
+            []
+        );
+
+        return;
 
     }
 
 
-    const allReservations =
-        reservations || [];
+    renderReservations(
+        "customerReservations",
+        data || [],
+        {
+            customer: true
+        }
+    );
+
+}
+
+
+/* ==========================================
+   Barber
+========================================== */
+
+async function loadBarberProfile() {
+
+    barberDashboard
+        ?.classList.remove("hidden");
+
+
+    profileAvatarIcon.className =
+        "fa-solid fa-user-scissors";
+
+    profileBadge.textContent =
+        "آرایشگر سالن";
+
+    profileSubtitle.textContent =
+        "پنل شخصی آرایشگر";
+
+
+    const {
+        data: barber,
+        error: barberError
+    } = await supabase
+
+        .from("barbers")
+
+        .select("*")
+
+        .eq(
+            "id",
+            currentBarberId
+        )
+
+        .maybeSingle();
+
+
+    if (barberError) {
+
+        throw barberError;
+
+    }
+
+
+    profileName.textContent =
+        barber?.name
+        ||
+        currentUser.user_metadata?.full_name
+        ||
+        "آرایشگر سالن";
+
+
+    await loadBarberReservations();
+
+    await loadBarberAvailability();
+
+    await loadBarberCustomers();
+
+}
+
+
+/* ==========================================
+   Barber Reservations
+========================================== */
+
+async function loadBarberReservations() {
+
+    const {
+        data,
+        error
+    } = await supabase
+
+        .from("reservations")
+
+        .select("*")
+
+        .eq(
+            "barber_id",
+            currentBarberId
+        )
+
+        .order(
+            "date",
+            {
+                ascending: false
+            }
+        )
+
+        .order(
+            "time",
+            {
+                ascending: false
+            }
+        );
+
+
+    if (error) {
+
+        throw error;
+
+    }
+
+
+    const reservations =
+        data || [];
 
 
     const today =
         getTodayDate();
 
 
-    // ================================
-    // Statistics
-    // ================================
-
     const todayReservations =
-
-        allReservations.filter(
+        reservations.filter(
 
             item =>
 
@@ -1087,8 +842,7 @@ async function loadBarberProfile(
 
 
     const completed =
-
-        allReservations.filter(
+        reservations.filter(
 
             item =>
 
@@ -1098,25 +852,25 @@ async function loadBarberProfile(
         );
 
 
-    const uniqueCustomerIds =
+    const customerIds = [
 
-        [
+        ...new Set(
 
-            ...new Set(
+            reservations
 
-                allReservations
+                .filter(
+                    item =>
+                        item.customer_id
+                )
 
-                    .filter(
-                        item => item.customer_id
-                    )
+                .map(
+                    item =>
+                        item.customer_id
+                )
 
-                    .map(
-                        item => item.customer_id
-                    )
+        )
 
-            )
-
-        ];
+    ];
 
 
     document.getElementById(
@@ -1128,13 +882,13 @@ async function loadBarberProfile(
     document.getElementById(
         "barberTotalReservations"
     ).textContent =
-        allReservations.length;
+        reservations.length;
 
 
     document.getElementById(
         "barberCustomers"
     ).textContent =
-        uniqueCustomerIds.length;
+        customerIds.length;
 
 
     document.getElementById(
@@ -1143,175 +897,157 @@ async function loadBarberProfile(
         completed.length;
 
 
-    // ================================
-    // Render Reservations
-    // ================================
-
     renderReservations(
-
         "barberReservations",
-
-        allReservations
-
-    );
-
-
-    // ================================
-    // Get Customers
-    // ================================
-
-    if (
-        uniqueCustomerIds.length > 0
-    ) {
-
-
-        const {
-
-            data: customers,
-
-            error: customerError
-
-        } = await supabase
-
-            .from("customers")
-
-            .select("*")
-
-            .in(
-                "id",
-                uniqueCustomerIds
-            );
-
-
-        if (
-            customerError
-        ) {
-
-            console.error(
-                customerError
-            );
-
+        reservations,
+        {
+            staff: true
         }
-
-
-        renderCustomers(
-            customers || []
-        );
-
-
-    }
-
-    else {
-
-
-        document.getElementById(
-            "barberCustomerList"
-        ).innerHTML = `
-
-            <div class="empty-state">
-
-                <i class="fa-solid fa-users"></i>
-
-                <p>
-
-                    هنوز مشتری ثبت نشده است.
-
-                </p>
-
-            </div>
-
-        `;
-
-
-    }
-
+    );
 
 }
 
 
-
 /* ==========================================
-   ADMIN PROFILE
+   Barber Customers
 ========================================== */
 
-async function loadAdminProfile(
-    profile,
-    user
-) {
+async function loadBarberCustomers() {
+
+    const {
+        data: reservations,
+        error
+    } = await supabase
+
+        .from("reservations")
+
+        .select("customer_id")
+
+        .eq(
+            "barber_id",
+            currentBarberId
+        );
 
 
-    adminDashboard.classList.remove(
-        "hidden"
+    if (error) {
+
+        console.error(error);
+
+        return;
+
+    }
+
+
+    const ids = [
+
+        ...new Set(
+
+            (reservations || [])
+
+                .map(
+                    item =>
+                        item.customer_id
+                )
+
+                .filter(Boolean)
+
+        )
+
+    ];
+
+
+    if (!ids.length) {
+
+        renderCustomers([]);
+
+        return;
+
+    }
+
+
+    const {
+        data: customers,
+        error: customerError
+    } = await supabase
+
+        .from("customers")
+
+        .select("*")
+
+        .in(
+            "id",
+            ids
+        );
+
+
+    if (customerError) {
+
+        console.error(
+            customerError
+        );
+
+        renderCustomers([]);
+
+        return;
+
+    }
+
+
+    renderCustomers(
+        customers || []
     );
+
+}
+
+
+/* ==========================================
+   Admin
+========================================== */
+
+async function loadAdminProfile() {
+
+    adminDashboard
+        ?.classList.remove("hidden");
 
 
     profileAvatarIcon.className =
         "fa-solid fa-crown";
 
-
     profileBadge.textContent =
         "مدیر سالن";
-
 
     profileSubtitle.textContent =
         "دسترسی کامل مدیریت";
 
 
     profileName.textContent =
-        user.email ||
+        currentUser.user_metadata?.full_name
+        ||
+        currentUser.email
+        ||
         "مدیر سالن";
 
 
-    // ================================
-    // Optional Barber Name
-    // ================================
+    await loadAdminReservations();
 
-    if (
-        profile.barber_id
-    ) {
+    await loadAdminAvailability();
 
+    await loadAdminBarbers();
 
-        const {
+    await loadAdminCounts();
 
-            data: barber
-
-        } = await supabase
-
-            .from("barbers")
-
-            .select("name")
-
-            .eq(
-                "id",
-                profile.barber_id
-            )
-
-            .maybeSingle();
+}
 
 
-        if (
-            barber?.name
-        ) {
+/* ==========================================
+   Admin Reservations
+========================================== */
 
-            profileName.textContent =
-                barber.name;
-
-        }
-
-
-    }
-
-
-    // ================================
-    // Reservations
-    // ================================
+async function loadAdminReservations() {
 
     const {
-
-        data: reservations,
-
-        error: reservationsError
-
+        data,
+        error
     } = await supabase
 
         .from("reservations")
@@ -1326,84 +1062,67 @@ async function loadAdminProfile(
         );
 
 
-    if (
-        reservationsError
-    ) {
+    if (error) {
 
-        throw reservationsError;
+        throw error;
 
     }
 
 
-    const allReservations =
-        reservations || [];
+    const reservations =
+        data || [];
 
 
     const today =
         getTodayDate();
 
 
-    const todayCount =
-
-        allReservations.filter(
-
-            item =>
-
-                item.date === today
-
-        ).length;
-
-
     document.getElementById(
         "adminTodayReservations"
     ).textContent =
-        todayCount;
+
+        reservations.filter(
+            item =>
+                item.date === today
+        ).length;
 
 
     document.getElementById(
         "adminTotalReservations"
     ).textContent =
-        allReservations.length;
+        reservations.length;
 
 
-    // ================================
-    // Customers Count
-    // ================================
+    renderReservations(
+        "adminReservations",
+        reservations.slice(0, 30),
+        {
+            staff: true
+        }
+    );
+
+}
+
+
+/* ==========================================
+   Admin Counts
+========================================== */
+
+async function loadAdminCounts() {
 
     const {
-
-        count: customerCount,
-
-        error: customerCountError
-
+        count: customerCount
     } = await supabase
 
         .from("customers")
 
         .select(
-
-            "*",
-
+            "id",
             {
-
                 count: "exact",
-
                 head: true
-
             }
-
         );
-
-
-    if (
-        customerCountError
-    ) {
-
-        console.error(
-            customerCountError
-        );
-
-    }
 
 
     document.getElementById(
@@ -1412,32 +1131,18 @@ async function loadAdminProfile(
         customerCount || 0;
 
 
-    // ================================
-    // Active Barbers Count
-    // ================================
-
     const {
-
-        count: barberCount,
-
-        error: barberCountError
-
+        count: barberCount
     } = await supabase
 
         .from("barbers")
 
         .select(
-
-            "*",
-
+            "id",
             {
-
                 count: "exact",
-
                 head: true
-
             }
-
         )
 
         .eq(
@@ -1446,49 +1151,254 @@ async function loadAdminProfile(
         );
 
 
-    if (
-        barberCountError
-    ) {
-
-        console.error(
-            barberCountError
-        );
-
-    }
-
-
     document.getElementById(
         "adminTotalBarbers"
     ).textContent =
         barberCount || 0;
 
+}
 
-    // ================================
-    // Latest Reservations
-    // ================================
 
-    renderReservations(
+/* ==========================================
+   Admin Barbers
+========================================== */
 
-        "adminReservations",
+async function loadAdminBarbers() {
 
-        allReservations.slice(0, 15)
+    const {
+        data,
+        error
+    } = await supabase
 
+        .from("barbers")
+
+        .select(
+            "id,name,active"
+        )
+
+        .eq(
+            "active",
+            true
+        )
+
+        .order(
+            "name"
+        );
+
+
+    if (error) {
+
+        console.error(
+            "Barbers:",
+            error
+        );
+
+        return;
+
+    }
+
+
+    const select =
+        document.getElementById(
+            "adminAvailabilityBarber"
+        );
+
+
+    if (!select) {
+        return;
+    }
+
+
+    select.innerHTML = `
+
+        <option value="">
+            کل سالن
+        </option>
+
+    `;
+
+
+    (data || []).forEach(
+        barber => {
+
+            const option =
+                document.createElement(
+                    "option"
+                );
+
+            option.value =
+                barber.id;
+
+            option.textContent =
+                barber.name;
+
+            select.appendChild(
+                option
+            );
+
+        }
     );
-
 
 }
 
 
-
 /* ==========================================
-   Render Reservations
+   Availability - Barber
 ========================================== */
 
-function renderReservations(
-    containerId,
-    reservations
-) {
+async function loadBarberAvailability() {
 
+    const {
+        data,
+        error
+    } = await supabase
+
+        .from("availability_blocks")
+
+        .select("*")
+
+        .eq(
+            "barber_id",
+            currentBarberId
+        )
+
+        .eq(
+            "active",
+            true
+        )
+
+        .gte(
+            "block_date",
+            getTodayDate()
+        )
+
+        .order(
+            "block_date",
+            {
+                ascending: true
+            }
+        )
+
+        .order(
+            "start_time",
+            {
+                ascending: true
+            }
+        );
+
+
+    if (error) {
+
+        console.error(
+            "Barber availability:",
+            error
+        );
+
+        renderAvailability(
+            "barberAvailabilityList",
+            []
+        );
+
+        return;
+
+    }
+
+
+    renderAvailability(
+        "barberAvailabilityList",
+        data || [],
+        {
+            barber: true
+        }
+    );
+
+}
+
+
+/* ==========================================
+   Availability - Admin
+========================================== */
+
+async function loadAdminAvailability() {
+
+    const {
+        data,
+        error
+    } = await supabase
+
+        .from("availability_blocks")
+
+        .select(
+            `
+                *,
+                barbers (
+                    name
+                )
+            `
+        )
+
+        .eq(
+            "active",
+            true
+        )
+
+        .gte(
+            "block_date",
+            getTodayDate()
+        )
+
+        .order(
+            "block_date",
+            {
+                ascending: true
+            }
+        )
+
+        .order(
+            "start_time",
+            {
+                ascending: true
+            }
+        );
+
+
+    if (error) {
+
+        console.error(
+            "Admin availability:",
+            error
+        );
+
+        renderAvailability(
+            "adminAvailabilityList",
+            []
+        );
+
+        return;
+
+    }
+
+
+    renderAvailability(
+        "adminAvailabilityList",
+        data || [],
+        {
+            admin: true
+        }
+    );
+
+}
+
+
+/* ==========================================
+   Render Availability
+========================================== */
+
+function renderAvailability(
+    containerId,
+    items,
+    options = {}
+) {
 
     const container =
         document.getElementById(
@@ -1496,104 +1406,37 @@ function renderReservations(
         );
 
 
-    if (
-        !container
-    ) {
-
+    if (!container) {
         return;
-
     }
 
 
-    // ================================
-    // Empty
-    // ================================
-
-    if (
-        !reservations ||
-        reservations.length === 0
-    ) {
-
+    if (!items.length) {
 
         container.innerHTML = `
 
             <div class="empty-state">
 
-                <i class="fa-solid fa-calendar-xmark"></i>
+                <i class="fa-solid fa-calendar-check"></i>
 
                 <p>
-
-                    هنوز رزروی ثبت نشده است.
-
+                    هنوز محدودیتی ثبت نشده است.
                 </p>
 
             </div>
 
         `;
 
-
         return;
 
     }
 
 
-    container.innerHTML =
-        "";
+    container.innerHTML = "";
 
 
-    reservations.forEach(
+    items.forEach(
         item => {
-
-
-            const statusInfo =
-                getStatusInfo(
-                    item.status
-                );
-
-
-            const fullName =
-
-                [
-
-                    item.first_name,
-
-                    item.last_name
-
-                ]
-
-                    .filter(Boolean)
-
-                    .join(" ")
-
-                    .trim()
-
-                ||
-
-                "مشتری";
-
-
-            const dateText =
-
-                item.display_date ||
-
-                item.date ||
-
-                "---";
-
-
-            const barberText =
-
-                item.barber_name ||
-
-                "---";
-
-
-            const serviceText =
-
-                item.service ||
-
-                "---";
-
 
             const div =
                 document.createElement(
@@ -1602,194 +1445,160 @@ function renderReservations(
 
 
             div.className =
-                "reservation-item";
+                "availability-item";
+
+
+            const barberName =
+                item.barbers?.name
+                ||
+                (
+                    item.barber_id
+                        ? "آرایشگر"
+                        : "کل سالن"
+                );
+
+
+            const title =
+                item.title
+                ||
+                getAvailabilityLabel(
+                    item.block_type
+                );
+
+
+            const reason =
+                item.reason
+                ||
+                "";
+
+
+            const activeBadge =
+                item.active
+                    ? ""
+                    : `
+                        <span
+                            class="availability-badge inactive"
+                        >
+                            غیرفعال
+                        </span>
+                    `;
 
 
             div.innerHTML = `
 
-                <div class="reservation-main">
+                <div class="availability-item-top">
 
-                    <h4>
+                    <div class="availability-info">
 
-                        ${escapeHtml(fullName)}
+                        <h4>
+                            ${escapeHtml(title)}
+                        </h4>
 
-                    </h4>
+                        <p>
+                            📅
+                            ${escapeHtml(
+                                formatDate(
+                                    item.block_date
+                                )
+                            )}
+                        </p>
+
+                        <p>
+                            🕒
+                            ${escapeHtml(
+                                formatAvailabilityTime(
+                                    item
+                                )
+                            )}
+                        </p>
+
+                        <p>
+                            👤
+                            ${escapeHtml(
+                                barberName
+                            )}
+                        </p>
+
+                        ${
+                            reason
+                                ? `
+                                    <p>
+                                        📝
+                                        ${escapeHtml(reason)}
+                                    </p>
+                                `
+                                : ""
+                        }
+
+                    </div>
 
 
-                    <p>
+                    <div class="availability-badges">
 
-                        ✂️
-                        ${escapeHtml(serviceText)}
+                        <span
+                            class="
+                                availability-badge
+                                ${escapeHtml(
+                                    item.block_type
+                                )}
+                            "
+                        >
+                            ${escapeHtml(
+                                getAvailabilityLabel(
+                                    item.block_type
+                                )
+                            )}
+                        </span>
 
-                    </p>
+                        ${activeBadge}
 
-
-                    <p>
-
-                        📅
-                        ${escapeHtml(dateText)}
-
-                        |
-
-                        🕒
-                        ${escapeHtml(item.time || "---")}
-
-                    </p>
-
-
-                    <p>
-
-                        👤
-                        ${escapeHtml(barberText)}
-
-                    </p>
+                    </div>
 
                 </div>
 
 
-                <span
-                    class="
-                        reservation-status
-                        ${statusInfo.className}
-                    "
-                >
+                <div class="availability-controls">
 
-                    ${statusInfo.label}
-
-                </span>
-
-            `;
+                    <button
+                        type="button"
+                        class="availability-control"
+                        data-availability-edit="${item.id}"
+                    >
+                        <i class="fa-solid fa-pen"></i>
+                        ویرایش
+                    </button>
 
 
-            container.appendChild(
-                div
-            );
+                    <button
+                        type="button"
+                        class="availability-control"
+                        data-availability-toggle="${item.id}"
+                        data-active="${item.active ? "true" : "false"}"
+                    >
+                        <i class="fa-solid fa-power-off"></i>
+
+                        ${
+                            item.active
+                                ? "غیرفعال کردن"
+                                : "فعال کردن"
+                        }
+
+                    </button>
 
 
-        }
+                    <button
+                        type="button"
+                        class="
+                            availability-control
+                            danger
+                        "
+                        data-availability-delete="${item.id}"
+                    >
+                        <i class="fa-solid fa-trash"></i>
+                        حذف
+                    </button>
 
-    );
-
-
-}
-
-
-
-/* ==========================================
-   Render Customers
-========================================== */
-
-function renderCustomers(
-    customers
-) {
-
-
-    const container =
-        document.getElementById(
-            "barberCustomerList"
-        );
-
-
-    if (
-        !container
-    ) {
-
-        return;
-
-    }
-
-
-    if (
-        !customers ||
-        customers.length === 0
-    ) {
-
-
-        container.innerHTML = `
-
-            <div class="empty-state">
-
-                <i class="fa-solid fa-users"></i>
-
-                <p>
-
-                    مشتری پیدا نشد.
-
-                </p>
-
-            </div>
-
-        `;
-
-
-        return;
-
-    }
-
-
-    container.innerHTML =
-        "";
-
-
-    customers.forEach(
-        customer => {
-
-
-            const fullName =
-                getCustomerFullName(
-                    customer
-                );
-
-
-            const div =
-                document.createElement(
-                    "div"
-                );
-
-
-            div.className =
-                "customer-item";
-
-
-            div.innerHTML = `
-
-                <h4>
-
-                    ${escapeHtml(
-                        fullName || "مشتری"
-                    )}
-
-                </h4>
-
-
-                <p>
-
-                    📞
-                    ${escapeHtml(
-                        customer.phone || "---"
-                    )}
-
-                </p>
-
-
-                <p>
-
-                    ✂️ تعداد مراجعات:
-
-                    ${customer.visit_count || 0}
-
-                </p>
-
-
-                <p>
-
-                    آخرین مراجعه:
-
-                    ${escapeHtml(
-                        customer.last_visit || "---"
-                    )}
-
-                </p>
+                </div>
 
             `;
 
@@ -1798,120 +1607,114 @@ function renderCustomers(
                 div
             );
 
-
         }
-
     );
 
 
-}
+    if (options.barber) {
 
-
-
-/* ==========================================
-   Security Helper
-========================================== */
-
-function escapeHtml(
-    value
-) {
-
-
-    const div =
-        document.createElement(
-            "div"
+        attachAvailabilityEvents(
+            container,
+            false
         );
-
-
-    div.textContent =
-        String(value ?? "");
-
-
-    return div.innerHTML;
-
-}
-
-
-
-/* ==========================================
-   Logout
-========================================== */
-
-logoutBtn.addEventListener(
-
-    "click",
-
-    async () => {
-
-
-        const confirmLogout =
-            confirm(
-                "آیا مطمئن هستید که می‌خواهید از حساب خود خارج شوید؟"
-            );
-
-
-        if (
-            !confirmLogout
-        ) {
-
-            return;
-
-        }
-
-
-        try {
-
-
-            logoutBtn.disabled =
-                true;
-
-
-            await signOutUser();
-
-
-            window.location.href =
-                "index.html";
-
-
-        }
-
-        catch (
-            error
-        ) {
-
-
-            console.error(
-                "Logout error:",
-                error
-            );
-
-
-            alert(
-                "خطایی در خروج از حساب رخ داد."
-            );
-
-
-        }
-
-        finally {
-
-
-            logoutBtn.disabled =
-                false;
-
-
-        }
-
 
     }
 
-);
 
+    if (options.admin) {
 
+        attachAvailabilityEvents(
+            container,
+            true
+        );
+
+    }
+
+}
 
 
 /* ==========================================
-   Start
+   Availability Events
 ========================================== */
 
-loadProfile();
+function attachAvailabilityEvents(
+    container,
+    isAdmin
+) {
+
+    container
+        .querySelectorAll(
+            "[data-availability-edit]"
+        )
+        .forEach(
+            button => {
+
+                button.addEventListener(
+                    "click",
+                    () => {
+
+                        editAvailability(
+                            button.dataset.availabilityEdit,
+                            isAdmin
+                        );
+
+                    }
+                );
+
+            }
+        );
+
+
+    container
+        .querySelectorAll(
+            "[data-availability-toggle]"
+        )
+        .forEach(
+            button => {
+
+                button.addEventListener(
+                    "click",
+                    () => {
+
+                        toggleAvailability(
+                            button.dataset.availabilityToggle,
+                            button.dataset.active === "true",
+                            isAdmin
+                        );
+
+                    }
+                );
+
+            }
+        );
+
+
+    container
+        .querySelectorAll(
+            "[data-availability-delete]"
+        )
+        .forEach(
+            button => {
+
+                button.addEventListener(
+                    "click",
+                    () => {
+
+                        deleteAvailability(
+                            button.dataset.availabilityDelete,
+                            isAdmin
+                        );
+
+                    }
+                );
+
+            }
+        );
+
+}
+
+
+/* ==========================================
+   Get Availability By ID
+========================================== */
+            
