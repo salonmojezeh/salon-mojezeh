@@ -1,603 +1,1487 @@
-
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#0d1117">
-  <meta name="description" content="پروفایل و پنل کاربری سالن معجزه">
 
-  <title>پروفایل | سالن معجزه</title>
+    <meta charset="UTF-8">
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-  <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="profile.css">
+    <meta
+        name="theme-color"
+        content="#0f0f0f"
+    >
+
+    <title>پروفایل من | سالن معجزه</title>
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="profile.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap"
+    >
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+
 </head>
+
 
 <body>
 
-  <div id="loader">
-    <div class="loader-spinner"></div>
-    <div class="loader-text">سالن معجزه</div>
-  </div>
 
-  <div id="overlay"></div>
+<!-- ============================= -->
+<!-- Loader اصلی سایت -->
+<!-- ============================= -->
 
-  <aside id="sidebar">
+<div id="loader">
+    <div class="profile-loader-spinner"></div>
+    <p>در حال بارگذاری...</p>
+</div>
 
-    <div class="sidebar-header">
-      <div class="sidebar-logo">سالن معجزه</div>
 
-      <button id="closeSidebar" class="sidebar-close" type="button" aria-label="بستن منو">
-        ×
-      </button>
-    </div>
+<!-- ============================= -->
+<!-- Overlay -->
+<!-- ============================= -->
 
-    <nav class="sidebar-nav">
+<div id="overlay"></div>
 
-      <a href="index.html">
-        <span>⌂</span>
-        <span>صفحه اصلی</span>
-      </a>
 
-      <a href="reserve.html">
-        <span>📅</span>
-        <span>رزرو نوبت</span>
-      </a>
+<!-- ============================= -->
+<!-- Sidebar -->
+<!-- ============================= -->
 
-      <a href="club.html">
-        <span>♛</span>
-        <span>باشگاه مشتریان</span>
-      </a>
+<aside id="sidebar">
 
-      <a href="gallery.html">
-        <span>▣</span>
-        <span>گالری</span>
-      </a>
+    <div class="sidebar-header">
 
-      <a href="news.html">
-        <span>◉</span>
-        <span>اخبار</span>
-      </a>
+        <div class="sidebar-brand">
+            <div class="sidebar-brand-icon">
+                <i class="fa-solid fa-scissors"></i>
+            </div>
 
-      <a href="services.html">
-        <span>✂</span>
-        <span>خدمات</span>
-      </a>
+            <div>
+                <strong>سالن معجزه</strong>
+                <span>Salon Mojezeh</span>
+            </div>
+        </div>
 
-      <a href="about.html">
-        <span>ⓘ</span>
-        <span>درباره ما</span>
-      </a>
+        <button
+            id="closeSidebar"
+            type="button"
+            aria-label="بستن منو"
+        >
+            <i class="fa-solid fa-xmark"></i>
+        </button>
 
-      <a href="contact.html">
-        <span>☎</span>
-        <span>تماس با ما</span>
-      </a>
+    </div>
 
-      <a href="https://maps.google.com/?q=مشهد،+کوی+امیرالمومنین،+خیابان+ولیعصر،+ولیعصر+۱۶" target="_blank" rel="noopener">
-        <span>⌖</span>
-        <span>مسیریابی</span>
-      </a>
 
-    </nav>
-  </aside>
+    <nav class="sidebar-nav">
 
-  <header id="header">
+        <a href="index.html">
+            <i class="fa-solid fa-house"></i>
+            <span>صفحه اصلی</span>
+        </a>
 
-    <button id="menuBtn" type="button" aria-label="باز کردن منو">
-      ☰
-    </button>
+        <a href="reserve.html">
+            <i class="fa-solid fa-calendar-plus"></i>
+            <span>رزرو نوبت</span>
+        </a>
 
-    <a href="profile.html" id="headerProfileBtn" aria-label="پروفایل">
-      👤
-    </a>
+        <a
+            href="profile.html"
+            class="active"
+        >
+            <i class="fa-solid fa-user"></i>
+            <span>پروفایل من</span>
+        </a>
 
-    <div class="header-title">
-      <strong>سالن معجزه</strong>
-      <span>استایل شما ، معجزه ماست</span>
-    </div>
+        <a href="club.html">
+            <i class="fa-solid fa-star"></i>
+            <span>باشگاه مشتریان</span>
+        </a>
 
-    <button id="themeToggle" type="button" aria-label="تغییر حالت نمایش">
-      <span id="themeIcon">☾</span>
-    </button>
+        <a href="gallery.html">
+            <i class="fa-solid fa-images"></i>
+            <span>نمونه کارها</span>
+        </a>
 
-  </header>
+        <a href="news.html">
+            <i class="fa-solid fa-newspaper"></i>
+            <span>اخبار</span>
+        </a>
 
-  <div id="profileLoader" class="profile-loader">
-    <div class="loader-spinner"></div>
-    <p>در حال دریافت اطلاعات حساب...</p>
-  </div>
+        <a href="services.html">
+            <i class="fa-solid fa-scissors"></i>
+            <span>خدمات</span>
+        </a>
 
-  <main id="profilePage" class="profile-page">
+        <a href="about.html">
+            <i class="fa-solid fa-circle-info"></i>
+            <span>درباره ما</span>
+        </a>
 
-    <section class="profile-hero">
+        <a href="contact.html">
+            <i class="fa-solid fa-phone"></i>
+            <span>تماس با ما</span>
+        </a>
 
-      <div class="profile-hero-content">
+        <a href="maps.html">
+            <i class="fa-solid fa-location-dot"></i>
+            <span>مسیریابی</span>
+        </a>
 
-        <div class="profile-avatar" id="profileAvatar">
-          <span>👤</span>
-        </div>
+    </nav>
 
-        <div class="profile-identity">
-          <span class="profile-welcome">خوش آمدید</span>
-          <h1 id="profileName">در حال دریافت اطلاعات...</h1>
-          <p id="profileRole">حساب کاربری</p>
-        </div>
+</aside>
 
-      </div>
 
-      <div class="profile-hero-actions">
+<!-- ============================= -->
+<!-- Header -->
+<!-- ============================= -->
 
-        <a href="reserve.html" class="profile-btn profile-btn-primary" id="profileReserveBtn">
-          📅 رزرو نوبت
-        </a>
+<header id="header">
 
-        <button type="button" class="profile-btn profile-btn-secondary" id="logoutBtn">
-          خروج از حساب
-        </button>
+    <button
+        id="menuBtn"
+        type="button"
+        aria-label="باز کردن منو"
+    >
+        <i class="fa-solid fa-bars"></i>
+    </button>
 
-      </div>
-
-    </section>
 
-    <section class="profile-section">
+    <a
+        href="profile.html"
+        id="headerProfileBtn"
+        class="profile-btn"
+        aria-label="پروفایل"
+    >
+        <i class="fa-solid fa-user"></i>
+    </a>
 
-      <div class="section-heading">
-        <div>
-          <span class="section-eyebrow">ACCOUNT</span>
-          <h2>اطلاعات حساب</h2>
-        </div>
-      </div>
 
-      <div class="account-info-grid">
+    <div class="header-title">
 
-        <div class="account-info-card">
-          <span class="info-label">شماره موبایل</span>
-          <strong id="accountPhone">---</strong>
-        </div>
+        <h2>سالن معجزه</h2>
 
-        <div class="account-info-card">
-          <span class="info-label">ایمیل</span>
-          <strong id="accountEmail">---</strong>
-        </div>
+        <span>
+            استایل شما ، معجزه ماست
+        </span>
 
-        <div class="account-info-card">
-          <span class="info-label">نوع حساب</span>
-          <strong id="accountRole">---</strong>
-        </div>
+    </div>
 
-        <div class="account-info-card">
-          <span class="info-label">وضعیت حساب</span>
-          <strong id="accountStatus">---</strong>
-        </div>
 
-      </div>
+    <button
+        id="themeToggle"
+        type="button"
+        aria-label="تغییر حالت شب و روز"
+    >
+        <i
+            id="themeIcon"
+            class="fa-solid fa-moon"
+        ></i>
+    </button>
 
-    </section>
+</header>
 
-    <section id="customerDashboard" class="dashboard-section" hidden>
 
-      <div class="section-heading">
-        <div>
-          <span class="section-eyebrow">CUSTOMER</span>
-          <h2>پنل مشتری</h2>
-          <p>اطلاعات و نوبت‌های شما</p>
-        </div>
-      </div>
+<!-- ============================= -->
+<!-- Profile Loader -->
+<!-- ============================= -->
 
-      <div class="stats-grid">
+<div
+    id="profileLoader"
+    class="profile-loader"
+>
 
-        <div class="stat-card">
-          <span class="stat-icon">📅</span>
-          <span class="stat-label">کل نوبت‌ها</span>
-          <strong id="customerTotalReservations">0</strong>
-        </div>
-
-        <div class="stat-card">
-          <span class="stat-icon">⏳</span>
-          <span class="stat-label">نوبت‌های آینده</span>
-          <strong id="customerUpcomingReservations">0</strong>
-        </div>
-
-        <div class="stat-card">
-          <span class="stat-icon">✓</span>
-          <span class="stat-label">نوبت‌های انجام‌شده</span>
-          <strong id="customerCompletedReservations">0</strong>
-        </div>
+    <div class="loader-circle"></div>
 
-        <div class="stat-card">
-          <span class="stat-icon">♛</span>
-          <span class="stat-label">امتیاز باشگاه</span>
-          <strong id="customerPoints">0</strong>
-        </div>
-
-      </div>
-
-      <div class="dashboard-card">
+    <p>
+        در حال دریافت اطلاعات...
+    </p>
 
-        <div class="dashboard-card-header">
-          <div>
-            <span class="section-eyebrow">PERSONAL</span>
-            <h3>اطلاعات شخصی</h3>
-          </div>
-        </div>
-
-        <div class="personal-info-grid">
+</div>
 
-          <div>
-            <span>نام</span>
-            <strong id="customerFirstName">---</strong>
-          </div>
-
-          <div>
-            <span>نام خانوادگی</span>
-            <strong id="customerLastName">---</strong>
-          </div>
 
-          <div>
-            <span>شماره تماس</span>
-            <strong id="customerPhone">---</strong>
-          </div>
+<!-- ============================= -->
+<!-- Main -->
+<!-- ============================= -->
 
-        </div>
+<main class="profile-page">
 
-      </div>
 
-      <div class="dashboard-card">
-
-        <div class="dashboard-card-header">
-          <div>
-            <span class="section-eyebrow">RESERVATIONS</span>
-            <h3>نوبت‌های من</h3>
-          </div>
+    <!-- ========================= -->
+    <!-- Hero -->
+    <!-- ========================= -->
 
-          <button type="button" class="small-action-btn" data-refresh="customer">
-            ↻ بروزرسانی
-          </button>
-      </div>
+    <section class="profile-hero">
 
-        <div id="customerReservations" class="reservations-list">
-          <div class="empty-state">در حال دریافت نوبت‌ها...</div>
-        </div>
+        <div class="profile-avatar">
 
-      </div>
+            <i
+                id="profileAvatarIcon"
+                class="fa-solid fa-user"
+            ></i>
 
-    </section>
+        </div>
 
-    <section id="barberDashboard" class="dashboard-section" hidden>
 
-      <div class="section-heading">
-        <div>
-          <span class="section-eyebrow">BARBER</span>
-          <h2>پنل آرایشگر</h2>
-          <p>مدیریت نوبت‌ها و مشتریان</p>
-        </div>
-      </div>
+        <div class="profile-main-info">
 
-      <div class="stats-grid">
+            <span
+                id="profileBadge"
+                class="profile-badge"
+            >
+                ...
+            </span>
 
-        <div class="stat-card">
-          <span class="stat-icon">📅</span>
-          <span class="stat-label">کل نوبت‌ها</span>
-          <strong id="barberTotalReservations">0</strong>
-        </div>
+            <h1 id="profileName">
+                در حال بارگذاری...
+            </h1>
 
-        <div class="stat-card">
-          <span class="stat-icon">⏳</span>
-          <span class="stat-label">نوبت‌های امروز</span>
-          <strong id="barberTodayReservations">0</strong>
-        </div>
+            <p id="profileSubtitle">
+                لطفاً صبر کنید
+            </p>
 
-        <div class="stat-card">
-          <span class="stat-icon">✓</span>
-          <span class="stat-label">انجام‌شده</span>
-          <strong id="barberCompletedReservations">0</strong>
-        </div>
+        </div>
 
-        <div class="stat-card">
-          <span class="stat-icon">✕</span>
-          <span class="stat-label">لغوشده</span>
-          <strong id="barberCancelledReservations">0</strong>
-        </div>
 
-      </div>
-
-      <div class="dashboard-card">
-
-        <div class="dashboard-card-header">
-          <div>
-            <span class="section-eyebrow">PROFILE</span>
-            <h3>اطلاعات آرایشگر</h3>
-          </div>
-      </div>
+        <div class="profile-hero-action">
 
-        <div class="personal-info-grid">
-
-          <div>
-            <span>نام آرایشگر</span>
-            <strong id="barberName">---</strong>
-          </div>
+            <a
+                href="reserve.html"
+                class="reserve-now-btn"
+            >
+                <i class="fa-solid fa-calendar-plus"></i>
+                رزرو نوبت
+            </a>
 
-          <div>
-            <span>شماره تماس</span>
-            <strong id="barberPhone">---</strong>
-          </div>
-
-          <div>
-            <span>وضعیت</span>
-            <strong id="barberStatus">---</strong>
-          </div>
-
-        </div>
-
-      </div>
-
-      <div class="dashboard-card">
-
-        <div class="dashboard-card-header">
-          <div>
-            <span class="section-eyebrow">RESERVATIONS</span>
-            <h3>نوبت‌های من</h3>
-          </div>
-
-          <button type="button" class="small-action-btn" data-refresh="barber">
-            ↻ بروزرسانی
-          </button>
-      </div>
-
-        <div id="barberReservations" class="reservations-list">
-          <div class="empty-state">در حال دریافت نوبت‌ها...</div>
-        </div>
-
-      </div>
-
-      <div class="dashboard-card">
-
-        <div class="dashboard-card-header">
-          <div>
-            <span class="section-eyebrow">CUSTOMERS</span>
-            <h3>مشتریان</h3>
-          </div>
-      </div>
-
-        <div id="barberCustomers" class="customers-list">
-          <div class="empty-state">در حال دریافت اطلاعات...</div>
-        </div>
-
-      </div>
-
-    </section>
-
-    <section id="adminDashboard" class="dashboard-section" hidden>
-
-      <div class="section-heading">
-        <div>
-          <span class="section-eyebrow">ADMIN</span>
-          <h2>پنل مدیریت</h2>
-          <p>مدیریت کلی سالن معجزه</p>
-        </div>
-      </div>
-
-      <div class="stats-grid">
-
-        <div class="stat-card">
-          <span class="stat-icon">📅</span>
-          <span class="stat-label">کل نوبت‌ها</span>
-          <strong id="adminTotalReservations">0</strong>
-        </div>
-
-        <div class="stat-card">
-          <span class="stat-icon">⏳</span>
-          <span class="stat-label">نوبت‌های امروز</span>
-          <strong id="adminTodayReservations">0</strong>
-        </div>
-
-        <div class="stat-card">
-          <span class="stat-icon">👥</span>
-          <span class="stat-label">آرایشگران</span>
-          <strong id="adminBarbersCount">0</strong>
-        </div>
-
-        <div class="stat-card">
-          <span class="stat-icon">✓</span>
-          <span class="stat-label">انجام‌شده</span>
-          <strong id="adminCompletedReservations">0</strong>
-        </div>
-
-      </div>
-
-      <div class="dashboard-card">
-
-        <div class="dashboard-card-header">
-          <div>
-            <span class="section-eyebrow">MANAGEMENT</span>
-            <h3>مدیریت سالن</h3>
-          </div>
-      </div>
-
-        <div class="management-links">
-
-          <a href="reserve.html" class="management-link">
-            <span class="management-link-icon">📅</span>
-            <div>
-              <strong>رزرو نوبت</strong>
-              <span>مشاهده و بررسی سیستم رزرو</span>
-            </div>
-          </a>
-
-          <a href="services.html" class="management-link">
-            <span class="management-link-icon">✂</span>
-            <div>
-              <strong>خدمات سالن</strong>
-              <span>مشاهده خدمات و قیمت‌ها</span>
-            </div>
-          </a>
-
-          <a href="index.html" class="management-link">
-            <span class="management-link-icon">⌂</span>
-            <div>
-              <strong>صفحه اصلی</strong>
-              <span>بازگشت به سایت</span>
-            </div>
-          </a>
-
-        </div>
-
-      </div>
-
-      <div class="dashboard-card">
-
-        <div class="dashboard-card-header">
-          <div>
-            <span class="section-eyebrow">LATEST</span>
-            <h3>آخرین نوبت‌ها</h3>
-          </div>
-
-          <button type="button" class="small-action-btn" data-refresh="admin">
-            ↻ بروزرسانی
-          </button>
-      </div>
-
-        <div id="adminReservations" class="reservations-list">
-          <div class="empty-state">در حال دریافت نوبت‌ها...</div>
-        </div>
-
-      </div>
-
-    </section>
-
-    <section id="availabilityManagerPanel" class="dashboard-section availability-manager" hidden>
-
-      <div class="section-heading">
-        <div>
-          <span class="section-eyebrow">AVAILABILITY</span>
-          <h2>مدیریت تعطیلی و ساعات بسته</h2>
-          <p id="availabilityManagerDescription">تعطیلی روزها و بازه‌های زمانی بسته را مدیریت کنید.</p>
-        </div>
-      </div>
-
-      <div class="dashboard-card">
-
-        <div class="dashboard-card-header">
-          <div>
-            <span class="section-eyebrow">BLOCK TIME</span>
-            <h3 id="availabilityFormTitle">ثبت زمان بسته</h3>
-          </div>
-      </div>
-
-        <form id="availabilityForm" class="availability-form">
-
-          <input type="hidden" id="availabilityEditId" value="">
-
-          <div class="form-field">
-            <label for="availabilityDate">تاریخ</label>
-            <input type="date" id="availabilityDate" required>
-            <small id="availabilityDatePreview" class="field-preview"></small>
-          </div>
-
-          <div class="form-field">
-            <label for="availabilityType">نوع</label>
-            <select id="availabilityType" required>
-              <option value="closed">بسته</option>
-              <option value="busy">مشغول</option>
-              <option value="holiday">تعطیل</option>
-              <option value="leave">مرخصی</option>
-            </select>
-          </div>
-
-          <div class="form-field" id="availabilityBarberField">
-            <label for="availabilityBarber">آرایشگر</label>
-            <select id="availabilityBarber">
-              <option value="">کل سالن</option>
-            </select>
-            <small class="field-help">انتخاب «کل سالن» باعث بسته شدن این زمان برای همه آرایشگران می‌شود.</small>
-          </div>
-
-          <div class="form-field">
-            <label for="availabilityStart">ساعت شروع</label>
-            <input type="time" id="availabilityStart">
-          </div>
-
-          <div class="form-field">
-            <label for="availabilityEnd">ساعت پایان</label>
-            <input type="time" id="availabilityEnd">
-            <small class="field-help">اگر ساعت‌ها خالی باشند، کل روز بسته خواهد شد.</small>
-          </div>
-
-          <div class="form-field">
-            <label for="availabilityTitle">عنوان</label>
-            <input type="text" id="availabilityTitle" maxlength="100" placeholder="مثلاً تعطیلی سالن">
-          </div>
-
-          <div class="form-field form-field-full">
-            <label for="availabilityReason">توضیحات</label>
-            <textarea id="availabilityReason" maxlength="500" rows="3" placeholder="توضیحات اختیاری..."></textarea>
-          </div>
-
-          <div class="availability-form-actions">
-            <button type="submit" class="profile-btn profile-btn-primary" id="availabilitySubmitBtn">
-              ثبت زمان بسته
-            </button>
-
-            <button type="button" class="profile-btn profile-btn-secondary" id="availabilityCancelEditBtn" hidden>
-              انصراف از ویرایش
-            </button>
-          </div>
-
-        </form>
-
-      </div>
-
-      <div class="dashboard-card">
-
-        <div class="dashboard-card-header">
-          <div>
-            <span class="section-eyebrow">BLOCKED TIMES</span>
-            <h3>زمان‌های بسته ثبت‌شده</h3>
-          </div>
-
-          <button type="button" class="small-action-btn" id="refreshAvailabilityBtn">
-            ↻ بروزرسانی
-          </button>
-      </div>
-
-        <div id="availabilityList" class="availability-list">
-          <div class="empty-state">در حال دریافت زمان‌های بسته...</div>
-        </div>
-
-      </div>
-
-    </section>
-
-    <section id="profileError" class="profile-error" hidden>
-
-      <div class="profile-error-icon">!</div>
-
-      <h3>دریافت اطلاعات حساب با مشکل مواجه شد</h3>
-
-      <p id="profileErrorMessage">لطفاً دوباره تلاش کنید.</p>
-
-      <button type="button" class="profile-btn profile-btn-primary" id="profileRetryBtn">
-        تلاش مجدد
-      </button>
-
-    </section>
-
-  </main>
-
-  <footer class="profile-footer">
-    <strong>سالن معجزه</strong>
-    <span>مشهد، کوی امیرالمومنین، خیابان ولیعصر، ولیعصر ۱۶</span>
-    <a href="tel:09380449987">۰۹۳۸۰۴۴۹۹۸۷</a>
-  </footer>
-
-  <script src="script.js"></script>
-  <script type="module" src="profile.js"></script>
+        </div>
+
+    </section>
+
+
+    <!-- ========================= -->
+    <!-- CUSTOMER -->
+    <!-- ========================= -->
+
+    <section
+        id="customerDashboard"
+        class="dashboard-section hidden"
+    >
+
+        <div class="section-heading">
+
+            <span>Customer Dashboard</span>
+
+            <h2>
+                حساب کاربری من
+            </h2>
+
+            <p>
+                اطلاعات، سوابق و رزروهای خود را مدیریت کنید.
+            </p>
+
+        </div>
+
+
+        <!-- Stats -->
+
+        <div class="stats-grid">
+
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fa-solid fa-scissors"></i>
+                </div>
+
+                <div>
+                    <span>تعداد مراجعات</span>
+                    <strong id="customerVisits">0</strong>
+                </div>
+            </div>
+
+
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fa-solid fa-star"></i>
+                </div>
+
+                <div>
+                    <span>امتیاز باشگاه</span>
+                    <strong id="customerPoints">0</strong>
+                </div>
+            </div>
+
+
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fa-solid fa-gift"></i>
+                </div>
+
+                <div>
+                    <span>هدیه</span>
+                    <strong id="customerGift">ندارد</strong>
+                </div>
+            </div>
+
+
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fa-solid fa-calendar-check"></i>
+                </div>
+
+                <div>
+                    <span>آخرین مراجعه</span>
+                    <strong id="customerLastVisit">---</strong>
+                </div>
+            </div>
+
+        </div>
+
+
+        <!-- Personal Info -->
+
+        <div class="profile-panel">
+
+            <div class="panel-title">
+
+                <div>
+                    <i class="fa-solid fa-user"></i>
+                    <h3>اطلاعات شخصی</h3>
+                </div>
+
+            </div>
+
+
+            <div class="info-grid">
+
+                <div class="info-item">
+                    <span>نام و نام خانوادگی</span>
+                    <strong id="customerFullName">---</strong>
+                </div>
+
+                <div class="info-item">
+                    <span>شماره موبایل</span>
+                    <strong id="customerPhone">---</strong>
+                </div>
+
+                <div class="info-item">
+                    <span>ایمیل</span>
+                    <strong id="customerEmail">---</strong>
+                </div>
+
+                <div class="info-item">
+                    <span>مدل موی مورد علاقه</span>
+                    <strong id="customerFavoriteModel">ثبت نشده</strong>
+                </div>
+
+                <div class="info-item">
+                    <span>آخرین آرایشگر</span>
+                    <strong id="customerLastBarber">---</strong>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Reservations -->
+
+        <div class="profile-panel">
+
+            <div class="panel-title">
+
+                <div>
+                    <i class="fa-solid fa-calendar-check"></i>
+                    <h3>رزروهای من</h3>
+                </div>
+
+                <div class="panel-title-actions">
+
+                    <button
+                        type="button"
+                        class="small-action-btn"
+                        id="customerRefreshBtn"
+                    >
+                        <i class="fa-solid fa-rotate"></i>
+                        بروزرسانی
+                    </button>
+
+                    <a
+                        href="reserve.html"
+                        class="panel-link"
+                    >
+                        رزرو جدید
+                        <i class="fa-solid fa-arrow-left"></i>
+                    </a>
+
+                </div>
+
+            </div>
+
+
+            <div
+                id="customerReservations"
+                class="reservation-list"
+            >
+                در حال دریافت اطلاعات...
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ========================= -->
+    <!-- BARBER -->
+    <!-- ========================= -->
+
+    <section
+        id="barberDashboard"
+        class="dashboard-section hidden"
+    >
+
+        <div class="section-heading">
+
+            <span>Barber Dashboard</span>
+
+            <h2>
+                پنل آرایشگر
+            </h2>
+
+            <p>
+                رزروها، مشتریان و زمان‌های کاری خود را مدیریت کنید.
+            </p>
+
+        </div>
+
+
+        <div class="stats-grid">
+
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fa-solid fa-calendar-day"></i>
+                </div>
+
+                <div>
+                    <span>رزرو امروز</span>
+                    <strong id="barberTodayReservations">0</strong>
+                </div>
+            </div>
+
+
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fa-solid fa-calendar-week"></i>
+                </div>
+
+                <div>
+                    <span>کل رزروها</span>
+                    <strong id="barberTotalReservations">0</strong>
+                </div>
+            </div>
+
+
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fa-solid fa-users"></i>
+                </div>
+
+                <div>
+                    <span>مشتریان من</span>
+                    <strong id="barberCustomers">0</strong>
+                </div>
+            </div>
+
+
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+
+                <div>
+                    <span>انجام شده</span>
+                    <strong id="barberCompleted">0</strong>
+                </div>
+            </div>
+
+        </div>
+
+
+        <!-- Availability -->
+
+        <div class="profile-panel availability-panel">
+
+            <div class="panel-title">
+
+                <div>
+                    <i class="fa-solid fa-calendar-xmark"></i>
+
+                    <div>
+                        <h3>
+                            مدیریت تعطیلی و ساعت‌های بسته
+                        </h3>
+
+                        <small>
+                            روز یا ساعت‌هایی که نمی‌خواهید مشتری بتواند رزرو کند.
+                        </small>
+                    </div>
+                </div>
+
+            </div>
+
+
+            <form
+                id="availabilityForm"
+                class="availability-form"
+            >
+
+                <input
+                    type="hidden"
+                    id="availabilityId"
+                >
+
+
+                <div class="form-grid">
+
+                    <div class="form-field">
+
+                        <label for="availabilityDate">
+                            تاریخ
+                        </label>
+
+                        <input
+                            type="date"
+                            id="availabilityDate"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="form-field">
+
+                        <label for="availabilityType">
+                            نوع محدودیت
+                        </label>
+
+                        <select id="availabilityType">
+
+                            <option value="closed">
+                                تعطیلی کامل
+                            </option>
+
+                            <option value="busy">
+                                ساعت شلوغ / بسته
+                            </option>
+
+                            <option value="holiday">
+                                تعطیلی مناسبتی
+                            </option>
+
+                            <option value="leave">
+                                مرخصی
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="form-field">
+
+                        <label for="availabilityStart">
+                            شروع ساعت
+                        </label>
+
+                        <input
+                            type="time"
+                            id="availabilityStart"
+                        >
+
+                    </div>
+
+
+                    <div class="form-field">
+
+                        <label for="availabilityEnd">
+                            پایان ساعت
+                        </label>
+
+                        <input
+                            type="time"
+                            id="availabilityEnd"
+                        >
+
+                    </div>
+
+
+                    <div class="form-field form-field-wide">
+
+                        <label for="availabilityTitle">
+                            عنوان
+                        </label>
+
+                        <input
+                            type="text"
+                            id="availabilityTitle"
+                            maxlength="120"
+                            placeholder="مثلاً مرخصی شخصی"
+                        >
+
+                    </div>
+
+
+                    <div class="form-field form-field-wide">
+
+                        <label for="availabilityReason">
+                            توضیحات
+                        </label>
+
+                        <textarea
+                            id="availabilityReason"
+                            rows="3"
+                            maxlength="500"
+                            placeholder="توضیح اختیاری..."
+                        ></textarea>
+
+                    </div>
+
+                </div>
+
+
+                <div
+                    id="availabilityMessage"
+                    class="form-message"
+                ></div>
+
+
+                <div class="form-actions">
+
+                    <button
+                        type="submit"
+                        class="primary-form-btn"
+                        id="availabilitySaveBtn"
+                    >
+                        <i class="fa-solid fa-floppy-disk"></i>
+                        ذخیره محدودیت
+                    </button>
+
+
+                    <button
+                        type="button"
+                        class="secondary-form-btn hidden"
+                        id="availabilityCancelEditBtn"
+                    >
+                        انصراف از ویرایش
+                    </button>
+
+                </div>
+
+            </form>
+
+
+            <div class="availability-divider"></div>
+
+
+            <div class="availability-list-header">
+
+                <div>
+                    <h4>
+                        محدودیت‌های ثبت‌شده
+                    </h4>
+
+                    <p>
+                        موارد آینده در این بخش نمایش داده می‌شوند.
+                    </p>
+                </div>
+
+
+                <button
+                    type="button"
+                    class="small-action-btn"
+                    id="availabilityRefreshBtn"
+                >
+                    <i class="fa-solid fa-rotate"></i>
+                    بروزرسانی
+                </button>
+
+            </div>
+
+
+            <div
+                id="barberAvailabilityList"
+                class="availability-list"
+            >
+                در حال دریافت اطلاعات...
+            </div>
+
+        </div>
+
+
+        <!-- Reservations -->
+
+        <div class="profile-panel">
+
+            <div class="panel-title">
+
+                <div>
+                    <i class="fa-solid fa-calendar-days"></i>
+                    <h3>رزروهای من</h3>
+                </div>
+
+
+                <button
+                    type="button"
+                    class="small-action-btn"
+                    id="barberRefreshBtn"
+                >
+                    <i class="fa-solid fa-rotate"></i>
+                    بروزرسانی
+                </button>
+
+            </div>
+
+
+            <div
+                id="barberReservations"
+                class="reservation-list"
+            >
+                در حال دریافت اطلاعات...
+            </div>
+
+        </div>
+
+
+        <!-- Customers -->
+
+        <div class="profile-panel">
+
+            <div class="panel-title">
+
+                <div>
+                    <i class="fa-solid fa-users"></i>
+                    <h3>مشتریان من</h3>
+                </div>
+
+            </div>
+
+
+            <div
+                id="barberCustomerList"
+                class="customer-list"
+            >
+                در حال دریافت اطلاعات...
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ========================= -->
+    <!-- ADMIN -->
+    <!-- ========================= -->
+
+    <section
+        id="adminDashboard"
+        class="dashboard-section hidden"
+    >
+
+        <div class="section-heading">
+
+            <span>Administrator</span>
+
+            <h2>
+                مدیریت سالن معجزه
+            </h2>
+
+            <p>
+                کنترل رزروها، آرایشگران، مشتریان و زمان‌های قابل رزرو.
+            </p>
+
+        </div>
+
+
+        <div class="admin-welcome">
+
+            <div class="admin-welcome-icon">
+                <i class="fa-solid fa-crown"></i>
+            </div>
+
+            <div>
+
+                <h2>
+                    خوش آمدید 👋
+                </h2>
+
+                <p>
+                    شما دسترسی کامل مدیریت سالن را دارید.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="stats-grid">
+
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fa-solid fa-calendar-day"></i>
+                </div>
+
+                <div>
+                    <span>رزرو امروز</span>
+                    <strong id="adminTodayReservations">0</strong>
+                </div>
+            </div>
+
+
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fa-solid fa-calendar-check"></i>
+                </div>
+
+                <div>
+                    <span>کل رزروها</span>
+                    <strong id="adminTotalReservations">0</strong>
+                </div>
+            </div>
+
+
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fa-solid fa-users"></i>
+                </div>
+
+                <div>
+                    <span>کل مشتریان</span>
+                    <strong id="adminTotalCustomers">0</strong>
+                </div>
+            </div>
+
+
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fa-solid fa-user-scissors"></i>
+                </div>
+
+                <div>
+                    <span>آرایشگران فعال<
+                                                              <strong id="adminActiveBarbers">0</strong>
+                </div>
+            </div>
+
+
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+
+                <div>
+                    <span>رزروهای انجام شده</span>
+                    <strong id="adminCompletedReservations">0</strong>
+                </div>
+            </div>
+
+        </div>
+
+
+        <!-- Admin Actions -->
+
+        <div class="profile-panel">
+
+            <div class="panel-title">
+
+                <div>
+                    <i class="fa-solid fa-gears"></i>
+                    <h3>دسترسی‌های مدیریت</h3>
+                </div>
+
+            </div>
+
+
+            <div class="admin-actions-grid">
+
+                <a
+                    href="reserve.html"
+                    class="admin-action-card"
+                >
+
+                    <div class="admin-action-icon">
+                        <i class="fa-solid fa-calendar-plus"></i>
+                    </div>
+
+                    <div>
+                        <strong>رزرو نوبت</strong>
+
+                        <span>
+                            مشاهده و ثبت نوبت جدید
+                        </span>
+                    </div>
+
+                    <i class="fa-solid fa-arrow-left"></i>
+
+                </a>
+
+
+                <a
+                    href="services.html"
+                    class="admin-action-card"
+                >
+
+                    <div class="admin-action-icon">
+                        <i class="fa-solid fa-scissors"></i>
+                    </div>
+
+                    <div>
+                        <strong>خدمات سالن</strong>
+
+                        <span>
+                            مشاهده خدمات و قیمت‌ها
+                        </span>
+                    </div>
+
+                    <i class="fa-solid fa-arrow-left"></i>
+
+                </a>
+
+
+                <a
+                    href="club.html"
+                    class="admin-action-card"
+                >
+
+                    <div class="admin-action-icon">
+                        <i class="fa-solid fa-star"></i>
+                    </div>
+
+                    <div>
+                        <strong>باشگاه مشتریان</strong>
+
+                        <span>
+                            مدیریت امتیازها و مزایا
+                        </span>
+                    </div>
+
+                    <i class="fa-solid fa-arrow-left"></i>
+
+                </a>
+
+
+                <a
+                    href="gallery.html"
+                    class="admin-action-card"
+                >
+
+                    <div class="admin-action-icon">
+                        <i class="fa-solid fa-images"></i>
+                    </div>
+
+                    <div>
+                        <strong>نمونه کارها</strong>
+
+                        <span>
+                            مدیریت و مشاهده نمونه کارها
+                        </span>
+                    </div>
+
+                    <i class="fa-solid fa-arrow-left"></i>
+
+                </a>
+
+            </div>
+
+        </div>
+
+
+        <!-- Admin Availability -->
+
+        <div class="profile-panel availability-panel">
+
+            <div class="panel-title">
+
+                <div>
+                    <i class="fa-solid fa-calendar-xmark"></i>
+
+                    <div>
+                        <h3>
+                            مدیریت تعطیلی و ساعات بسته
+                        </h3>
+
+                        <small>
+                            امکان بستن کل سالن یا تعیین بازه بسته برای هر آرایشگر.
+                        </small>
+                    </div>
+                </div>
+
+            </div>
+
+
+            <form
+                id="adminAvailabilityForm"
+                class="availability-form"
+            >
+
+                <input
+                    type="hidden"
+                    id="adminAvailabilityId"
+                >
+
+
+                <div class="form-grid">
+
+                    <div class="form-field">
+
+                        <label for="adminAvailabilityDate">
+                            تاریخ
+                        </label>
+
+                        <input
+                            type="date"
+                            id="adminAvailabilityDate"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="form-field">
+
+                        <label for="adminAvailabilityType">
+                            نوع محدودیت
+                        </label>
+
+                        <select id="adminAvailabilityType">
+
+                            <option value="closed">
+                                تعطیلی کامل
+                            </option>
+
+                            <option value="busy">
+                                ساعت شلوغ / بسته
+                            </option>
+
+                            <option value="holiday">
+                                تعطیلی مناسبتی
+                            </option>
+
+                            <option value="leave">
+                                مرخصی
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="form-field">
+
+                        <label for="adminAvailabilityBarber">
+                            آرایشگر
+                        </label>
+
+                        <select id="adminAvailabilityBarber">
+
+                            <option value="">
+                                کل سالن
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="form-field">
+
+                        <label for="adminAvailabilityStart">
+                            شروع ساعت
+                        </label>
+
+                        <input
+                            type="time"
+                            id="adminAvailabilityStart"
+                        >
+
+                    </div>
+
+
+                    <div class="form-field">
+
+                        <label for="adminAvailabilityEnd">
+                            پایان ساعت
+                        </label>
+
+                        <input
+                            type="time"
+                            id="adminAvailabilityEnd"
+                        >
+
+                    </div>
+
+
+                    <div class="form-field form-field-wide">
+
+                        <label for="adminAvailabilityTitle">
+                            عنوان
+                        </label>
+
+                        <input
+                            type="text"
+                            id="adminAvailabilityTitle"
+                            maxlength="120"
+                            placeholder="مثلاً تعطیلی مناسبتی"
+                        >
+
+                    </div>
+
+
+                    <div class="form-field form-field-wide">
+
+                        <label for="adminAvailabilityReason">
+                            توضیحات
+                        </label>
+
+                        <textarea
+                            id="adminAvailabilityReason"
+                            rows="3"
+                            maxlength="500"
+                            placeholder="توضیح اختیاری..."
+                        ></textarea>
+
+                    </div>
+
+                </div>
+
+
+                <div
+                    id="adminAvailabilityMessage"
+                    class="form-message"
+                ></div>
+
+
+                <div class="form-actions">
+
+                    <button
+                        type="submit"
+                        class="primary-form-btn"
+                        id="adminAvailabilitySaveBtn"
+                    >
+                        <i class="fa-solid fa-floppy-disk"></i>
+                        ذخیره محدودیت
+                    </button>
+
+
+                    <button
+                        type="button"
+                        class="secondary-form-btn hidden"
+                        id="adminAvailabilityCancelEditBtn"
+                    >
+                        انصراف از ویرایش
+                    </button>
+
+                </div>
+
+            </form>
+
+
+            <div class="availability-divider"></div>
+
+
+            <div class="availability-list-header">
+
+                <div>
+                    <h4>
+                        محدودیت‌های ثبت‌شده
+                    </h4>
+
+                    <p>
+                        تعطیلی‌های سالن و آرایشگران در این بخش نمایش داده می‌شوند.
+                    </p>
+                </div>
+
+
+                <button
+                    type="button"
+                    class="small-action-btn"
+                    id="adminAvailabilityRefreshBtn"
+                >
+                    <i class="fa-solid fa-rotate"></i>
+                    بروزرسانی
+                </button>
+
+            </div>
+
+
+            <div
+                id="adminAvailabilityList"
+                class="availability-list"
+            >
+                در حال دریافت اطلاعات...
+            </div>
+
+        </div>
+
+
+        <!-- Latest Reservations -->
+
+        <div class="profile-panel">
+
+            <div class="panel-title">
+
+                <div>
+                    <i class="fa-solid fa-calendar-days"></i>
+                    <h3>آخرین رزروها</h3>
+                </div>
+
+
+                <button
+                    type="button"
+                    class="small-action-btn"
+                    id="adminRefreshBtn"
+                >
+                    <i class="fa-solid fa-rotate"></i>
+                    بروزرسانی
+                </button>
+
+            </div>
+
+
+            <div
+                id="adminReservations"
+                class="reservation-list"
+            >
+                در حال دریافت اطلاعات...
+            </div>
+
+        </div>
+
+
+        <!-- Admin Account -->
+
+        <div class="profile-panel">
+
+            <div class="panel-title">
+
+                <div>
+                    <i class="fa-solid fa-shield-halved"></i>
+                    <h3>اطلاعات حساب مدیریت</h3>
+                </div>
+
+            </div>
+
+
+            <div class="info-grid">
+
+                <div class="info-item">
+
+                    <span>
+                        نام حساب
+                    </span>
+
+                    <strong id="adminAccountName">
+                        ---
+                    </strong>
+
+                </div>
+
+
+                <div class="info-item">
+
+                    <span>
+                        شماره موبایل
+                    </span>
+
+                    <strong id="adminAccountPhone">
+                        ---
+                    </strong>
+
+                </div>
+
+
+                <div class="info-item">
+
+                    <span>
+                        ایمیل
+                    </span>
+
+                    <strong id="adminAccountEmail">
+                        ---
+                    </strong>
+
+                </div>
+
+
+                <div class="info-item">
+
+                    <span>
+                        سطح دسترسی
+                    </span>
+
+                    <strong>
+                        مدیر سیستم
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ============================= -->
+    <!-- Shared Account Information -->
+    <!-- ============================= -->
+
+    <section
+        id="accountInfoSection"
+        class="profile-panel account-info-panel"
+    >
+
+        <div class="panel-title">
+
+            <div>
+                <i class="fa-solid fa-circle-user"></i>
+
+                <div>
+                    <h3>
+                        حساب کاربری
+                    </h3>
+
+                    <small>
+                        اطلاعات حسابی که با آن وارد سالن معجزه شده‌اید.
+                    </small>
+                </div>
+            </div>
+
+        </div>
+
+
+        <div class="info-grid">
+
+            <div class="info-item">
+
+                <span>
+                    نقش حساب
+                </span>
+
+                <strong id="accountRole">
+                    ---
+                </strong>
+
+            </div>
+
+
+            <div class="info-item">
+
+                <span>
+                    شماره موبایل
+                </span>
+
+                <strong id="accountPhone">
+                    ---
+                </strong>
+
+            </div>
+
+
+            <div class="info-item">
+
+                <span>
+                    ایمیل
+                </span>
+
+                <strong id="accountEmail">
+                    ---
+                </strong>
+
+            </div>
+
+
+            <div class="info-item">
+
+                <span>
+                    وضعیت حساب
+                </span>
+
+                <strong id="accountStatus">
+                    فعال
+                </strong>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ============================= -->
+    <!-- Logout -->
+    <!-- ============================= -->
+
+    <section class="profile-logout-section">
+
+        <button
+            type="button"
+            id="logoutBtn"
+            class="logout-btn"
+        >
+            <i class="fa-solid fa-right-from-bracket"></i>
+            خروج از حساب کاربری
+        </button>
+
+    </section>
+
+
+</main>
+
+
+<!-- ============================= -->
+<!-- Toast -->
+<!-- ============================= -->
+
+<div
+    id="profileToast"
+    class="profile-toast"
+    role="status"
+    aria-live="polite"
+></div>
+
+
+<!-- ============================= -->
+<!-- Scripts -->
+<!-- ============================= -->
+
+<script
+    src="script.js"
+    defer
+></script>
+
+
+<script
+    type="module"
+    src="profile.js"
+></script>
+
 
 </body>
-                                </html>
-    
+
+                    </html>
