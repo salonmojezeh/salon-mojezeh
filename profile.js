@@ -2393,4 +2393,873 @@ async function toggleAvailability(
 /* ==========================================
    Delete Availability
 ========================================== */
-       
+
+async function deleteAvailability(
+    id,
+    isAdmin
+) {
+
+    const confirmed =
+        confirm(
+            "آیا مطمئن هستید که می‌خواهید این محدودیت حذف شود؟"
+        );
+
+
+    if (!confirmed) {
+        return;
+    }
+
+
+    try {
+
+        const {
+            error
+        } = await supabase
+
+            .from("availability_blocks")
+
+            .delete()
+
+            .eq(
+                "id",
+                id
+            );
+
+
+        if (error) {
+
+            throw error;
+
+        }
+
+
+        if (isAdmin) {
+
+            await loadAdminAvailability();
+
+        } else {
+
+            await loadBarberAvailability();
+
+        }
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        alert(
+            "حذف محدودیت انجام نشد."
+        );
+
+    }
+
+}
+
+
+/* ==========================================
+   Render Reservations
+========================================== */
+
+function renderReservations(
+    containerId,
+    reservations,
+    options = {}
+) {
+
+    const container =
+        document.getElementById(
+            containerId
+        );
+
+
+    if (!container) {
+        return;
+    }
+
+
+    if (
+        !reservations
+        ||
+        !reservations.length
+    ) {
+
+        container.innerHTML = `
+
+            <div class="empty-state">
+
+                <i class="fa-solid fa-calendar-xmark"></i>
+
+                <p>
+                    هنوز رزروی ثبت نشده است.
+                </p>
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    container.innerHTML = "";
+
+
+    reservations.forEach(
+        item => {
+
+            const status =
+                getStatusInfo(
+                    item.status
+                );
+
+
+            const fullName =
+
+                [
+                    item.first_name,
+                    item.last_name
+                ]
+
+                    .filter(Boolean)
+
+                    .join(" ")
+
+                ||
+
+                item.customer_name
+
+                ||
+
+                "مشتری";
+
+
+            const service =
+                item.service
+                ||
+                item.service_name
+                ||
+                "---";
+
+
+            const barber =
+                item.barber_name
+                ||
+                "---";
+
+
+            const dateText =
+                item.display_date
+                ||
+                formatDate(
+                    item.date
+                );
+
+
+            const time =
+                item.time
+                ||
+                "---";
+
+
+            const div =
+                document.createElement(
+                    "div"
+                );
+
+
+            div.className =
+                "reservation-item";
+
+
+            const canManage =
+                options.staff
+                &&
+                item.status ===
+                    RESERVATION_STATUS.RESERVED;
+
+
+            div.innerHTML = `
+
+                <div class="reservation-main">
+
+                    <h4>
+                        ${escapeHtml(fullName)}
+                    </h4>
+
+                    <p>
+                        ✂️
+                        ${escapeHtml(service)}
+                    </p>
+
+                    <p>
+                        📅
+                        ${escapeHtml(dateText)}
+
+                        |
+
+                        🕒
+                        ${escapeHtml(time)}
+                    </p>
+
+                    <p>
+                        👤
+                        ${escapeHtml(barber)}
+                    </p>
+
+                    ${
+                        canManage
+                            ? `
+
+                                <div
+                                    class="reservation-actions"
+                                >
+
+                                    <button
+                                        type="button"
+                                        class="
+                                            reservation-action
+                                            success
+                                        "
+                                        data-reservation-complete="${item.id}"
+                                    >
+                                        <i class="fa-solid fa-check"></i>
+                                        انجام شد
+                                    </button>
+
+
+                                    <button
+                                        type="button"
+                                        class="
+                                            reservation-action
+                                            danger
+                                        "
+                                        data-reservation-cancel="${item.id}"
+                                    >
+                                        <i class="fa-solid fa-xmark"></i>
+                                        لغو
+                                    </button>
+
+
+                                    <button
+                                        type="button"
+                                        class="reservation-action"
+                                        data-reservation-noshow="${item.id}"
+                                    >
+                                        <i class="fa-solid fa-user-xmark"></i>
+                                        عدم مراجعه
+                                    </button>
+
+                                </div>
+
+                            `
+                            : ""
+                    }
+
+                </div>
+
+
+                <span
+                    class="
+                        reservation-status
+                        ${status.className}
+                    "
+                >
+                    ${escapeHtml(status.label)}
+                </span>
+
+            `;
+
+
+            container.appendChild(
+                div
+            );
+
+        }
+    );
+
+
+    if (options.staff) {
+
+        attachReservationEvents(
+            container
+        );
+
+    }
+
+
+    if (options.customer) {
+
+        attachCustomerReservationEvents(
+            container
+        );
+
+    }
+
+}
+
+
+/* ==========================================
+   Staff Reservation Actions
+=
+function attachReservationEvents(
+    container
+) {
+
+    container
+        .querySelectorAll(
+            "[data-reservation-complete]"
+        )
+        .forEach(
+            button => {
+
+                button.addEventListener(
+                    "click",
+                    async () => {
+
+                        await reservationAction(
+                            button.dataset.reservationComplete,
+                            "complete"
+                        );
+
+                    }
+                );
+
+            }
+        );
+
+
+    container
+        .querySelectorAll(
+            "[data-reservation-cancel]"
+        )
+        .forEach(
+            button => {
+
+                button.addEventListener(
+                    "click",
+                    async () => {
+
+                        await reservationAction(
+                            button.dataset.reservationCancel,
+                            "cancel"
+                        );
+
+                    }
+                );
+
+            }
+        );
+
+
+    container
+        .querySelectorAll(
+            "[data-reservation-noshow]"
+        )
+        .forEach(
+            button => {
+
+                button.addEventListener(
+                    "click",
+                    async () => {
+
+                        await reservationAction(
+                            button.dataset.reservationNoshow,
+                            "no_show"
+                        );
+
+                    }
+                );
+
+            }
+        );
+
+}
+
+
+/* ==========================================
+   Customer Reservation Actions
+========================================== */
+
+function attachCustomerReservationEvents(
+    container
+) {
+
+    /*
+       مشتری فقط بتواند رزرو فعال آینده را لغو کند.
+    */
+
+    container
+        .querySelectorAll(
+            "[data-customer-cancel]"
+        )
+        .forEach(
+            button => {
+
+                button.addEventListener(
+                    "click",
+                    async () => {
+
+                        await reservationAction(
+                            button.dataset.customerCancel,
+                            "cancel"
+                        );
+
+                    }
+                );
+
+            }
+        );
+
+}
+
+
+/* ==========================================
+   Reservation Action
+========================================== */
+
+async function reservationAction(
+    reservationId,
+    action
+) {
+
+    let message =
+        "";
+
+
+    if (action === "complete") {
+
+        message =
+            "آیا این نوبت انجام شده است؟";
+
+    }
+
+    if (action === "cancel") {
+
+        message =
+            "آیا از لغو این نوبت مطمئن هستید؟";
+
+    }
+
+    if (action === "no_show") {
+
+        message =
+            "آیا مشتری در این نوبت مراجعه نکرده است؟";
+
+    }
+
+
+    if (!confirm(message)) {
+
+        return;
+
+    }
+
+
+    try {
+
+        if (action === "complete") {
+
+            await completeReservation(
+                reservationId
+            );
+
+        }
+
+        else if (action === "cancel") {
+
+            await cancelReservation(
+                reservationId
+            );
+
+        }
+
+        else if (action === "no_show") {
+
+            await markReservationNoShow(
+                reservationId
+            );
+
+        }
+
+
+        if (currentRole === "admin") {
+
+            await loadAdminReservations();
+
+        }
+
+        else if (currentRole === "barber") {
+
+            await loadBarberReservations();
+
+        }
+
+        else if (currentRole === "customer") {
+
+            const profile =
+                await getCurrentUserProfile();
+
+            if (
+                profile?.customer_id
+            ) {
+
+                await loadCustomerReservations(
+                    profile.customer_id
+                );
+
+            }
+
+        }
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Reservation action:",
+            error
+        );
+
+        alert(
+            error?.message
+            ||
+            "عملیات روی رزرو انجام نشد."
+        );
+
+    }
+
+}
+
+
+/* ==========================================
+   Render Customers
+========================================== */
+
+function renderCustomers(
+    customers
+) {
+
+    const container =
+        document.getElementById(
+            "barberCustomerList"
+        );
+
+
+    if (!container) {
+        return;
+    }
+
+
+    if (!customers.length) {
+
+        container.innerHTML = `
+
+            <div class="empty-state">
+
+                <i class="fa-solid fa-users"></i>
+
+                <p>
+                    هنوز مشتری ثبت نشده است.
+                </p>
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    container.innerHTML = "";
+
+
+    customers.forEach(
+        customer => {
+
+            const fullName =
+                getCustomerFullName(
+                    customer
+                );
+
+
+            const div =
+                document.createElement(
+                    "div"
+                );
+
+
+            div.className =
+                "customer-item";
+
+
+            div.innerHTML = `
+
+                <h4>
+                    ${escapeHtml(
+                        fullName || "مشتری"
+                    )}
+                </h4>
+
+                <p>
+                    📞
+                    ${escapeHtml(
+                        customer.phone || "---"
+                    )}
+                </p>
+
+                <p>
+                    ✂️
+                    تعداد مراجعات:
+                    ${customer.visit_count || 0}
+                </p>
+
+                <p>
+                    آخرین مراجعه:
+                    ${escapeHtml(
+                        customer.last_visit || "---"
+                    )}
+                </p>
+
+            `;
+
+
+            container.appendChild(
+                div
+            );
+
+        }
+    );
+
+}
+
+
+/* ==========================================
+   Form Events
+========================================== */
+
+const availabilityForm =
+    document.getElementById(
+        "availabilityForm"
+    );
+
+
+availabilityForm?.addEventListener(
+    "submit",
+    event => {
+
+        event.preventDefault();
+
+        saveAvailability(
+            availabilityForm,
+            false
+        );
+
+    }
+);
+
+
+const adminAvailabilityForm =
+    document.getElementById(
+        "adminAvailabilityForm"
+    );
+
+
+adminAvailabilityForm?.addEventListener(
+    "submit",
+    event => {
+
+        event.preventDefault();
+
+        saveAvailability(
+            adminAvailabilityForm,
+            true
+        );
+
+    }
+);
+
+
+/* ==========================================
+   Cancel Edit
+========================================== */
+
+document
+    .getElementById(
+        "availabilityCancelEditBtn"
+    )
+    ?.addEventListener(
+        "click",
+        () => {
+
+            resetAvailabilityForm(
+                false
+            );
+
+        }
+    );
+
+
+document
+    .getElementById(
+        "adminAvailabilityCancelEditBtn"
+    )
+    ?.addEventListener(
+        "click",
+        () => {
+
+            resetAvailabilityForm(
+                true
+            );
+
+        }
+    );
+
+
+/* ==========================================
+   Refresh
+========================================== */
+
+document
+    .getElementById(
+        "availabilityRefreshBtn"
+    )
+    ?.addEventListener(
+        "click",
+        async () => {
+
+            await loadBarberAvailability();
+
+        }
+    );
+
+
+document
+    .getElementById(
+        "adminAvailabilityRefreshBtn"
+    )
+    ?.addEventListener(
+        "click",
+        async () => {
+
+            await loadAdminAvailability();
+
+        }
+    );
+
+
+document
+    .getElementById(
+        "barberRefreshBtn"
+    )
+    ?.addEventListener(
+        "click",
+        async () => {
+
+            await loadBarberReservations();
+
+            await loadBarberCustomers();
+
+        }
+    );
+
+
+document
+    .getElementById(
+        "adminRefreshBtn"
+    )
+    ?.addEventListener(
+        "click",
+        async () => {
+
+            await loadAdminReservations();
+
+            await loadAdminCounts();
+
+        }
+    );
+
+
+document
+    .getElementById(
+        "customerRefreshBtn"
+    )
+    ?.addEventListener(
+        "click",
+        async () => {
+
+            if (
+                currentProfile?.customer_id
+            ) {
+
+                await loadCustomerReservations(
+                    currentProfile.customer_id
+                );
+
+            }
+
+        }
+    );
+
+
+/* ==========================================
+   Logout
+========================================== */
+
+logoutBtn?.addEventListener(
+    "click",
+    async () => {
+
+        if (
+            !confirm(
+                "آیا مطمئن هستید که می‌خواهید از حساب خود خارج شوید؟"
+            )
+        ) {
+
+            return;
+
+        }
+
+
+        try {
+
+            logoutBtn.disabled =
+                true;
+
+
+            await signOutUser();
+
+
+            window.location.href =
+                "index.html";
+
+        }
+
+        catch (error) {
+
+            console.error(
+                "Logout:",
+                error
+            );
+
+            alert(
+                "خطایی در خروج از حساب رخ داد."
+            );
+
+            logoutBtn.disabled =
+                false;
+
+        }
+
+    }
+);
+
+
+/* ==========================================
+   Start
+========================================== */
+
+loadProfile();
