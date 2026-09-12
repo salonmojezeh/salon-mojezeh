@@ -1717,4 +1717,210 @@ function attachAvailabilityEvents(
 /* ==========================================
    Get Availability By ID
 ========================================== */
-            
+        
+async function getAvailabilityById(id) {
+
+    const {
+        data,
+        error
+    } = await supabase
+
+        .from("availability_blocks")
+
+        .select("*")
+
+        .eq(
+            "id",
+            id
+        )
+
+        .maybeSingle();
+
+
+    if (error) {
+
+        throw error;
+
+    }
+
+
+    return data;
+
+}
+
+
+/* ==========================================
+   Edit Availability
+========================================== */
+
+async function editAvailability(
+    id,
+    isAdmin
+) {
+
+    try {
+
+        const item =
+            await getAvailabilityById(
+                id
+            );
+
+
+        if (!item) {
+
+            alert(
+                "این محدودیت پیدا نشد."
+            );
+
+            return;
+
+        }
+
+
+        if (isAdmin) {
+
+            document.getElementById(
+                "adminAvailabilityId"
+            ).value =
+                item.id;
+
+            document.getElementById(
+                "adminAvailabilityBarber"
+            ).value =
+                item.barber_id || "";
+
+            document.getElementById(
+                "adminAvailabilityDate"
+            ).value =
+                item.block_date;
+
+            document.getElementById(
+                "adminAvailabilityType"
+            ).value =
+                item.block_type;
+
+            document.getElementById(
+                "adminAvailabilityStart"
+            ).value =
+                item.start_time || "";
+
+            document.getElementById(
+                "adminAvailabilityEnd"
+            ).value =
+                item.end_time || "";
+
+            document.getElementById(
+                "adminAvailabilityTitle"
+            ).value =
+                item.title || "";
+
+            document.getElementById(
+                "adminAvailabilityReason"
+            ).value =
+                item.reason || "";
+
+
+            document.getElementById(
+                "adminAvailabilityCancelEditBtn"
+            ).classList.remove("hidden");
+
+
+            showMessage(
+                document.getElementById(
+                    "adminAvailabilityMessage"
+                ),
+                "در حال ویرایش محدودیت...",
+                ""
+            );
+
+
+            window.scrollTo({
+                top:
+                    document.getElementById(
+                        "adminAvailabilityForm"
+                    ).offsetTop - 120,
+                behavior: "smooth"
+            });
+
+
+        } else {
+
+            document.getElementById(
+                "availabilityId"
+            ).value =
+                item.id;
+
+            document.getElementById(
+                "availabilityDate"
+            ).value =
+                item.block_date;
+
+            document.getElementById(
+                "availabilityType"
+            ).value =
+                item.block_type;
+
+            document.getElementById(
+                "availabilityStart"
+            ).value =
+                item.start_time || "";
+
+            document.getElementById(
+                "availabilityEnd"
+            ).value =
+                item.end_time || "";
+
+            document.getElementById(
+                "availabilityTitle"
+            ).value =
+                item.title || "";
+
+            document.getElementById(
+                "availabilityReason"
+            ).value =
+                item.reason || "";
+
+
+            document.getElementById(
+                "availabilityCancelEditBtn"
+            ).classList.remove("hidden");
+
+
+            showMessage(
+                document.getElementById(
+                    "availabilityMessage"
+                ),
+                "در حال ویرایش محدودیت...",
+                ""
+            );
+
+
+            window.scrollTo({
+                top:
+                    document.getElementById(
+                        "availabilityForm"
+                    ).offsetTop - 120,
+                behavior: "smooth"
+            });
+
+        }
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        alert(
+            "دریافت اطلاعات محدودیت انجام نشد."
+        );
+
+    }
+
+}
+
+
+/* ==========================================
+   Save Availability
+========================================== */
+
