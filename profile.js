@@ -1924,3 +1924,473 @@ async function editAvailability(
    Save Availability
 ========================================== */
 
+async function saveAvailability(
+    form,
+    isAdmin
+) {
+
+    const prefix =
+        isAdmin
+            ? "admin"
+            : "";
+
+
+    const id =
+        document.getElementById(
+            `${prefix}AvailabilityId`
+        ).value;
+
+
+    const barberId =
+        isAdmin
+            ? (
+                document.getElementById(
+                    "adminAvailabilityBarber"
+                ).value
+                ||
+                null
+            )
+            : currentBarberId;
+
+
+    const date =
+        document.getElementById(
+            `${prefix}AvailabilityDate`
+        ).value;
+
+
+    const type =
+        document.getElementById(
+            `${prefix}AvailabilityType`
+        ).value;
+
+
+    const start =
+        document.getElementById(
+            `${prefix}AvailabilityStart`
+        ).value
+        ||
+        null;
+
+
+    const end =
+        document.getElementById(
+            `${prefix}AvailabilityEnd`
+        ).value
+        ||
+        null;
+
+
+    const title =
+        document.getElementById(
+            `${prefix}AvailabilityTitle`
+        ).value.trim()
+        ||
+        null;
+
+
+    const reason =
+        document.getElementById(
+            `${prefix}AvailabilityReason`
+        ).value.trim()
+        ||
+        null;
+
+
+    const message =
+        document.getElementById(
+            `${prefix}AvailabilityMessage`
+        );
+
+
+    if (!date) {
+
+        showMessage(
+            message,
+            "لطفاً تاریخ را انتخاب کنید.",
+            "error"
+        );
+
+        return;
+
+    }
+
+
+    if (
+        start
+        &&
+        end
+        &&
+        start >= end
+    ) {
+
+        showMessage(
+            message,
+            "ساعت پایان باید بعد از ساعت شروع باشد.",
+            "error"
+        );
+
+        return;
+
+    }
+
+
+    if (
+        type === "closed"
+        ||
+        type === "holiday"
+        ||
+        type === "leave"
+    ) {
+
+        /*
+           برای تعطیلی کامل بهتر است ساعت‌ها خالی باشند.
+        */
+
+        if (
+            start
+            ||
+            end
+        ) {
+
+            showMessage(
+                message,
+                "برای تعطیلی کامل، مناسبتی یا مرخصی، ساعت‌ها را خالی بگذارید.",
+                "error"
+            );
+
+            return;
+
+        }
+
+    }
+
+
+    const payload = {
+
+        barber_id:
+            barberId,
+
+        block_date:
+            date,
+
+        start_time:
+            start,
+
+        end_time:
+            end,
+
+        block_type:
+            type,
+
+        title:
+            title,
+
+        reason:
+            reason,
+
+        active:
+            true
+
+    };
+
+
+    try {
+
+        const saveButton =
+            document.getElementById(
+                `${prefix}AvailabilitySaveBtn`
+            );
+
+
+        saveButton.disabled =
+            true;
+
+
+        showMessage(
+            message,
+            "در حال ذخیره...",
+            ""
+        );
+
+
+        let error = null;
+
+
+        if (id) {
+
+            const result =
+                await supabase
+
+                    .from("availability_blocks")
+
+                    .update(
+                        payload
+                    )
+
+                    .eq(
+                        "id",
+                        id
+                    );
+
+
+            error =
+                result.error;
+
+        } else {
+
+            const result =
+                await supabase
+
+                    .from("availability_blocks")
+
+                    .insert(
+                        [
+                            {
+                                ...payload,
+
+                                created_by:
+                                    currentUser.id
+                            }
+                        ]
+                    );
+
+
+            error =
+                result.error;
+
+        }
+
+
+        if (error) {
+
+            throw error;
+
+        }
+
+
+        showMessage(
+            message,
+            "محدودیت با موفقیت ذخیره شد.",
+            "success"
+        );
+
+
+        resetAvailabilityForm(
+            isAdmin
+        );
+
+
+        if (isAdmin) {
+
+            await loadAdminAvailability();
+
+        } else {
+
+            await loadBarberAvailability();
+
+        }
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Save availability:",
+            error
+        );
+
+
+        showMessage(
+            message,
+            mapAvailabilityError(
+                error
+            ),
+            "error"
+        );
+
+    }
+
+    finally {
+
+        const saveButton =
+            document.getElementById(
+                `${prefix}AvailabilitySaveBtn`
+            );
+
+
+        if (saveButton) {
+
+            saveButton.disabled =
+                false;
+
+        }
+
+    }
+
+}
+
+
+/* ==========================================
+   Availability Error
+========================================== */
+       
+function mapAvailabilityError(error) {
+
+    const message =
+        error?.message
+        ||
+        "";
+
+
+    if (
+        message.includes(
+            "duplicate"
+        )
+    ) {
+
+        return "این محدودیت قبلاً ثبت شده است.";
+
+    }
+
+
+    if (
+        message.includes(
+            "row-level security"
+        )
+        ||
+        message.includes(
+            "permission denied"
+        )
+    ) {
+
+        return "دسترسی ثبت این محدودیت مجاز نیست.";
+
+    }
+
+
+    return (
+        message
+        ||
+        "ثبت محدودیت انجام نشد."
+    );
+
+}
+
+
+/* ==========================================
+   Reset Availability Form
+========================================== */
+
+function resetAvailabilityForm(
+    isAdmin
+) {
+
+    const prefix =
+        isAdmin
+            ? "admin"
+            : "";
+
+
+    const form =
+        document.getElementById(
+            `${prefix}AvailabilityForm`
+        );
+
+
+    if (form) {
+
+        form.reset();
+
+    }
+
+
+    document.getElementById(
+        `${prefix}AvailabilityId`
+    ).value =
+        "";
+
+
+    document.getElementById(
+        `${prefix}AvailabilityCancelEditBtn`
+    )?.classList.add(
+        "hidden"
+    );
+
+
+    showMessage(
+        document.getElementById(
+            `${prefix}AvailabilityMessage`
+        ),
+        "",
+        ""
+    );
+
+}
+
+
+/* ==========================================
+   Toggle Availability
+========================================== */
+
+async function toggleAvailability(
+    id,
+    currentlyActive,
+    isAdmin
+) {
+
+    try {
+
+        const {
+            error
+        } = await supabase
+
+            .from("availability_blocks")
+
+            .update({
+                active:
+                    !currentlyActive
+            })
+
+            .eq(
+                "id",
+                id
+            );
+
+
+        if (error) {
+
+            throw error;
+
+        }
+
+
+        if (isAdmin) {
+
+            await loadAdminAvailability();
+
+        } else {
+
+            await loadBarberAvailability();
+
+        }
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        alert(
+            "تغییر وضعیت محدودیت انجام نشد."
+        );
+
+    }
+
+}
+
+
+/* ==========================================
+   Delete Availability
+========================================== */
+       
