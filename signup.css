@@ -1,0 +1,26 @@
+/* فقط استایل اختصاصی صفحه ثبت‌نام؛ تم اصلی از style.css می‌آید */
+.signup-page{min-height:calc(100vh - 82px);display:grid;place-items:center;padding:32px 16px;background:var(--background)}
+.signup-card{width:min(680px,100%);background:var(--card);border:1px solid var(--border);border-radius:24px;box-shadow:var(--shadow);padding:28px}
+.signup-heading{text-align:center;margin-bottom:24px}
+.signup-icon{display:grid;place-items:center;width:58px;height:58px;margin:0 auto 12px;border-radius:18px;background:color-mix(in srgb,var(--primary) 15%,transparent);color:var(--primary);font-size:28px}
+.signup-heading h1{margin:0 0 8px;color:var(--secondary);font-size:26px}
+.signup-heading p{margin:0;color:var(--text-light);line-height:1.9}
+#signupForm{display:grid;gap:16px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+#signupForm label:not(.terms){display:grid;gap:7px}
+#signupForm label span{font-weight:700;color:var(--text)}
+#signupForm input[type=text],#signupForm input[type=tel],#signupForm input[type=email],#signupForm input[type=password]{width:100%;box-sizing:border-box;padding:13px 14px;border:1px solid var(--border);border-radius:13px;background:var(--surface);color:var(--text);outline:none;font:inherit;transition:.2s}
+#signupForm input:focus{border-color:var(--primary);box-shadow:0 0 0 3px color-mix(in srgb,var(--primary) 15%,transparent)}
+#signupForm small{color:var(--text-light)}
+.terms{display:flex;align-items:center;gap:9px;color:var(--text-light);font-size:14px}
+.terms input{accent-color:var(--primary)}
+.primary-btn{border:0;border-radius:14px;padding:14px;background:var(--primary);color:#fff;font:inherit;font-weight:800;cursor:pointer;min-height:52px}
+.primary-btn:disabled{opacity:.65;cursor:not-allowed}
+.form-message{padding:12px 14px;border-radius:12px;margin-bottom:16px;line-height:1.8}
+.form-message.error{background:#fee2e2;color:#991b1b}
+.form-message.success{background:#dcfce7;color:#166534}
+.btn-loader{display:inline-block;width:17px;height:17px;border:2px solid currentColor;border-left-color:transparent;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-inline-start:8px}
+.signup-footer{display:flex;justify-content:center;gap:7px;margin-top:20px;color:var(--text-light)}
+.signup-footer a{color:var(--primary);font-weight:800;text-decoration:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:600px){.signup-card{padding:22px 16px;border-radius:18px}.form-grid{grid-template-columns:1fr}.signup-heading h1{font-size:23px}}
