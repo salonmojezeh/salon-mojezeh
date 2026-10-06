@@ -1,497 +1,161 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fa" dir="rtl">
-
 <head>
-
-<meta charset="UTF-8">
-
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>پنل مدیریت سالن معجزه</title>
-
-<link rel="stylesheet" href="admin.css">
-
-<link rel="stylesheet"
-href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>پنل مدیریت | سالن معجزه</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="admin.css">
 </head>
-
 <body>
+  <div id="adminLoader" class="admin-loader"><div class="spinner"></div><strong>در حال آماده‌سازی پنل مدیریت...</strong></div>
 
-<div class="admin-container">
+  <header class="mobile-topbar">
+    <button id="mobileMenuBtn" class="round-btn" aria-label="منو">☰</button>
+    <div class="mobile-title"><strong>سالن معجزه</strong><span>پنل مدیریت</span></div>
+    <button id="adminRefreshMobile" class="round-btn" aria-label="بروزرسانی">↻</button>
+  </header>
 
-    <!-- ================= Sidebar ================= -->
+  <aside id="adminSidebar" class="admin-sidebar">
+    <div class="brand-box">
+      <div class="brand-mark">م</div>
+      <div><strong>سالن معجزه</strong><span>استایل شما، معجزه ماست</span></div>
+    </div>
+    <div class="admin-user"><div id="adminAvatar">م</div><div><strong id="adminName">مدیر سالن</strong><span id="adminRole">مدیر</span></div></div>
+    <nav>
+      <button data-target="dashboard">⌂ <span>خانه</span></button>
+      <button data-target="reservationsSection">▣ <span>رزروها</span></button>
+      <button data-target="customersSection">♙ <span>مشتریان</span></button>
+      <button data-target="barbersSection">✂ <span>آرایشگران</span></button>
+      <button data-target="clubSection">★ <span>باشگاه مشتریان</span></button>
+      <button data-target="availabilitySection">◷ <span>تعطیلی و ساعات بسته</span></button>
+      <button data-target="servicesSection">✦ <span>خدمات</span></button>
+      <button data-target="reportsSection">▤ <span>گزارش‌ها</span></button>
+      <button data-target="settingsSection">⚙ <span>تنظیمات</span></button>
+    </nav>
+    <button id="adminLogout" class="sidebar-logout">خروج از حساب</button>
+  </aside>
 
-    <aside class="sidebar">
+  <main class="admin-main">
+    <section id="dashboard" class="dashboard-section">
+      <div class="page-head">
+        <div><span class="eyebrow">مدیریت سالن</span><h1>داشبورد مدیریت</h1><p id="todayLabel">—</p></div>
+        <div class="head-actions"><button id="adminRefresh" class="outline-btn">↻ بروزرسانی</button><button id="quickReservation" class="primary-btn">+ رزرو جدید</button></div>
+      </div>
 
-        <div class="logo">
+      <div id="adminMessage" class="admin-message" hidden></div>
+      <div id="statsGrid" class="stats-grid"></div>
 
-            <img src="images/logo.png" alt="Salon">
+      <div class="dashboard-grid">
+        <section class="card">
+          <div class="card-head"><div><h2>رزروهای امروز</h2><p>نمایش سریع نوبت‌های روز</p></div><button data-target="reservationsSection" class="text-btn">مشاهده همه</button></div>
+          <div id="todayReservations" class="mini-list"></div>
+        </section>
+        <section class="card">
+          <div class="card-head"><div><h2>تولدهای نزدیک</h2><p>برای هدیه باشگاه مشتریان</p></div><button data-target="clubSection" class="text-btn">باشگاه</button></div>
+          <div id="birthdayPreview" class="mini-list"></div>
+        </section>
+      </div>
 
-            <h2>سالن معجزه</h2>
+      <div class="mobile-sections">
+        <button class="colored-row purple" data-target="reservationsSection"><span>▣ رزروها</span><b>›</b></button>
+        <button class="colored-row green" data-target="customersSection"><span>♙ مشتریان</span><b>›</b></button>
+        <button class="colored-row violet" data-target="barbersSection"><span>✂ آرایشگران</span><b>›</b></button>
+        <button class="colored-row gold" data-target="clubSection"><span>★ باشگاه مشتریان</span><b>›</b></button>
+        <button class="colored-row cyan" data-target="availabilitySection"><span>◷ تعطیلی و ساعات بسته</span><b>›</b></button>
+        <button class="colored-row pink" data-target="servicesSection"><span>✦ خدمات</span><b>›</b></button>
+        <button class="colored-row teal" data-target="reportsSection"><span>▤ گزارش‌ها</span><b>›</b></button>
+        <button class="colored-row dark" data-target="settingsSection"><span>⚙ تنظیمات</span><b>›</b></button>
+      </div>
+    </section>
 
+    <section id="reservationsSection" class="panel-section">
+      <div class="section-title"><div><span class="eyebrow">عملیات</span><h2>مدیریت رزروها</h2></div></div>
+      <div class="filters">
+        <label>تاریخ<input id="reservationDateFilter" type="date"></label>
+        <label>آرایشگر<select id="reservationBarberFilter"><option value="">همه آرایشگران</option></select></label>
+        <label>وضعیت<select id="reservationStatusFilter"><option value="">همه</option><option value="reserved">رزرو شده</option><option value="completed">تکمیل شده</option><option value="cancelled">لغو شده</option><option value="no_show">عدم مراجعه</option></select></label>
+        <label>جستجو<input id="reservationSearch" type="search" placeholder="نام، موبایل، خدمت..."></label>
+      </div>
+      <div id="daySchedule" class="day-schedule"></div>
+      <div id="reservationsList" class="reservation-grid"></div>
+    </section>
+
+    <section id="customersSection" class="panel-section">
+      <div class="section-title"><div><span class="eyebrow">باشگاه و CRM</span><h2>مشتریان</h2></div></div>
+      <div class="filters one"><label>جستجوی مشتری<input id="customerSearch" type="search" placeholder="نام یا شماره موبایل..."></label></div>
+      <div id="customersList" class="customer-grid"></div>
+    </section>
+
+    <section id="barbersSection" class="panel-section">
+      <div class="section-title"><div><span class="eyebrow">تیم سالن</span><h2>آرایشگران</h2></div></div>
+      <div id="barbersList" class="barber-grid"></div>
+    </section>
+
+    <section id="clubSection" class="panel-section">
+      <div class="section-title"><div><span class="eyebrow">وفاداری</span><h2>باشگاه مشتریان و هدیه تولد</h2></div></div>
+      <div class="club-notice">تاریخ تولد از فرم ثبت‌نام گرفته می‌شود. در صورت وجود ستون‌های باشگاه در جدول مشتریان، امتیاز و وضعیت هدیه نیز از همین بخش مدیریت می‌شوند.</div>
+      <div class="filters"><label>فیلتر تولد<select id="birthdayFilter"><option value="all">همه مشتریان</option><option value="30">تولد ۳۰ روز آینده</option><option value="today">تولد امروز</option></select></label></div>
+      <div id="clubList" class="club-grid"></div>
+    </section>
+
+    <section id="availabilitySection" class="panel-section">
+      <div class="section-title"><div><span class="eyebrow">تقویم سالن</span><h2>تعطیلی و ساعات بسته</h2><p>کل سالن یا یک آرایشگر را برای روز یا بازه زمانی ببند.</p></div></div>
+      <form id="availabilityForm" class="availability-form card">
+        <input id="availabilityEditId" type="hidden">
+        <div class="form-grid">
+          <label>تاریخ<input id="blockDate" type="date" required></label>
+          <label>آرایشگر<select id="blockBarber"><option value="">کل سالن</option></select></label>
+          <label>نوع<select id="blockType"><option value="closed">بسته / تعطیل</option><option value="busy">مشغول</option><option value="holiday">تعطیلی مناسبتی</option><option value="leave">مرخصی</option></select></label>
+          <label>از ساعت<input id="blockStart" type="time"></label>
+          <label>تا ساعت<input id="blockEnd" type="time"></label>
+          <label>عنوان<input id="blockTitle" type="text" placeholder="مثلاً مرخصی آرایشگر"></label>
         </div>
-
-        <ul class="menu">
-
-            <li class="active">
-
-                <a href="#dashboard">
-
-                    <i class="fas fa-chart-line"></i>
-
-                    داشبورد
-
-                </a>
-
-            </li>
-
-            <li>
-
-                <a href="#customers">
-
-                    <i class="fas fa-users"></i>
-
-                    مشتریان
-
-                </a>
-
-            </li>
-
-            <li>
-
-                <a href="#reservations">
-
-                    <i class="fas fa-calendar-check"></i>
-
-                    رزروها
-
-                </a>
-
-            </li>
-
-            <li>
-
-                <a href="#club">
-
-                    <i class="fas fa-gift"></i>
-
-                    باشگاه مشتریان
-
-                </a>
-
-            </li>
-
-            <li>
-
-                <a href="#birthdays">
-
-                    <i class="fas fa-cake-candles"></i>
-
-                    تولدها
-
-                </a>
-
-            </li>
-
-            <li>
-
-                <a href="#models">
-
-                    <i class="fas fa-scissors"></i>
-
-                    مدل مو
-
-                </a>
-
-            </li>
-
-            <li>
-
-                <a href="#products">
-
-                    <i class="fas fa-store"></i>
-
-                    فروش محصولات
-
-                </a>
-
-            </li>
-
-            <li>
-
-                <a href="#settings">
-
-                    <i class="fas fa-gear"></i>
-
-                    تنظیمات
-
-                </a>
-
-            </li>
-
-        </ul>
-
-    </aside>
-
-    <!-- ================= محتوا ================= -->
-
-    <main class="content">
-
-        <header class="topbar">
-
-            <h1>
-
-                داشبورد مدیریت
-
-            </h1>
-
-            <span id="todayDate"></span>
-
-        </header>
-                <!-- ================= داشبورد ================= -->
-
-        <section id="dashboard">
-
-            <div class="cards">
-
-                <div class="dashboard-card">
-
-                    <i class="fas fa-calendar-day"></i>
-
-                    <h3>رزرو امروز</h3>
-
-                    <p id="todayReservations">0</p>
-
-                </div>
-
-                <div class="dashboard-card">
-
-                    <i class="fas fa-calendar-plus"></i>
-
-                    <h3>رزرو فردا</h3>
-
-                    <p id="tomorrowReservations">0</p>
-
-                </div>
-
-                <div class="dashboard-card">
-
-                    <i class="fas fa-calendar-alt"></i>
-
-                    <h3>رزرو ۳۰ روز اخیر</h3>
-
-                    <p id="monthReservations">0</p>
-
-                </div>
-
-                <div class="dashboard-card">
-
-                    <i class="fas fa-users"></i>
-
-                    <h3>کل مشتریان</h3>
-
-                    <p id="totalCustomers">0</p>
-
-                </div>
-
-                <div class="dashboard-card">
-
-                    <i class="fas fa-gift"></i>
-
-                    <h3>هدیه آماده</h3>
-
-                    <p id="giftCustomers">0</p>
-
-                </div>
-
-                <div class="dashboard-card">
-
-                    <i class="fas fa-cake-candles"></i>
-
-                    <h3>تولد امروز</h3>
-
-                    <p id="todayBirthdays">0</p>
-
-                </div>
-
-                <div class="dashboard-card">
-
-                    <i class="fas fa-birthday-cake"></i>
-
-                    <h3>تولد فردا</h3>
-
-                    <p id="tomorrowBirthdays">0</p>
-
-                </div>
-
-            </div>
-
-        </section>
-
-
-
-        <!-- ================= آخرین رزروها ================= -->
-
-        <section class="panel">
-
-            <div class="panel-header">
-
-                <h2>
-
-                    <i class="fas fa-clock"></i>
-
-                    آخرین رزروها
-
-                </h2>
-
-            </div>
-
-            <div id="reservationList" class="reservation-list">
-
-                در حال بارگذاری...
-
-            </div>
-
-        </section>
-                <!-- ================= اطلاعات مشتری ================= -->
-
-        <section class="panel">
-
-            <div class="panel-header">
-
-                <h2>
-
-                    <i class="fas fa-user"></i>
-
-                    اطلاعات مشتری
-
-                </h2>
-
-            </div>
-
-            <div id="customerDetails" class="customer-details">
-
-                <div class="customer-empty">
-
-                    <i class="fas fa-user-circle"></i>
-
-                    <p>
-
-                        برای مشاهده اطلاعات کامل،
-                        روی یکی از رزروها کلیک کنید.
-
-                    </p>
-
-                </div>
-
-            </div>
-
-        </section>
-
-
-
-        <!-- ================= تاریخچه مراجعات ================= -->
-
-        <section class="panel">
-
-            <div class="panel-header">
-
-                <h2>
-
-                    <i class="fas fa-clock-rotate-left"></i>
-
-                    تاریخچه مراجعه
-
-                </h2>
-
-            </div>
-
-            <div id="historyList" class="history-list">
-
-                هنوز مراجعه‌ای ثبت نشده است.
-
-            </div>
-
-        </section>
-
-
-
-        <!-- ================= عملیات سریع ================= -->
-
-        <section class="panel">
-
-            <div class="panel-header">
-
-                <h2>
-
-                    <i class="fas fa-bolt"></i>
-
-                    عملیات سریع
-
-                </h2>
-
-            </div>
-
-            <div class="quick-actions">
-
-                <button id="btnDone">
-
-                    <i class="fas fa-check-circle"></i>
-
-                    انجام شد
-
-                </button>
-
-                <button id="btnEdit">
-
-                    <i class="fas fa-pen"></i>
-
-                    ویرایش
-
-                </button>
-
-                <button id="btnDelete">
-
-                    <i class="fas fa-trash"></i>
-
-                    حذف رزرو
-
-                </button>
-
-                <button id="btnGift">
-
-                    <i class="fas fa-gift"></i>
-
-                    ثبت هدیه
-
-                </button>
-
-            </div>
-
-        </section>
-                <!-- ================= تنظیمات ================= -->
-
-        <section class="panel">
-
-            <div class="panel-header">
-
-                <h2>
-
-                    <i class="fas fa-gear"></i>
-
-                    تنظیمات سالن
-
-                </h2>
-
-            </div>
-
-            <div class="settings-grid">
-
-                <div class="setting-card">
-
-                    <i class="fas fa-phone"></i>
-
-                    <h3>شماره تماس</h3>
-
-                    <button id="editPhone">
-
-                        ویرایش
-
-                    </button>
-
-                </div>
-
-                <div class="setting-card">
-
-                    <i class="fas fa-clock"></i>
-
-                    <h3>ساعات کاری</h3>
-
-                    <button id="editHours">
-
-                        ویرایش
-
-                    </button>
-
-                </div>
-
-                <div class="setting-card">
-
-                    <i class="fas fa-scissors"></i>
-
-                    <h3>خدمات سالن</h3>
-
-                    <button id="editServices">
-
-                        مدیریت
-
-                    </button>
-
-                </div>
-
-                <div class="setting-card">
-
-                    <i class="fas fa-images"></i>
-
-                    <h3>گالری تصاویر</h3>
-
-                    <button id="editGallery">
-
-                        مدیریت
-
-                    </button>
-
-                </div>
-
-                <div class="setting-card">
-
-                    <i class="fas fa-calendar-times"></i>
-
-                    <h3>روزهای تعطیل</h3>
-
-                    <button id="editHoliday">
-
-                        مدیریت
-
-                    </button>
-
-                </div>
-
-                <div class="setting-card">
-
-                    <i class="fas fa-palette"></i>
-
-                    <h3>رنگ سایت</h3>
-
-                    <button id="editTheme">
-
-                        تغییر
-
-                    </button>
-
-                </div>
-
-            </div>
-
-        </section>
-
-    </main>
-
-</div>
-
-
-
-<footer class="admin-footer">
-
-    © 2026 سالن معجزه | پنل مدیریت
-
-</footer>
-
-
-
-<script type="module" src="admin.js"></script>
-
+        <label>توضیحات<input id="blockReason" type="text" placeholder="اختیاری"></label>
+        <div class="form-actions"><button class="primary-btn" type="submit">ذخیره</button><button id="cancelBlockEdit" class="outline-btn" type="button" hidden>لغو ویرایش</button></div>
+        <div id="availabilityMessage" class="admin-message" hidden></div>
+      </form>
+      <div id="availabilityList" class="availability-grid"></div>
+    </section>
+
+    <section id="servicesSection" class="panel-section">
+      <div class="section-title"><div><span class="eyebrow">کاتالوگ</span><h2>خدمات</h2></div></div>
+      <div id="servicesList" class="service-grid"></div>
+    </section>
+
+    <section id="reportsSection" class="panel-section">
+      <div class="section-title"><div><span class="eyebrow">گزارش</span><h2>گزارش‌های سریع</h2></div></div>
+      <div id="reportsGrid" class="reports-grid"></div>
+    </section>
+
+    <section id="settingsSection" class="panel-section">
+      <div class="section-title"><div><span class="eyebrow">سیستم</span><h2>تنظیمات</h2></div></div>
+      <div class="settings-grid">
+        <div class="setting-card"><strong>حساب مدیر</strong><span id="settingsEmail">—</span></div>
+        <div class="setting-card"><strong>آدرس سایت</strong><span>salonmojezeh.github.io/salon-mojezeh</span></div>
+        <div class="setting-card"><strong>موبایل سالن</strong><span>۰۹۳۸۰۴۴۹۹۸۷</span></div>
+        <div class="setting-card"><strong>آدرس</strong><span>مشهد، کوی امیرالمومنین، خیابان ولیعصر، ولیعصر ۱۶</span></div>
+      </div>
+    </section>
+  </main>
+
+  <nav class="mobile-bottom-nav">
+    <button data-target="reservationsSection"><span>▣</span>عملیات</button>
+    <button data-target="reportsSection"><span>▤</span>گزارش‌ها</button>
+    <button id="mobileQuickAdd" class="fab">+</button>
+    <button data-target="dashboard"><span>⌂</span>خانه</button>
+    <button data-target="settingsSection"><span>⚙</span>تنظیمات</button>
+  </nav>
+
+  <div id="customerModal" class="modal" hidden>
+    <div class="modal-card">
+      <button class="modal-close" data-close-modal="customerModal">×</button>
+      <div id="customerModalBody"></div>
+    </div>
+  </div>
+
+  <script type="module" src="admin.js"></script>
 </body>
-
 </html>

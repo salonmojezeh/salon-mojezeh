@@ -1,0 +1,26 @@
+/* ظاهر ثبت‌نام هماهنگ با style.css اصلی */
+.signup-page{min-height:calc(100vh - 90px);padding:42px 16px 80px;display:flex;justify-content:center;background:var(--background)}
+.signup-card{width:min(760px,100%);background:var(--card);border:1px solid var(--border);border-radius:28px;box-shadow:var(--shadow);padding:30px}
+.signup-head{text-align:center;margin-bottom:26px}
+.eyebrow{display:inline-block;color:var(--primary);font-weight:900;font-size:14px}
+.signup-head h1{margin:8px 0;font-size:36px;color:var(--secondary)}
+.signup-head p{margin:0;color:var(--text-light);line-height:1.9}
+#signupForm{display:grid;gap:16px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+#signupForm label:not(.check-row){display:grid;gap:7px;font-weight:800;color:var(--secondary)}
+#signupForm input:not([type=checkbox]){height:54px;width:100%;box-sizing:border-box;border:1px solid var(--border);border-radius:15px;background:var(--surface);color:var(--text);padding:0 14px;font:inherit;outline:none;transition:.2s}
+#signupForm input:not([type=checkbox]):focus{border-color:var(--primary);box-shadow:0 0 0 3px color-mix(in srgb,var(--primary) 14%,transparent)}
+small,.optional{font-size:12px;color:var(--text-light);font-weight:400;line-height:1.7}
+.check-row{display:flex;align-items:center;gap:9px;font-weight:500!important}
+.check-row input{width:19px;height:19px;accent-color:var(--primary)}
+.primary-btn{height:56px;border:0;border-radius:16px;background:var(--primary);color:#fff;font:inherit;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px}
+.primary-btn:disabled{opacity:.65;cursor:wait}
+.btn-loader{width:18px;height:18px;border:2px solid rgba(255,255,255,.45);border-top-color:#fff;border-radius:50%;animation:signupSpin .7s linear infinite}
+.form-message{padding:12px;border-radius:13px;font-weight:700;line-height:1.8}
+.form-message[hidden]{display:none}
+.form-message.error{background:#fee2e2;color:#991b1b}
+.form-message.success{background:#dcfce7;color:#166534}
+.login-hint{text-align:center;margin-top:20px;color:var(--text-light)}
+.login-hint a{color:var(--primary);font-weight:900;text-decoration:none}
+@keyframes signupSpin{to{transform:rotate(360deg)}}
+@media(max-width:620px){.signup-page{padding:24px 10px 60px}.signup-card{padding:22px 15px;border-radius:22px}.form-grid{grid-template-columns:1fr}.signup-head h1{font-size:29px}}
