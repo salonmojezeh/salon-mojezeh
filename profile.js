@@ -23,6 +23,7 @@ const fa = (n) => new Intl.NumberFormat("fa-IR").format(Number(n || 0));
 const esc = (v) => String(v ?? "").replace(/[&<>"']/g, m => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m]));
 const today = () => new Date().toISOString().slice(0,10);
 const tm = (v) => v ? String(v).slice(0,5) : "—";
+const mins = (v) => { const [h,m]=tm(v).split(":").map(Number); return (h||0)*60+(m||0); };
 function dateFa(v){ if(!v)return"—"; try{return new Intl.DateTimeFormat("fa-IR-u-ca-persian",{year:"numeric",month:"long",day:"numeric"}).format(new Date(`${v}T00:00:00`));}catch{return v;} }
 function past(r){ return r?.date ? new Date(`${r.date}T${r.time || "23:59"}:00`) < new Date() : false; }
 function price(r){ return Number(r?.price ?? r?.amount ?? r?.total_price ?? r?.service_price ?? 0); }
@@ -88,7 +89,8 @@ function reservationCard(r, canManage){
     : canManage
       ? `<button class="mini-btn success" data-action="complete" data-id="${esc(r.id)}">تکمیل</button>
          <button class="mini-btn" data-action="noshow" data-id="${esc(r.id)}">عدم مراجعه</button>
-         <button class="mini-btn danger" data-action="cancel" data-id="${esc(r.id)}">لغو</button>`
+         <button class="mini-btn danger" data-action="cancel" data-id="${esc(r.id)}">لغو</button>
+         <button class="mini-btn info" data-edit-profile-reservation="${esc(r.id)}">ویرایش زمان</button>`
       : "") : "";
 
   return `<article class="reservation-card">
@@ -103,6 +105,18 @@ function renderReservations(rows, target, canManage=false){
   const box = $(target);
   if(!box)return;
   box.innerHTML = rows.length ? rows.map(r=>reservationCard(r,canManage)).join("") : `<div class="empty-state">رزروی برای نمایش وجود ندارد.</div>`;
+}
+
+async function loadCustomerMessages(){
+  if(role!=="customer" || !customer?.id || !$("#customerMessages")) return;
+  const {data,error}=await supabase.from("customer_messages").select("id,message,created_at,read_at,reservation_id").eq("customer_id",customer.id).order("created_at",{ascending:false}).limit(30);
+  if(error){ $("#customerMessages").innerHTML='<div class="empty-state">پیام جدیدی وجود ندارد.</div>'; return; }
+  $("#customerMessages").innerHTML=data?.length?data.map(m=>`<article class="message-card"><strong>${esc(new Intl.DateTimeFormat("fa-IR-u-ca-persian",{dateStyle:"medium",timeStyle:"short"}).format(new Date(m.created_at)))}</strong><p>${esc(m.message)}</p></article>`).join(""):'<div class="empty-state">پیامی برای شما ثبت نشده است.</div>';
+}
+
+function openProfileEditReservation(id){
+  const r=reservationsCache.find(x=>x.id===id); if(!r)return;
+  const modal=document.createElement("div"); modal.className="modal profile-edit-modal"; modal.innerHTML=`<div class="modal-card"><button class="modal-close" type="button">×</button><form id="profileEditReservationForm" class="availability-form"><h2>ویرایش نوبت مشتری</h2><input type="hidden" name="id" value="${esc(r.id)}"><label>تاریخ<input name="date" type="date" value="${esc(r.date)}" required></label><label>ساعت<input name="time" type="time" value="${esc(tm(r.time))}" required></label><label>پیام برای مشتری<textarea name="message" placeholder="پیام دلخواه برای پروفایل مشتری"></textarea></label><button class="primary-btn">ذخیره تغییر و پیام</button></form></div>`; document.body.appendChild(modal);modal.querySelector(".modal-close").onclick=()=>modal.remove();modal.querySelector("form").onsubmit=async e=>{e.preventDefault();const fd=new FormData(e.target),date=fd.get("date"),time=fd.get("time");try{const duration=Number(r.service_duration||30);const {data:other}=await supabase.from("reservations").select("id,time,service_duration").eq("barber_id",barber.id).eq("date",date).eq("status","reserved").neq("id",r.id);if((other||[]).some(x=>mins(time)<mins(x.time)+Number(x.service_duration||30)&&mins(time)+duration>mins(x.time)))throw Error("این ساعت با رزرو دیگری تداخل دارد.");const {error}=await supabase.from("reservations").update({date,time,notes:fd.get("message")||r.notes||null,updated_at:new Date().toISOString()}).eq("id",r.id);if(error)throw error;if(fd.get("message")){const {error:me}=await supabase.from("customer_messages").insert({customer_id:r.customer_id,reservation_id:r.id,author_id:user.id,message:fd.get("message")});if(me)throw me;}modal.remove();showMessage("رزرو و پیام با موفقیت ذخیره شد.","success");await loadReservations()}catch(x){showMessage(x.message||"ویرایش انجام نشد.")}};
 }
 
 async function loadReservations(){
@@ -267,6 +281,8 @@ function bindSections(){
 
     const action=e.target.closest("[data-action]");
     if(action) doReservationAction(action.dataset.action,action.dataset.id);
+    const edit=e.target.closest("[data-edit-profile-reservation]");
+    if(edit) openProfileEditReservation(edit.dataset.editProfileReservation);
 
     const block=e.target.closest("[data-block]");
     if(block){ if(block.dataset.block==="edit")editBlock(block.dataset.id); else deleteBlock(block.dataset.id); }
@@ -295,6 +311,7 @@ async function boot(){
     await loadAvailability();
   }
   await loadReservations();
+  await loadCustomerMessages();
 
   $("#profileApp").hidden=false;
   $("#profileLoader").classList.add("hidden");

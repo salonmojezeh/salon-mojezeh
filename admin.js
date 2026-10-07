@@ -1,316 +1,69 @@
-import {
-  supabase,
-  getCurrentUser,
-  getCurrentUserProfile,
-  getReservations,
-  getBarbers,
-  getServices,
-  completeReservation,
-  cancelReservation,
-  markReservationNoShow,
-  signOutUser
-} from "./supabase.js";
-
-const $ = (s) => document.querySelector(s);
-let user=null, profile=null, reservations=[], customers=[], barbers=[], services=[], blocks=[];
-
-const fa=n=>new Intl.NumberFormat("fa-IR").format(Number(n||0));
-const esc=v=>String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
-const today=()=>new Date().toISOString().slice(0,10);
-const tm=v=>v?String(v).slice(0,5):"—";
-const dateFa=v=>{if(!v)return"—";try{return new Intl.DateTimeFormat("fa-IR-u-ca-persian",{year:"numeric",month:"long",day:"numeric"}).format(new Date(`${v}T00:00:00`));}catch{return v;}};
-const statusMap={reserved:["رزرو شده","reserved"],completed:["تکمیل شده","completed"],cancelled:["لغو شده","cancelled"],no_show:["عدم مراجعه","no_show"]};
-const list=x=>Array.isArray(x)?x:(x?.data||[]);
-const customerName=c=>[c?.first_name??c?.firstName,c?.last_name??c?.lastName].filter(Boolean).join(" ")||"مشتری";
-const normalizeDigits=v=>String(v||"").replace(/[۰-۹]/g,d=>"۰۱۲۳۴۵۶۷۸۹".indexOf(d)).replace(/[٠-٩]/g,d=>"٠١٢٣٤٥٦٧٨٩".indexOf(d));
-
-function showMessage(text,type="error",target="#adminMessage"){
-  const el=$(target); if(!el)return;
-  el.hidden=false; el.className=`admin-message ${type}`; el.textContent=text;
-  setTimeout(()=>el.hidden=true,4500);
-}
-function barberName(id){return barbers.find(b=>b.id===id)?.name||"آرایشگر";}
-function serviceName(id){return services.find(s=>s.id===id)?.name||"خدمت";}
-function customerFor(r){return customers.find(c=>c.id===r.customer_id);}
-function reservationName(r){return r.customer_name||[r.first_name,r.last_name].filter(Boolean).join(" ")||customerName(customerFor(r));}
-function price(r){return Number(r?.price??r?.amount??r?.total_price??r?.service_price??0);}
-function past(r){return r?.date?new Date(`${r.date}T${r.time||"23:59"}:00`)<new Date():false;}
-
-function renderStats(){
-  const todayRows=reservations.filter(r=>r.date===today());
-  const upcoming=reservations.filter(r=>r.status==="reserved"&&!past(r)).length;
-  const completed=reservations.filter(r=>r.status==="completed").length;
-  const birthdays=customers.filter(c=>isBirthdayWithin(c,30)).length;
-  const cards=[
-    ["رزرو امروز",todayRows.length,"purple"],
-    ["رزروهای آینده",upcoming,"green"],
-    ["مشتریان",customers.length,"cyan"],
-    ["تکمیل‌شده",completed,"gold"],
-    ["تولدهای نزدیک",birthdays,"pink"]
-  ];
-  $("#statsGrid").innerHTML=cards.map(([a,b,c])=>`<div class="stat-card"><span><i class="dot" style="background:${c==="green"?"#11913b":c==="cyan"?"#159aaa":c==="gold"?"#b08b32":c==="pink"?"#ad4c79":"#6f2a91"}"></i>${a}</span><strong>${fa(b)}</strong></div>`).join("");
-}
-
-function reservationCard(r){
-  const [label,cls]=statusMap[r.status]||[r.status||"—",""];
-  const cname=reservationName(r);
-  const bname=r.barber_name||barberName(r.barber_id);
-  const sname=r.service_name||r.service||serviceName(r.service_id);
-  const actions=r.status==="reserved"?`
-    <button class="mini-btn success" data-action="complete" data-id="${esc(r.id)}">تکمیل</button>
-    <button class="mini-btn" data-action="noshow" data-id="${esc(r.id)}">عدم مراجعه</button>
-    <button class="mini-btn danger" data-action="cancel" data-id="${esc(r.id)}">لغو</button>`:"";
-  return `<article class="reservation-card">
-    <div class="reservation-top"><div><h3>${esc(cname)}</h3><div class="muted">${esc(sname)} · ${esc(bname)}</div></div><span class="status ${cls}">${esc(label)}</span></div>
-    <div class="card-row muted"><span>${esc(dateFa(r.date))}</span><strong>${esc(tm(r.time||r.start_time))}</strong></div>
-    <div class="muted">${r.phone?`موبایل: ${esc(r.phone)}`:""} ${price(r)?` · مبلغ: ${fa(price(r))} تومان`:""}</div>
-    ${actions?`<div class="reservation-actions">${actions}</div>`:""}
-  </article>`;
-}
-
-function renderReservations(){
-  const date=$("#reservationDateFilter").value;
-  const barber=$("#reservationBarberFilter").value;
-  const status=$("#reservationStatusFilter").value;
-  const q=normalizeDigits($("#reservationSearch").value.trim()).toLowerCase();
-
-  let rows=reservations.filter(r=>{
-    if(date&&r.date!==date)return false;
-    if(barber&&r.barber_id!==barber)return false;
-    if(status&&r.status!==status)return false;
-    if(q){
-      const text=[reservationName(r),r.phone,r.customer_phone,r.service_name,r.service,r.notes].filter(Boolean).join(" ").toLowerCase();
-      if(!normalizeDigits(text).includes(q))return false;
-    }
-    return true;
-  }).sort((a,b)=>`${a.date||""}${a.time||""}`.localeCompare(`${b.date||""}${b.time||""}`));
-
-  $("#reservationsList").innerHTML=rows.length?rows.map(reservationCard).join(""):`<div class="empty">رزروی با این فیلتر پیدا نشد.</div>`;
-  renderDaySchedule(date||today());
-}
-
-function renderDaySchedule(date){
-  const rows=reservations.filter(r=>r.date===date).sort((a,b)=>tm(a.time||a.start_time).localeCompare(tm(b.time||b.start_time)));
-  $("#daySchedule").innerHTML=`<div class="day-title">${esc(dateFa(date))} — ${fa(rows.length)} رزرو</div>`+(rows.length?rows.slice(0,12).map(r=>`<div class="mini-item"><strong>${esc(tm(r.time||r.start_time))} · ${esc(reservationName(r))}</strong><span>${esc(serviceName(r.service_id))} · ${esc(barberName(r.barber_id))}</span></div>`).join(""):`<div class="mini-item"><span>برای این روز رزروی ثبت نشده است.</span></div>`);
-}
-
-function renderToday(){
-  const rows=reservations.filter(r=>r.date===today()).sort((a,b)=>tm(a.time||a.start_time).localeCompare(tm(b.time||b.start_time))).slice(0,8);
-  $("#todayReservations").innerHTML=rows.length?rows.map(r=>`<div class="mini-item"><strong>${esc(tm(r.time||r.start_time))} · ${esc(reservationName(r))}</strong><span>${esc(serviceName(r.service_id))}</span></div>`).join(""):`<div class="empty">امروز رزروی ثبت نشده است.</div>`;
-}
-
-function getBirthDate(c){
-  return c?.birth_date||c?.birthDate||c?.birthday||null;
-}
-function isBirthdayWithin(c,days){
-  const raw=getBirthDate(c); if(!raw)return false;
-  const d=new Date(`${raw}T00:00:00`); if(Number.isNaN(d.getTime()))return false;
-  const now=new Date(); const target=new Date(now.getFullYear(),d.getMonth(),d.getDate());
-  if(target<new Date(now.getFullYear(),now.getMonth(),now.getDate()))target.setFullYear(now.getFullYear()+1);
-  return Math.ceil((target-new Date(now.getFullYear(),now.getMonth(),now.getDate()))/86400000)<=days;
-}
-function birthdayToday(c){
-  const raw=getBirthDate(c); if(!raw)return false;
-  const d=new Date(`${raw}T00:00:00`); const n=new Date();
-  return d.getMonth()===n.getMonth()&&d.getDate()===n.getDate();
-}
-
-function renderBirthdays(){
-  const rows=customers.filter(c=>isBirthdayWithin(c,30)).sort((a,b)=>getBirthDate(a).slice(5).localeCompare(getBirthDate(b).slice(5)));
-  $("#birthdayPreview").innerHTML=rows.length?rows.slice(0,6).map(c=>`<div class="mini-item"><strong>${esc(customerName(c))}</strong><span>${esc(getBirthDate(c))}</span></div>`).join(""):`<div class="empty">تولد نزدیک ثبت نشده است.</div>`;
-}
-
-function renderCustomers(){
-  const q=normalizeDigits($("#customerSearch").value.trim()).toLowerCase();
-  const rows=customers.filter(c=>!q||normalizeDigits([customerName(c),c.phone,c.email].filter(Boolean).join(" ").toLowerCase()).includes(q));
-  $("#customersList").innerHTML=rows.length?rows.map(c=>`<article class="customer-card" data-customer-id="${esc(c.id)}">
-    <div class="card-row"><h3>${esc(customerName(c))}</h3><span class="tag">${fa(c.club_points??c.points??0)} امتیاز</span></div>
-    <div class="muted">${esc(c.phone||"بدون موبایل")} · تولد: ${esc(getBirthDate(c)||"ثبت نشده")}</div>
-  </article>`).join(""):`<div class="empty">مشتری‌ای پیدا نشد.</div>`;
-}
-
-function renderBarbers(){
-  $("#barbersList").innerHTML=barbers.length?barbers.map(b=>{
-    const count=reservations.filter(r=>r.barber_id===b.id&&r.status==="reserved"&&!past(r)).length;
-    return `<article class="barber-card"><div class="card-row"><h3>${esc(b.name||"آرایشگر")}</h3><span class="tag">${b.active===false?"غیرفعال":"فعال"}</span></div><div class="muted">${esc(b.phone||"—")}</div><div class="muted">${fa(count)} نوبت آینده</div></article>`;
-  }).join(""):`<div class="empty">آرایشگری ثبت نشده است.</div>`;
-}
-
-function renderClub(){
-  let filter=$("#birthdayFilter").value;
-  let rows=[...customers];
-  if(filter==="today")rows=rows.filter(birthdayToday);
-  if(filter==="30")rows=rows.filter(c=>isBirthdayWithin(c,30));
-  rows.sort((a,b)=>customerName(a).localeCompare(customerName(b),"fa"));
-  $("#clubList").innerHTML=rows.length?rows.map(c=>{
-    const gift=Boolean(c.free_gift??c.freeGift??false);
-    return `<article class="club-card">
-      <div class="card-row"><h3>${esc(customerName(c))}</h3><span class="tag">${fa(c.club_points??c.points??0)} امتیاز</span></div>
-      <div class="muted">موبایل: ${esc(c.phone||"—")}</div>
-      <div class="muted">تولد: ${esc(getBirthDate(c)||"ثبت نشده")}</div>
-      <div class="muted">هدیه تولد: ${gift?"فعال":"ثبت نشده"}</div>
-      <div class="club-actions">
-        <button class="mini-btn info" data-customer-id="${esc(c.id)}">مشاهده پرونده</button>
-        ${gift?"":`<button class="mini-btn success" data-gift-id="${esc(c.id)}">ثبت هدیه</button>`}
-      </div>
-    </article>`;
-  }).join(""):`<div class="empty">موردی برای نمایش وجود ندارد.</div>`;
-}
-
-function renderServices(){
-  $("#servicesList").innerHTML=services.length?services.map(s=>`<article class="service-card">
-    <div class="card-row"><h3>${esc(s.name||"خدمت")}</h3><span class="tag">${s.active===false?"غیرفعال":"فعال"}</span></div>
-    <div class="muted">${s.price!=null?`${fa(s.price)} تومان`:"قیمت ثبت نشده"} ${s.duration?` · ${esc(s.duration)} دقیقه`:""}</div>
-    <div class="muted">${esc(s.description||s.details||"")}</div>
-  </article>`).join(""):`<div class="empty">خدمتی ثبت نشده است.</div>`;
-}
-
-function renderReports(){
-  const revenue=reservations.filter(r=>r.status==="completed").reduce((a,r)=>a+price(r),0);
-  const todayCount=reservations.filter(r=>r.date===today()).length;
-  const cancel=reservations.filter(r=>r.status==="cancelled").length;
-  const noShow=reservations.filter(r=>r.status==="no_show").length;
-  $("#reportsGrid").innerHTML=[
-    ["درآمد رزروهای تکمیل‌شده",`${fa(revenue)} تومان`],
-    ["رزرو امروز",fa(todayCount)],
-    ["لغوها",fa(cancel)],
-    ["عدم مراجعه",fa(noShow)]
-  ].map(([a,b])=>`<div class="report-card"><span>${a}</span><strong>${b}</strong></div>`).join("");
-}
-
-async function loadAvailability(){
-  let q=supabase.from("availability_blocks").select("*").eq("active",true).gte("block_date",today()).order("block_date").order("start_time");
-  const {data,error}=await q;
-  if(error){$("#availabilityList").innerHTML=`<div class="empty">خطا: ${esc(error.message)}</div>`;return;}
-  blocks=data||[];
-  $("#availabilityList").innerHTML=blocks.length?blocks.map(b=>{
-    const type=({closed:"بسته / تعطیل",busy:"مشغول",holiday:"تعطیلی مناسبتی",leave:"مرخصی"})[b.block_type]||b.block_type;
-    const target=b.barber_id?barberName(b.barber_id):"کل سالن";
-    const range=b.start_time&&b.end_time?`${tm(b.start_time)} تا ${tm(b.end_time)}`:"کل روز";
-    return `<article class="availability-card"><div class="block-top"><strong class="block-type">${esc(type)}</strong><span class="tag">${esc(target)}</span></div><h3>${esc(dateFa(b.block_date))}</h3><div class="muted">${esc(range)}</div><div class="muted">${esc(b.title||"")} ${b.reason?`— ${esc(b.reason)}`:""}</div><div class="block-actions"><button class="mini-btn" data-block="edit" data-id="${esc(b.id)}">ویرایش</button><button class="mini-btn danger" data-block="delete" data-id="${esc(b.id)}">حذف</button></div></article>`;
-  }).join(""):`<div class="empty">هیچ بازه بسته‌ای برای آینده ثبت نشده است.</div>`;
-}
-
-function fillBarberFilter(){
-  $("#reservationBarberFilter").innerHTML=`<option value="">همه آرایشگران</option>`+barbers.map(b=>`<option value="${esc(b.id)}">${esc(b.name||"آرایشگر")}</option>`).join("");
-  $("#blockBarber").innerHTML=`<option value="">کل سالن</option>`+barbers.map(b=>`<option value="${esc(b.id)}">${esc(b.name||"آرایشگر")}</option>`).join("");
-}
-
-function resetBlockForm(){
-  $("#availabilityEditId").value="";$("#blockDate").value="";$("#blockType").value="closed";$("#blockStart").value="";$("#blockEnd").value="";$("#blockTitle").value="";$("#blockReason").value="";$("#cancelBlockEdit").hidden=true;
-}
-async function saveBlock(e){
-  e.preventDefault();
-  const id=$("#availabilityEditId").value,date=$("#blockDate").value,start=$("#blockStart").value,end=$("#blockEnd").value;
-  if(!date)return showMessage("تاریخ را انتخاب کنید.");
-  if((start&&!end)||(!start&&end))return showMessage("ساعت شروع و پایان را هر دو وارد کنید.");
-  if(start&&end&&start>=end)return showMessage("ساعت پایان باید بعد از شروع باشد.");
-  const payload={barber_id:$("#blockBarber").value||null,block_date:date,start_time:start||null,end_time:end||null,block_type:$("#blockType").value,title:$("#blockTitle").value.trim()||null,reason:$("#blockReason").value.trim()||null,active:true,updated_at:new Date().toISOString()};
-  try{
-    if(id){const {error}=await supabase.from("availability_blocks").update(payload).eq("id",id);if(error)throw error;}
-    else{payload.created_by=user.id;const {error}=await supabase.from("availability_blocks").insert(payload);if(error)throw error;}
-    showMessage("بازه با موفقیت ذخیره شد.","success");resetBlockForm();await loadAvailability();
-  }catch(err){showMessage(err.message||"ذخیره انجام نشد.");}
-}
-async function editBlock(id){
-  const {data,error}=await supabase.from("availability_blocks").select("*").eq("id",id).single();
-  if(error)return showMessage(error.message);
-  $("#availabilityEditId").value=data.id;$("#blockDate").value=data.block_date;$("#blockBarber").value=data.barber_id||"";$("#blockType").value=data.block_type;$("#blockStart").value=tm(data.start_time)==="—"?"":tm(data.start_time);$("#blockEnd").value=tm(data.end_time)==="—"?"":tm(data.end_time);$("#blockTitle").value=data.title||"";$("#blockReason").value=data.reason||"";$("#cancelBlockEdit").hidden=false;$("#availabilitySection").scrollIntoView({behavior:"smooth"});
-}
-async function deleteBlock(id){
-  if(!confirm("این بازه حذف شود؟"))return;
-  const {error}=await supabase.from("availability_blocks").delete().eq("id",id);
-  if(error)return showMessage(error.message);
-  await loadAvailability();
-}
-
-async function actionReservation(action,id){
-  try{
-    if(action==="cancel")await cancelReservation(id);
-    if(action==="complete")await completeReservation(id);
-    if(action==="noshow")await markReservationNoShow(id);
-    await loadData();
-    showMessage("عملیات با موفقیت انجام شد.","success");
-  }catch(err){showMessage(err.message||"عملیات انجام نشد.");}
-}
-
-async function openCustomer(id){
-  const c=customers.find(x=>x.id===id); if(!c)return;
-  const history=reservations.filter(r=>r.customer_id===id).sort((a,b)=>`${b.date||""}${b.time||""}`.localeCompare(`${a.date||""}${a.time||""}`)).slice(0,12);
-  $("#customerModalBody").innerHTML=`<h2>${esc(customerName(c))}</h2>
-    <p class="muted">موبایل: ${esc(c.phone||"—")} · ایمیل: ${esc(c.email||"—")}</p>
-    <p class="muted">تولد: ${esc(getBirthDate(c)||"ثبت نشده")} · امتیاز: ${fa(c.club_points??c.points??0)}</p>
-    <hr>
-    <h3>آخرین رزروها</h3>
-    ${history.length?history.map(r=>`<div class="mini-item"><strong>${esc(dateFa(r.date))} ${esc(tm(r.time||r.start_time))}</strong><span>${esc(serviceName(r.service_id))} · ${esc(r.status||"—")}</span></div>`).join(""):`<div class="empty">سابقه‌ای ثبت نشده است.</div>`}`;
-  $("#customerModal").hidden=false;
-}
-
-async function addGift(id){
-  const c=customers.find(x=>x.id===id); if(!c)return;
-  const field=Object.prototype.hasOwnProperty.call(c,"free_gift")?"free_gift":Object.prototype.hasOwnProperty.call(c,"freeGift")?"freeGift":null;
-  if(!field)return showMessage("ستون هدیه در جدول customers وجود ندارد. ابتدا ستون free_gift را در Supabase اضافه کن.");
-  const {error}=await supabase.from("customers").update({[field]:true}).eq("id",id);
-  if(error)return showMessage(error.message);
-  await loadData();showMessage("هدیه تولد برای مشتری ثبت شد.","success");
-}
-
-async function loadData(){
-  const [r,c,b,s]=await Promise.all([
-    getReservations(),
-    supabase.from("customers").select("*").order("created_at",{ascending:false}).limit(500),
-    getBarbers(),
-    getServices()
-  ]);
-  reservations=list(r);customers=c.data||[];barbers=list(b);services=list(s);
-  renderStats();renderToday();renderBirthdays();renderCustomers();renderBarbers();renderClub();renderServices();renderReports();fillBarberFilter();renderReservations();await loadAvailability();
-  $("#settingsEmail").textContent=user?.email||"—";
-}
-
-function bind(){
-  document.addEventListener("click",e=>{
-    const target=e.target.closest("[data-target]");
-    if(target){const el=$("#"+target.dataset.target);if(el){el.scrollIntoView({behavior:"smooth",block:"start");document.querySelectorAll(".admin-sidebar nav button").forEach(x=>x.classList.toggle("active",x.dataset.target===target.dataset.target));}}
-    const action=e.target.closest("[data-action]");if(action)actionReservation(action.dataset.action,action.dataset.id);
-    const cust=e.target.closest("[data-customer-id]");if(cust)openCustomer(cust.dataset.customerId);
-    const gift=e.target.closest("[data-gift-id]");if(gift)addGift(gift.dataset.giftId);
-    const block=e.target.closest("[data-block]");if(block)block.dataset.block==="edit"?editBlock(block.dataset.id):deleteBlock(block.dataset.id);
-    const close=e.target.closest("[data-close-modal]");if(close)$("#"+close.dataset.closeModal).hidden=true;
-  });
-
-  $("#reservationDateFilter").addEventListener("change",renderReservations);
-  $("#reservationBarberFilter").addEventListener("change",renderReservations);
-  $("#reservationStatusFilter").addEventListener("change",renderReservations);
-  $("#reservationSearch").addEventListener("input",renderReservations);
-  $("#customerSearch").addEventListener("input",renderCustomers);
-  $("#birthdayFilter").addEventListener("change",renderClub);
-  $("#availabilityForm").addEventListener("submit",saveBlock);
-  $("#cancelBlockEdit").addEventListener("click",resetBlockForm);
-  $("#adminRefresh").addEventListener("click",loadData);
-  $("#adminRefreshMobile").addEventListener("click",loadData);
-  $("#quickReservation").addEventListener("click",()=>location.href="reserve.html");
-  $("#mobileQuickAdd").addEventListener("click",()=>location.href="reserve.html");
-  $("#adminLogout").addEventListener("click",async()=>{await signOutUser();location.replace("index.html");});
-  $("#mobileMenuBtn").addEventListener("click",()=>$("#adminSidebar").classList.toggle("mobile-open"));
-  $("#customerModal").addEventListener("click",e=>{if(e.target.id==="customerModal")e.currentTarget.hidden=true;});
-}
-
-function setupDefaults(){
-  $("#reservationDateFilter").value=today();
-  $("#blockDate").min=today();
-  $("#todayLabel").textContent=new Intl.DateTimeFormat("fa-IR-u-ca-persian",{weekday:"long",year:"numeric",month:"long",day:"numeric"}).format(new Date());
-}
-
-async function boot(){
-  user=await getCurrentUser();
-  if(!user){location.replace("login.html");return;}
-  profile=await getCurrentUserProfile();
-  if(!profile?.is_admin && profile?.role!=="admin"){location.replace("profile.html");return;}
-  const display=user?.user_metadata?.full_name||user?.email||"مدیر سالن";
-  $("#adminName").textContent=display;$("#adminAvatar").textContent=display.charAt(0)||"م";
-  $("#adminRole").textContent="مدیر سالن";
-  setupDefaults();bind();await loadData();
-  $("#adminLoader").classList.add("hidden");
-}
-
-boot().catch(err=>{console.error(err);showMessage(err.message||"پنل مدیریت بارگذاری نشد.");$("#adminLoader").classList.add("hidden");});
+import {supabase,getCurrentUser,getCurrentUserProfile,getReservations,getBarbers,getServices,completeReservation,cancelReservation,markReservationNoShow,signOutUser,saveCustomer,createReservation} from './supabase.js';
+const $=s=>document.querySelector(s); let user=null,profile=null,reservations=[],customers=[],barbers=[],services=[],blocks=[];
+const fa=n=>new Intl.NumberFormat('fa-IR').format(Number(n||0)); const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+const digits=v=>String(v||'').replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d));
+const today=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
+const tm=v=>v?String(v).slice(0,5):'—'; const mins=t=>{const [h,m]=String(t||'00:00').slice(0,5).split(':').map(Number);return h*60+m}; const fmtTime=m=>`${String(Math.floor(m/60)).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`;
+const dateFa=v=>{try{return new Intl.DateTimeFormat('fa-IR-u-ca-persian',{year:'numeric',month:'long',day:'numeric'}).format(new Date(`${v}T00:00:00`))}catch{return v||'—'}};
+const cname=c=>[c?.first_name??c?.firstName,c?.last_name??c?.lastName].filter(Boolean).join(' ')||'مشتری'; const cby=r=>customers.find(c=>c.id===r.customer_id); const rname=r=>r.customer_name||[r.first_name,r.last_name].filter(Boolean).join(' ')||cname(cby(r)); const bname=id=>barbers.find(b=>b.id===id)?.name||'آرایشگر'; const sname=id=>services.find(s=>s.id===id)?.name||'خدمت';
+const statusLabel={reserved:'رزرو شده',completed:'تکمیل شده',cancelled:'لغو شده',no_show:'عدم مراجعه'};
+function msg(t,type='error'){const e=$('#adminMessage');if(!e)return;e.hidden=false;e.className=`admin-message ${type}`;e.textContent=t;setTimeout(()=>e.hidden=true,4000)}
+function birth(c){return c?.birth_date||c?.birthDate||c?.birthday||null} function birthday(c){if(!birth(c))return false;const d=new Date(`${birth(c)}T00:00:00`),n=new Date();return d.getMonth()===n.getMonth()&&d.getDate()===n.getDate()}
+function nearBirth(c,days=30){if(!birth(c))return false;const d=new Date(`${birth(c)}T00:00:00`),n=new Date();let t=new Date(n.getFullYear(),d.getMonth(),d.getDate());if(t<new Date(n.getFullYear(),n.getMonth(),n.getDate()))t.setFullYear(n.getFullYear()+1);return Math.ceil((t-new Date(n.getFullYear(),n.getMonth(),n.getDate()))/86400000)<=days}
+function price(r){return Number(r?.price??r?.amount??r?.total_price??r?.service_price??0)}
+function past(r){return new Date(`${r.date}T${tm(r.time||r.start_time)||'23:59'}:00`)<new Date()}
+function renderStats(){const t=reservations.filter(r=>r.date===today()),up=reservations.filter(r=>r.status==='reserved'&&!past(r)),done=reservations.filter(r=>r.status==='completed');const revenue=done.reduce((a,r)=>a+price(r),0);const cards=[['رزرو امروز',t.length],['رزروهای آینده',up.length],['مشتریان',customers.length],['آرایشگران فعال',barbers.filter(b=>b.active!==false).length],['درآمد تکمیل‌شده',`${fa(revenue)} تومان`]];$('#statsGrid').innerHTML=cards.map(x=>`<div class="stat-card"><span>${x[0]}</span><strong>${typeof x[1]==='number'?fa(x[1]):x[1]}</strong></div>`).join('')}
+function renderToday(){const rows=reservations.filter(r=>r.date===today()).sort((a,b)=>mins(a.time)-mins(b.time));$('#todayReservations').innerHTML=rows.length?rows.slice(0,10).map(r=>`<div class="mini-item"><strong>${esc(tm(r.time))} · ${esc(rname(r))}</strong><span>${esc(sname(r.service_id))}</span></div>`).join(''):'<div class="empty">امروز رزروی ثبت نشده است.</div>'}
+function reservationCard(r){const actions=r.status==='reserved'?`<button class="mini-btn success" data-action="complete" data-id="${esc(r.id)}">تکمیل</button><button class="mini-btn" data-action="noshow" data-id="${esc(r.id)}">عدم مراجعه</button><button class="mini-btn danger" data-action="cancel" data-id="${esc(r.id)}">لغو</button><button class="mini-btn info" data-edit-reservation="${esc(r.id)}">ویرایش</button>`:'';return `<article class="reservation-card"><div class="reservation-top"><div><h3>${esc(rname(r))}</h3><div class="muted">${esc(r.service_name||r.service||sname(r.service_id))} · ${esc(r.barber_name||bname(r.barber_id))}</div></div><span class="status ${esc(r.status||'')}">${esc(statusLabel[r.status]||r.status||'—')}</span></div><div class="card-row muted"><span>${esc(dateFa(r.date))}</span><strong>${esc(tm(r.time))}</strong></div><div class="muted">${r.phone||r.customer_phone?`موبایل: ${esc(r.phone||r.customer_phone)}`:''}${price(r)?` · ${fa(price(r))} تومان`:''}</div>${actions?`<div class="reservation-actions">${actions}</div>`:''}</article>`}
+function renderReservations(){const date=$('#scheduleDate').value||today(),barber=$('#reservationBarberFilter').value,status=$('#reservationStatusFilter').value,q=digits($('#reservationSearch').value.trim()).toLowerCase();let rows=reservations.filter(r=>r.date===date&&( !barber||r.barber_id===barber)&&(!status||r.status===status)&&(!q||digits([rname(r),r.phone,r.customer_phone,r.service_name,r.service,r.notes].filter(Boolean).join(' ').toLowerCase()).includes(q)));rows.sort((a,b)=>mins(a.time)-mins(b.time));$('#reservationsList').innerHTML=rows.length?rows.map(reservationCard).join(''):'<div class="empty">رزروی با این فیلتر پیدا نشد.</div>';renderSchedule(date,barber)}
+function blocksFor(date,barberId){return blocks.filter(b=>b.active&&b.block_date===date&&(!b.barber_id||!barberId||b.barber_id===barberId))}
+function reservationAt(date,barberId,start){return reservations.find(r=>r.date===date&&r.barber_id===barberId&&r.status==='reserved'&&mins(r.time)<=start&&start<mins(r.time)+(Number(r.service_duration)||30))}
+function renderSchedule(date,barberId){$('#scheduleDateLabel').textContent=dateFa(date);let ids=barberId?[barberId]:barbers.filter(b=>b.active!==false).map(b=>b.id);if(!ids.length){$('#daySchedule').innerHTML='<div class="empty">آرایشگری فعال وجود ندارد.</div>';return}let html='';ids.forEach(id=>{html+=`<div class="schedule-barber"><h3>${esc(bname(id))}</h3>`;for(let m=600;m<=1320;m+=30){const r=reservationAt(date,id,m),bs=blocksFor(date,id).find(b=>{const s=b.start_time?mins(b.start_time):0,e=b.end_time?mins(b.end_time):1440;return m<e&&(m+30)>s});let cls=r?'booked':bs?'blocked':'free',text=r?`${rname(r)} · ${sname(r.service_id)}`:bs?(bs.title||'بسته'):'آزاد';html+=`<div class="slot-row"><div class="slot-time">${fmtTime(m)}</div><div class="slot-body ${cls}"><strong>${esc(text)}</strong><span>${r?esc(statusLabel[r.status]||'رزرو'):bs?esc(bs.reason||'غیرقابل رزرو'):'قابل رزرو'}</span></div></div>`}html+='</div>'});$('#daySchedule').innerHTML=html}
+function renderCustomers(){const q=digits($('#customerSearch').value.trim()).toLowerCase();const rows=customers.filter(c=>!q||digits([cname(c),c.phone,c.email].filter(Boolean).join(' ').toLowerCase()).includes(q));$('#customersList').innerHTML=rows.length?rows.map(c=>`<article class="customer-card"><div class="card-row"><h3>${esc(cname(c))}</h3><span class="tag">${fa(c.club_points??c.points??0)} امتیاز</span></div><div class="muted">${esc(c.phone||'بدون موبایل')} · تولد: ${esc(birth(c)||'ثبت نشده')}</div><div class="muted">مراجعه: ${fa(c.visit_count??c.visits??0)} · سطح: ${esc(c.club_level||c.level||'عادی')}</div><div class="reservation-actions"><button class="mini-btn info" data-customer="${esc(c.id)}">مشاهده پروفایل</button><button class="mini-btn" data-edit-customer="${esc(c.id)}">ویرایش</button></div></article>`).join(''):'<div class="empty">مشتری‌ای پیدا نشد.</div>'}
+function renderBarbers(){$('#barbersList').innerHTML=barbers.length?barbers.map(b=>`<article class="barber-card"><div class="card-row"><h3>${esc(b.name||'آرایشگر')}</h3><span class="tag">${b.active===false?'غیرفعال':'فعال'}</span></div>${b.image_url?`<img class="barber-photo" src="${esc(b.image_url)}" alt="">`:''}<div class="muted">${esc(b.role||'آرایشگر')} · ${esc(b.phone||'—')}</div><div class="muted">رزرو آینده: ${fa(reservations.filter(r=>r.barber_id===b.id&&r.status==='reserved'&&!past(r)).length)}</div><div class="reservation-actions"><button class="mini-btn" data-toggle-barber="${esc(b.id)}">${b.active===false?'فعال‌سازی':'غیرفعال‌سازی'}</button><button class="mini-btn info" data-edit-barber="${esc(b.id)}">ویرایش</button></div></article>`).join(''):'<div class="empty">آرایشگری ثبت نشده است.</div>'}
+function renderClub(){let f=$('#birthdayFilter').value,rows=customers;if(f==='today')rows=rows.filter(birthday);if(f==='30')rows=rows.filter(c=>nearBirth(c));$('#clubList').innerHTML=rows.map(c=>`<article class="club-card"><div class="card-row"><h3>${esc(cname(c))}</h3><span class="tag">${fa(c.club_points??c.points??0)} امتیاز</span></div><div class="muted">تولد: ${esc(birth(c)||'ثبت نشده')}</div><div class="muted">سطح: ${esc(c.club_level||c.level||'عادی')} · مراجعه: ${fa(c.visit_count??c.visits??0)}</div><div class="muted">هدیه تولد: ${c.free_gift?'فعال':'غیرفعال'}</div><div class="reservation-actions"><button class="mini-btn info" data-customer="${esc(c.id)}">پرونده</button><button class="mini-btn success" data-gift="${esc(c.id)}">فعال‌سازی هدیه</button></div></article>`).join('')||'<div class="empty">موردی وجود ندارد.</div>'}
+function renderServices(){$('#servicesList').innerHTML=services.map(s=>`<article class="service-card"><div class="card-row"><h3>${esc(s.name||'خدمت')}</h3><span class="tag">${s.active===false?'غیرفعال':'فعال'}</span></div><div class="muted">${s.price!=null?fa(s.price)+' تومان':'قیمت ثبت نشده'} · ${fa(s.duration||0)} دقیقه</div><div class="muted">${esc(s.description||s.details||'')}</div><div class="reservation-actions"><button class="mini-btn info" data-edit-service="${esc(s.id)}">ویرایش</button><button class="mini-btn" data-toggle-service="${esc(s.id)}">${s.active===false?'فعال‌سازی':'غیرفعال‌سازی'}</button></div></article>`).join('')||'<div class="empty">خدمتی ثبت نشده است.</div>'}
+function renderBirthdays(){$('#birthdayPreview').innerHTML=customers.filter(c=>nearBirth(c,30)).slice(0,7).map(c=>`<div class="mini-item"><strong>${esc(cname(c))}</strong><span>${esc(birth(c)||'—')}</span></div>`).join('')||'<div class="empty">تولد نزدیک ثبت نشده است.</div>'}
+function renderReports(){const done=reservations.filter(r=>r.status==='completed'),rev=done.reduce((a,r)=>a+price(r),0);$('#reportsGrid').innerHTML=[['رزرو امروز',reservations.filter(r=>r.date===today()).length],['تکمیل‌شده',done.length],['لغو شده',reservations.filter(r=>r.status==='cancelled').length],['عدم مراجعه',reservations.filter(r=>r.status==='no_show').length],['درآمد',`${fa(rev)} تومان`],['مشتری',customers.length],['آرایشگر فعال',barbers.filter(b=>b.active!==false).length],['تولد نزدیک',customers.filter(c=>nearBirth(c,30)).length]].map(x=>`<div class="report-card"><span>${x[0]}</span><strong>${typeof x[1]==='number'?fa(x[1]):x[1]}</strong></div>`).join('')}
+function renderTransactions(){const rows=reservations.filter(r=>r.status==='completed').sort((a,b)=>`${b.date}${b.time}`.localeCompare(`${a.date}${a.time}`)).slice(0,30);$('#transactionsGrid').innerHTML=rows.map(r=>`<div class="report-card"><span>${esc(dateFa(r.date))} · ${esc(tm(r.time))}</span><strong>${fa(price(r))} تومان</strong><small>${esc(rname(r))} · ${esc(sname(r.service_id))}</small></div>`).join('')||'<div class="empty">تراکنش تکمیل‌شده‌ای ثبت نشده است.</div>'}
+function localContent(key){try{return JSON.parse(localStorage.getItem(key)||'[]')}catch{return[]}} function saveContent(key,rows){localStorage.setItem(key,JSON.stringify(rows))}
+function renderContent(){const offers=localContent('salon_offers'),notes=localContent('salon_notices');$('#offersList').innerHTML=offers.map((x,i)=>`<article class="content-card"><h3>${esc(x.title)}</h3><p>${esc(x.text)}</p><button class="mini-btn danger" data-delete-content="offers" data-i="${i}">حذف</button></article>`).join('')||'<div class="empty">طرحی ثبت نشده است.</div>';$('#noticesList').innerHTML=notes.map((x,i)=>`<article class="content-card"><h3>${esc(x.title)}</h3><p>${esc(x.text)}</p><button class="mini-btn danger" data-delete-content="notices" data-i="${i}">حذف</button></article>`).join('')||'<div class="empty">اطلاعیه‌ای ثبت نشده است.</div>';$('#offerPreview').textContent=offers[0]?.title||'پیشنهاد ویژه';$('#noticePreview').textContent=notes[0]?.title||'استوری سالن'}
+async function loadBlocks(){const {data,error}=await supabase.from('availability_blocks').select('*').eq('active',true).gte('block_date',today()).order('block_date').order('start_time');if(error){msg(error.message);return}blocks=data||[];$('#availabilityList').innerHTML=blocks.map(b=>`<article class="availability-card"><div class="card-row"><strong>${esc(({closed:'بسته / تعطیل',busy:'مشغول',holiday:'تعطیلی مناسبتی',leave:'مرخصی'})[b.block_type]||b.block_type)}</strong><span class="tag">${esc(b.barber_id?bname(b.barber_id):'کل سالن')}</span></div><h3>${esc(dateFa(b.block_date))}</h3><div class="muted">${b.start_time&&b.end_time?`${tm(b.start_time)} تا ${tm(b.end_time)}`:'کل روز'}</div><div class="muted">${esc(b.title||'')} ${b.reason?'— '+esc(b.reason):''}</div><div class="block-actions"><button class="mini-btn" data-edit-block="${esc(b.id)}">ویرایش</button><button class="mini-btn danger" data-delete-block="${esc(b.id)}">حذف</button></div></article>`).join('')||'<div class="empty">بازه بسته‌ای ثبت نشده است.</div>';renderSchedule($('#scheduleDate').value||today(),$('#reservationBarberFilter').value)}
+function fillBarbers(){const html='<option value="">کل سالن</option>'+barbers.map(b=>`<option value="${esc(b.id)}">${esc(b.name||'آرایشگر')}</option>`).join('');$('#reservationBarberFilter').innerHTML='<option value="">همه آرایشگران</option>'+barbers.map(b=>`<option value="${esc(b.id)}">${esc(b.name||'آرایشگر')}</option>`).join('');$('#blockBarber').innerHTML=html}
+function openModal(html){$('#modalBody').innerHTML=html;$('#modal').hidden=false} function closeModal(){$('#modal').hidden=true;$('#modalBody').innerHTML=''}
+function customerModal(c){openModal(`<form id="customerEditForm" class="modal-form"><h2>پرونده ${esc(cname(c))}</h2><input type="hidden" name="id" value="${esc(c.id)}"><label>نام<input name="first_name" value="${esc(c.first_name||'')}"></label><label>نام خانوادگی<input name="last_name" value="${esc(c.last_name||'')}"></label><label>موبایل<input name="phone" value="${esc(c.phone||'')}"></label><label>ایمیل<input name="email" value="${esc(c.email||'')}"></label><label>تاریخ تولد<input name="birth_date" type="date" value="${esc(birth(c)||'')}"></label><label>امتیاز<input name="club_points" type="number" value="${Number(c.club_points??c.points??0)}"></label><label>سطح<input name="club_level" value="${esc(c.club_level||c.level||'عادی')}"></label><label>یادداشت<textarea name="note">${esc(c.note||'')}</textarea></label><button class="primary-btn">ذخیره</button></form>`)}
+function barberModal(b={}){openModal(`<form id="barberForm" class="modal-form"><h2>${b.id?'ویرایش آرایشگر':'افزودن آرایشگر'}</h2><input type="hidden" name="id" value="${esc(b.id||'')}"><label>نام<input name="name" required value="${esc(b.name||'')}"></label><label>تخصص / نقش<input name="role" value="${esc(b.role||'آرایشگر')}"></label><label>موبایل<input name="phone" value="${esc(b.phone||'')}"></label><label>آدرس عکس<input name="image_url" value="${esc(b.image_url||'')}"></label><label>وضعیت<select name="active"><option value="true" ${b.active!==false?'selected':''}>فعال</option><option value="false" ${b.active===false?'selected':''}>غیرفعال</option></select></label><button class="primary-btn">ذخیره</button></form>`)}
+function serviceModal(s={}){openModal(`<form id="serviceForm" class="modal-form"><h2>${s.id?'ویرایش خدمت':'افزودن خدمت'}</h2><input type="hidden" name="id" value="${esc(s.id||'')}"><label>نام خدمت<input name="name" required value="${esc(s.name||'')}"></label><label>قیمت<input name="price" type="number" value="${Number(s.price||0)}"></label><label>مدت دقیقه<input name="duration" type="number" value="${Number(s.duration||30)}"></label><label>آدرس عکس<input name="image_url" value="${esc(s.image_url||'')}"></label><label>توضیحات<textarea name="description">${esc(s.description||'')}</textarea></label><label>وضعیت<select name="active"><option value="true" ${s.active!==false?'selected':''}>فعال</option><option value="false" ${s.active===false?'selected':''}>غیرفعال</option></select></label><button class="primary-btn">ذخیره</button></form>`)}
+function manualReservationModal(){openModal(`<form id="manualReservationForm" class="modal-form"><h2>ثبت رزرو تلفنی</h2><label>نام<input name="first_name" required></label><label>نام خانوادگی<input name="last_name" required></label><label>موبایل<input name="phone" required placeholder="0912..."></label><label>آرایشگر<select name="barber_id" required>${barbers.filter(b=>b.active!==false).map(b=>`<option value="${esc(b.id)}">${esc(b.name)}</option>`).join('')}</select></label><label>خدمت<select name="service_id" required>${services.filter(s=>s.active!==false).map(s=>`<option value="${esc(s.id)}">${esc(s.name)} · ${fa(s.duration||30)} دقیقه</option>`).join('')}</select></label><label>تاریخ<input name="date" type="date" value="${esc($('#scheduleDate').value||today())}" required></label><label>ساعت<input name="time" type="time" value="10:00" required></label><label>یادداشت<textarea name="notes"></textarea></label><button class="primary-btn">ثبت رزرو</button></form>`)}
+function editReservationModal(r){openModal(`<form id="editReservationForm" class="modal-form"><h2>ویرایش رزرو ${esc(rname(r))}</h2><input type="hidden" name="id" value="${esc(r.id)}"><label>تاریخ<input name="date" type="date" value="${esc(r.date)}" required></label><label>ساعت<input name="time" type="time" value="${esc(tm(r.time))}" required></label><label>پیام برای مشتری<textarea name="notes" placeholder="پیام یا توضیح تغییر زمان">${esc(r.notes||'')}</textarea></label><button class="primary-btn">ذخیره و ثبت پیام</button></form>`)}
+async function saveCustomerForm(form){const fd=new FormData(form);const id=fd.get('id');const payload={first_name:fd.get('first_name'),last_name:fd.get('last_name'),phone:fd.get('phone'),email:fd.get('email'),birth_date:fd.get('birth_date')||null,club_points:Number(fd.get('club_points')||0),club_level:fd.get('club_level'),note:fd.get('note')};const {error}=await supabase.from('customers').update(payload).eq('id',id);if(error)throw error;closeModal();await loadData();msg('پرونده مشتری ذخیره شد.','success')}
+async function saveBarberForm(form){const fd=new FormData(form);const id=fd.get('id');const p={name:fd.get('name'),role:fd.get('role'),phone:fd.get('phone'),image_url:fd.get('image_url'),active:fd.get('active')==='true'};const q=id?supabase.from('barbers').update(p).eq('id',id):supabase.from('barbers').insert(p);const {error}=await q;if(error)throw error;closeModal();await loadData();msg('اطلاعات آرایشگر ذخیره شد.','success')}
+async function saveServiceForm(form){const fd=new FormData(form);const id=fd.get('id');const p={name:fd.get('name'),price:Number(fd.get('price')||0),duration:Number(fd.get('duration')||30),image_url:fd.get('image_url'),description:fd.get('description'),active:fd.get('active')==='true'};const q=id?supabase.from('services').update(p).eq('id',id):supabase.from('services').insert(p);const {error}=await q;if(error)throw error;closeModal();await loadData();msg('خدمت ذخیره شد.','success')}
+function conflict(date,time,barberId,duration,id){const a=mins(time),z=a+duration;return reservations.some(r=>r.id!==id&&r.date===date&&r.barber_id===barberId&&r.status==='reserved'&&a<mins(r.time)+Number(r.service_duration||30)&&z>mins(r.time))}
+function blocked(date,time,barberId,duration){const a=mins(time),z=a+duration;return blocks.some(b=>b.active&&b.block_date===date&&(!b.barber_id||b.barber_id===barberId)&&a<(b.end_time?mins(b.end_time):1440)&&z>(b.start_time?mins(b.start_time):0))}
+async function saveManual(form){const fd=new FormData(form),phone=digits(fd.get('phone'));const barber=barbers.find(b=>b.id===fd.get('barber_id')),service=services.find(s=>s.id===fd.get('service_id'));const date=fd.get('date'),time=fd.get('time'),duration=Number(service?.duration||30);if(conflict(date,time,barber.id,duration,''))throw Error('این ساعت برای آرایشگر قبلاً رزرو شده است.');if(blocked(date,time,barber.id,duration))throw Error('این ساعت در بازه بسته یا مشغول قرار دارد.');const cid=await saveCustomer({firstName:fd.get('first_name'),lastName:fd.get('last_name'),phone,barberId:barber.id,barberName:barber.name,service:service.name,date});await createReservation({customerId:cid,firstName:fd.get('first_name'),lastName:fd.get('last_name'),phone,barberId:barber.id,barberName:barber.name,serviceId:service.id,service:service.name,serviceDuration:duration,date,time,notes:fd.get('notes')});closeModal();await loadData();msg('رزرو تلفنی ثبت شد و ساعت پر شد.','success')}
+async function saveEditReservation(form){const fd=new FormData(form),r=reservations.find(x=>x.id===fd.get('id'));if(!r)throw Error('رزرو پیدا نشد.');const service=services.find(s=>s.id===r.service_id),duration=Number(r.service_duration||service?.duration||30),date=fd.get('date'),time=fd.get('time');if(blocked(date,time,r.barber_id,duration))throw Error('ساعت جدید در بازه بسته قرار دارد.');if(conflict(date,time,r.barber_id,duration,r.id))throw Error('ساعت جدید با رزرو دیگری تداخل دارد.');const notes=fd.get('notes')||null;const {error}=await supabase.from('reservations').update({date,time,notes,updated_at:new Date().toISOString()}).eq('id',r.id);if(error)throw error;closeModal();await loadData();msg('زمان رزرو تغییر کرد و پیام برای پروفایل مشتری ثبت شد.','success')}
+async function saveBlock(e){e.preventDefault();const id=$('#availabilityEditId').value,date=$('#blockDate').value,start=$('#blockStart').value,end=$('#blockEnd').value;if(!date)return msg('تاریخ را انتخاب کنید.');if((start&&!end)||(!start&&end))return msg('ساعت شروع و پایان را هر دو وارد کنید.');if(start&&end&&start>=end)return msg('ساعت پایان باید بعد از شروع باشد.');const p={barber_id:$('#blockBarber').value||null,block_date:date,start_time:start||null,end_time:end||null,block_type:$('#blockType').value,title:$('#blockTitle').value.trim()||null,reason:$('#blockReason').value.trim()||null,active:true,updated_at:new Date().toISOString()};try{if(id){const {error}=await supabase.from('availability_blocks').update(p).eq('id',id);if(error)throw error}else{p.created_by=user.id;const {error}=await supabase.from('availability_blocks').insert(p);if(error)throw error}$('#availabilityEditId').value='';$('#cancelBlockEdit').hidden=true;await loadBlocks();msg('بازه بسته با موفقیت ذخیره شد.','success')}catch(e){msg(e.message||'ذخیره انجام نشد.')}}
+async function loadData(){const [r,c,b,s]=await Promise.all([getReservations(),supabase.from('customers').select('*').order('created_at',{ascending:false}).limit(1000),getBarbers(),getServices()]);reservations=Array.isArray(r)?r:(r?.data||[]);customers=c.data||[];barbers=Array.isArray(b)?b:(b?.data||[]);services=Array.isArray(s)?s:(s?.data||[]);renderStats();renderToday();renderBirthdays();renderCustomers();renderBarbers();renderClub();renderServices();renderReports();renderTransactions();fillBarbers();renderReservations();renderContent();await loadBlocks()}
+function setup(){const d=today();$('#scheduleDate').value=d;$('#blockDate').min=d;$('#scheduleDate').addEventListener('change',renderReservations);$('#reservationBarberFilter').addEventListener('change',renderReservations);$('#reservationStatusFilter').addEventListener('change',renderReservations);$('#reservationSearch').addEventListener('input',renderReservations);$('#customerSearch').addEventListener('input',renderCustomers);$('#birthdayFilter').addEventListener('change',renderClub);$('#prevDay').addEventListener('click',()=>shiftDay(-1));$('#nextDay').addEventListener('click',()=>shiftDay(1));$('#availabilityForm').addEventListener('submit',saveBlock);$('#cancelBlockEdit').addEventListener('click',()=>{$('#availabilityEditId').value='';$('#cancelBlockEdit').hidden=true});$('#adminRefresh').addEventListener('click',loadData);$('#quickReservation').addEventListener('click',manualReservationModal);$('#newReservationBtn').addEventListener('click',manualReservationModal);$('#addCustomerBtn').addEventListener('click',()=>openModal(`<form id="newCustomerForm" class="modal-form"><h2>ثبت مشتری</h2><label>نام<input name="first_name" required></label><label>نام خانوادگی<input name="last_name" required></label><label>موبایل<input name="phone" required></label><label>ایمیل<input name="email"></label><label>تاریخ تولد<input name="birth_date" type="date"></label><button class="primary-btn">ذخیره مشتری</button></form>`));$('#addBarberBtn').addEventListener('click',()=>barberModal());$('#addServiceBtn').addEventListener('click',()=>serviceModal());$('#addOfferBtn').addEventListener('click',()=>contentModal('offers'));$('#addNoticeBtn').addEventListener('click',()=>contentModal('notices'));$('#adminLogout').addEventListener('click',async()=>{await signOutUser();location.replace('index.html')});$('#menuBtn').addEventListener('click',()=>{$('#adminSidebar').classList.add('mobile-open');$('#adminOverlay').classList.add('active')});$('#closeAdminSidebar').addEventListener('click',closeSide);$('#adminOverlay').addEventListener('click',closeSide);document.addEventListener('click',handleClick);$('#globalSearch').addEventListener('input',globalSearch);}
+function closeSide(){$('#adminSidebar').classList.remove('mobile-open');$('#adminOverlay').classList.remove('active')}
+function shiftDay(n){const d=new Date(`${$('#scheduleDate').value}T00:00:00`);d.setDate(d.getDate()+n);$('#scheduleDate').value=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;renderReservations()}
+function contentModal(key){openModal(`<form id="contentForm" class="modal-form"><h2>${key==='offers'?'افزودن طرح ویژه':'افزودن اطلاع‌رسانی'}</h2><label>عنوان<input name="title" required></label><label>متن<textarea name="text" required></textarea></label><button class="primary-btn">ذخیره</button></form>`);$('#contentForm').dataset.key=key}
+async function handleClick(e){const target=e.target.closest('[data-target]');if(target){const el=$(`#${target.dataset.target}`);if(el){el.scrollIntoView({behavior:'smooth',block:'start');closeSide()}}const action=e.target.closest('[data-action]');if(action)try{if(action.dataset.action==='complete')await completeReservation(action.dataset.id);if(action.dataset.action==='noshow')await markReservationNoShow(action.dataset.id);if(action.dataset.action==='cancel')await cancelReservation(action.dataset.id);await loadData();msg('وضعیت رزرو با موفقیت تغییر کرد.','success')}catch(x){msg(x.message||'عملیات انجام نشد.')}
+const er=e.target.closest('[data-edit-reservation]');if(er){const r=reservations.find(x=>x.id===er.dataset.editReservation);if(r)editReservationModal(r)}
+const cu=e.target.closest('[data-customer]');if(cu){const c=customers.find(x=>x.id===cu.dataset.customer);if(c)customerModal(c)}
+const ec=e.target.closest('[data-edit-customer]');if(ec){const c=customers.find(x=>x.id===ec.dataset.editCustomer);if(c)customerModal(c)}
+const eb=e.target.closest('[data-edit-barber]');if(eb)barberModal(barbers.find(x=>x.id===eb.dataset.editBarber)||{});
+const tb=e.target.closest('[data-toggle-barber]');if(tb){const b=barbers.find(x=>x.id===tb.dataset.toggleBarber);if(b)try{const {error}=await supabase.from('barbers').update({active:b.active===false}).eq('id',b.id);if(error)throw error;await loadData();msg('وضعیت آرایشگر تغییر کرد.','success')}catch(x){msg(x.message)}}
+const es=e.target.closest('[data-edit-service]');if(es)serviceModal(services.find(x=>x.id===es.dataset.editService)||{});
+const ts=e.target.closest('[data-toggle-service]');if(ts){const s=services.find(x=>x.id===ts.dataset.toggleService);if(s)try{const {error}=await supabase.from('services').update({active:s.active===false}).eq('id',s.id);if(error)throw error;await loadData();msg('وضعیت خدمت تغییر کرد.','success')}catch(x){msg(x.message)}}
+const gift=e.target.closest('[data-gift]');if(gift){try{const {error}=await supabase.from('customers').update({free_gift:true}).eq('id',gift.dataset.gift);if(error)throw error;await loadData();msg('هدیه تولد فعال شد.','success')}catch(x){msg('برای هدیه تولد، ستون free_gift باید در customers وجود داشته باشد.')}}
+const ebk=e.target.closest('[data-edit-block]');if(ebk){const b=blocks.find(x=>x.id===ebk.dataset.editBlock);if(b){$('#availabilityEditId').value=b.id;$('#blockDate').value=b.block_date;$('#blockBarber').value=b.barber_id||'';$('#blockType').value=b.block_type;$('#blockStart').value=tm(b.start_time)==='—'?'':tm(b.start_time);$('#blockEnd').value=tm(b.end_time)==='—'?'':tm(b.end_time);$('#blockTitle').value=b.title||'';$('#blockReason').value=b.reason||'';$('#cancelBlockEdit').hidden=false;$('#availabilitySection').scrollIntoView({behavior:'smooth'})}}
+const db=e.target.closest('[data-delete-block]');if(db&&confirm('این بازه حذف شود؟')){const {error}=await supabase.from('availability_blocks').delete().eq('id',db.dataset.deleteBlock);if(error)msg(error.message);else await loadBlocks()}
+const dc=e.target.closest('[data-delete-content]');if(dc){const key=dc.dataset.deleteContent==='offers'?'salon_offers':'salon_notices',rows=localContent(key);rows.splice(Number(dc.dataset.i),1);saveContent(key,rows);renderContent()}
+if(e.target.matches('[data-close-modal]'))closeModal()}
+function globalSearch(){const q=digits($('#globalSearch').value.trim()).toLowerCase(),box=$('#searchResults');if(!q){box.hidden=true;return}const out=[];customers.filter(c=>digits(cname(c)).toLowerCase().includes(q)||digits(c.phone||'').includes(q)).slice(0,4).forEach(c=>out.push(`<a href="#customersSection">👤 ${esc(cname(c))} · ${esc(c.phone||'')}</a>`));barbers.filter(b=>digits(b.name||'').toLowerCase().includes(q)).slice(0,4).forEach(b=>out.push(`<a href="#barbersSection">✂ ${esc(b.name)}</a>`));services.filter(s=>digits(s.name||'').toLowerCase().includes(q)).slice(0,4).forEach(s=>out.push(`<a href="#servicesSection">✦ ${esc(s.name)}</a>`));reservations.filter(r=>digits(rname(r)).toLowerCase().includes(q)||String(r.time||'').includes(q)).slice(0,5).forEach(r=>out.push(`<a href="#reservationsSection">📅 ${esc(dateFa(r.date))} ${esc(tm(r.time))} · ${esc(rname(r))}</a>`));box.innerHTML=out.join('')||'<div class="empty">نتیجه‌ای پیدا نشد.</div>';box.hidden=false}
+function localContent(key){try{return JSON.parse(localStorage.getItem(key)||'[]')}catch{return[]}}function saveContent(key,v){localStorage.setItem(key,JSON.stringify(v))}function renderContent(){const o=localContent('salon_offers'),n=localContent('salon_notices');$('#offersList').innerHTML=o.map((x,i)=>`<article class="content-card"><h3>${esc(x.title)}</h3><p>${esc(x.text)}</p><button class="mini-btn danger" data-delete-content="offers" data-i="${i}">حذف</button></article>`).join('')||'<div class="empty">طرحی ثبت نشده است.</div>';$('#noticesList').innerHTML=n.map((x,i)=>`<article class="content-card"><h3>${esc(x.title)}</h3><p>${esc(x.text)}</p><button class="mini-btn danger" data-delete-content="notices" data-i="${i}">حذف</button></article>`).join('')||'<div class="empty">اطلاعیه‌ای ثبت نشده است.</div>';$('#offerPreview').textContent=o[0]?.title||'پیشنهاد ویژه';$('#noticePreview').textContent=n[0]?.title||'استوری سالن'}
+$('#modal').addEventListener('submit',async e=>{if(e.target.id==='customerEditForm')try{await saveCustomerForm(e.target)}catch(x){msg(x.message)}if(e.target.id==='barberForm')try{await saveBarberForm(e.target)}catch(x){msg(x.message)}if(e.target.id==='serviceForm')try{await saveServiceForm(e.target)}catch(x){msg(x.message)}if(e.target.id==='manualReservationForm')try{await saveManual(e.target)}catch(x){msg(x.message)}if(e.target.id==='editReservationForm')try{await saveEditReservation(e.target)}catch(x){msg(x.message)}if(e.target.id==='newCustomerForm')try{const f=new FormData(e.target);const p={first_name:f.get('first_name'),last_name:f.get('last_name'),phone:f.get('phone'),email:f.get('email'),birth_date:f.get('birth_date')||null};const {error}=await supabase.from('customers').insert(p);if(error)throw error;closeModal();await loadData();msg('مشتری ثبت شد.','success')}catch(x){msg(x.message)}if(e.target.id==='contentForm'){e.preventDefault();const f=new FormData(e.target),key=e.target.dataset.key==='offers'?'salon_offers':'salon_notices',rows=localContent(key);rows.unshift({title:f.get('title'),text:f.get('text')});saveContent(key,rows);closeModal();renderContent();msg('محتوا ذخیره شد.','success')}});
+async function boot(){user=await getCurrentUser();if(!user){location.replace('login.html');return}profile=await getCurrentUserProfile();if(!profile?.is_admin&&profile?.role!=='admin'){location.replace('profile.html');return}const display=user.user_metadata?.full_name||user.email||'مدیر سالن';$('#adminName').textContent=display;$('#adminAvatar').textContent=display.charAt(0)||'م';$('#settingsEmail').textContent=user.email||'—';$('#todayLabel').textContent=new Intl.DateTimeFormat('fa-IR-u-ca-persian',{weekday:'long',year:'numeric',month:'long',day:'numeric'}).format(new Date());setup();await loadData();$('#adminLoader').classList.add('hidden')}
+boot().catch(e=>{console.error(e);$('#adminLoader').classList.add('hidden');msg(e.message||'پنل مدیریت بارگذاری نشد.')});

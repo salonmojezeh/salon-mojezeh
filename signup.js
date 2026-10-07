@@ -43,6 +43,7 @@ form.addEventListener("submit", async (e) => {
   if (!firstName || !lastName) return show("نام و نام خانوادگی را کامل کنید.");
   if (!validIranPhone(rawPhone)) return show("شماره موبایل معتبر ایرانی وارد کنید.");
   if (email && !/^\S+@\S+\.\S+$/.test(email)) return show("ایمیل معتبر وارد کنید.");
+  if (!birthDate) return show("تاریخ تولد را برای فعال شدن هدیه تولد وارد کنید.");
   if (password.length < 8) return show("رمز عبور باید حداقل ۸ کاراکتر باشد.");
   if (password !== password2) return show("تکرار رمز عبور با رمز عبور یکسان نیست.");
   if (!$("#terms").checked) return show("پذیرش قوانین الزامی است.");
