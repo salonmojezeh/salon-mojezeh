@@ -1,8 +1,119 @@
-<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>پروفایل | سالن معجزه</title><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="profile.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"><link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"></head><body>
-<div id="loader"><div class="loader-circle"></div><h2>سالن معجزه</h2></div><div id="overlay"></div><aside id="sidebar"><div class="sidebar-header"><img src="images/logo.png" alt="سالن معجزه"><h2>سالن معجزه</h2><button id="closeSidebar" type="button"><i class="fa-solid fa-xmark"></i></button></div><nav><a href="index.html"><i class="fa-solid fa-house"></i><span>صفحه اصلی</span></a><a href="reserve.html"><i class="fa-solid fa-calendar-days"></i><span>رزرو نوبت</span></a><a href="club.html"><i class="fa-solid fa-gift"></i><span>باشگاه مشتریان</span></a><a href="profile.html"><i class="fa-solid fa-user"></i><span>پروفایل من</span></a><a href="admin.html"><i class="fa-solid fa-gauge"></i><span>پنل مدیریت</span></a></nav></aside>
-<header id="header"><button id="menuBtn" type="button"><i class="fa-solid fa-bars"></i></button><a class="logo-box" href="index.html"><img src="images/logo.png" alt="Salon"><div><h2>سالن معجزه</h2><small>پروفایل و رزروهای شما</small></div></a><button id="themeToggle" type="button"><i class="fa-solid fa-moon"></i></button></header>
-<main class="profile-page"><section class="profile-welcome"><div><h1 id="welcomeTitle">پروفایل من</h1><p id="accountMeta">در حال دریافت اطلاعات حساب...</p></div><button id="logoutBtn" class="secondary-btn"><i class="fa-solid fa-right-from-bracket"></i> خروج</button></section><p id="profileMessage" class="profile-message" aria-live="polite"></p>
-<section id="statsGrid" class="stats-grid"></section><section class="profile-panel"><div class="panel-heading"><h2>رزروهای من / رزروهای سالن</h2><button id="refreshBtn" class="secondary-btn"><i class="fa-solid fa-rotate"></i> تازه‌سازی</button></div><div id="reservationsList" class="reservations-list"></div></section>
-<section id="blocksPanel" class="profile-panel" hidden><div class="panel-heading"><h2>مدیریت تعطیلی و ساعت‌های بسته</h2><span>آرایشگر و مدیر می‌توانند زمان‌های غیرقابل رزرو را ثبت کنند.</span></div>
-<form id="blockForm" class="block-form"><label>تاریخ<input id="blockDate" type="date" required></label><label id="blockBarberLabel">آرایشگر<select id="blockBarber"><option value="">کل سالن</option></select></label><label>نوع بازه<select id="blockType"><option value="closed">بسته / خارج از ساعت کاری</option><option value="busy">مشغول</option><option value="holiday">تعطیلی</option><option value="leave">مرخصی</option></select></label><label>از ساعت (اختیاری)<input id="blockStart" type="time"></label><label>تا ساعت (اختیاری)<input id="blockEnd" type="time"></label><label>عنوان<input id="blockTitle" maxlength="100" placeholder="مثلاً جلسه یا مرخصی"></label><label class="block-wide">توضیحات<input id="blockReason" maxlength="250" placeholder="توضیحات اختیاری"></label><button class="primary-btn" type="submit"><i class="fa-solid fa-plus"></i> ثبت بازه بسته</button></form><div id="blocksList" class="blocks-list"></div></section></main>
-<script src="script.js"></script><script type="module" src="profile.js"></script></body></html>
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>پنل کاربری | سالن معجزه</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="profile.css">
+</head>
+<body>
+  <div id="loader"><div class="loader-spinner"></div></div>
+  <div id="overlay"></div>
+
+  <aside id="sidebar" class="sidebar">
+    <button id="closeSidebar" class="sidebar-close" aria-label="بستن">×</button>
+    <div class="sidebar-brand"><strong>سالن معجزه</strong><span>استایل شما، معجزه ماست</span></div>
+    <nav>
+      <a href="index.html">خانه</a><a href="reserve.html">رزرو نوبت</a><a href="profile.html" class="active">پروفایل / پنل</a>
+      <a href="club.html">باشگاه مشتریان</a><a href="gallery.html">نمونه‌کارها</a><a href="news.html">اخبار و مقالات</a>
+      <a href="services.html">خدمات</a><a href="about.html">درباره ما</a><a href="contact.html">تماس با ما</a><a href="maps.html">مسیریابی</a>
+    </nav>
+  </aside>
+
+  <header id="header" class="site-header">
+    <button id="menuBtn" class="icon-btn" aria-label="منو">☰</button>
+    <a href="profile.html" id="headerProfileBtn" class="header-profile" aria-label="پروفایل">◉</a>
+    <div class="header-title"><strong>سالن معجزه</strong><small>استایل شما، معجزه ماست</small></div>
+    <button id="themeToggle" class="icon-btn" aria-label="تغییر تم"><span id="themeIcon">☾</span></button>
+  </header>
+
+  <main id="profileApp" class="profile-app" hidden>
+    <section class="profile-hero">
+      <div class="identity">
+        <div id="avatar" class="avatar">م</div>
+        <div>
+          <span id="roleBadge" class="role-badge">مشتری</span>
+          <h1 id="profileName">سلام</h1>
+          <p id="profileContact">حساب کاربری</p>
+        </div>
+      </div>
+      
+    </section>
+
+    <div id="pageMessage" class="page-message" hidden></div>
+    <section id="statsGrid" class="quick-stats"></section>
+
+    <section id="customerDashboard" class="manager-section customer-only open">
+      <button class="section-head blue" type="button"><span>رزروهای من</span><b>⌄</b></button>
+      <div class="section-body">
+        <div class="section-toolbar"><div><h2>نوبت‌ها</h2><p>رزروهای آینده و سابقه مراجعه</p></div><a class="link-btn" href="reserve.html">رزرو جدید +</a></div>
+        <div id="reservationList" class="reservation-list"></div>
+      </div>
+    </section>
+
+    <section id="barberDashboard" class="manager-section manager-only" hidden>
+      <button class="section-head green" type="button"><span>رزروهای آرایشگر</span><b>⌄</b></button>
+      <div class="section-body">
+        <div class="section-toolbar"><div><h2>رزروهای من</h2><p>تکمیل، عدم مراجعه یا لغو نوبت</p></div></div>
+        <div id="barberReservationList" class="reservation-list"></div>
+      </div>
+    </section>
+
+    <section id="adminDashboard" class="manager-section admin-only" hidden>
+      <button class="section-head purple" type="button"><span>مرکز مدیریت</span><b>⌄</b></button>
+      <div class="section-body">
+        <div class="quick-grid">
+          <button data-scroll="adminReservations">رزروها</button>
+          <button data-scroll="adminCustomers">مشتریان</button>
+          <button data-scroll="adminBarbers">آرایشگران</button>
+          <button data-scroll="availabilityManager">تعطیلی و ساعات بسته</button>
+        </div>
+        <div id="adminReservations" class="admin-block"><h3>آخرین رزروها</h3><div id="adminReservationList" class="reservation-list"></div></div>
+        <div id="adminCustomers" class="admin-block"><h3>مشتریان</h3><div id="customersTable" class="table-wrap"></div></div>
+        <div id="adminBarbers" class="admin-block"><h3>آرایشگران</h3><div id="barbersTable" class="table-wrap"></div></div>
+      </div>
+    </section>
+
+    <section id="availabilityManager" class="manager-section manager-only" hidden>
+      <button class="section-head cyan" type="button"><span>تعطیلی و ساعات بسته</span><b>⌄</b></button>
+      <div class="section-body">
+        <p class="availability-intro">مدیر می‌تواند کل سالن یا یک آرایشگر را برای یک روز کامل یا یک بازه زمانی ببندد. آرایشگر فقط می‌تواند برنامه خودش را مدیریت کند.</p>
+        <form id="availabilityForm" class="availability-form">
+          <input id="availabilityEditId" type="hidden">
+          <label>تاریخ<input id="blockDate" type="date" required></label>
+          <label>آرایشگر<select id="blockBarber"></select></label>
+          <label>نوع<select id="blockType"><option value="closed">بسته / تعطیل</option><option value="busy">مشغول</option><option value="holiday">تعطیلی مناسبتی</option><option value="leave">مرخصی</option></select></label>
+          <div class="time-grid">
+            <label>از ساعت<input id="startTime" type="time"></label>
+            <label>تا ساعت<input id="endTime" type="time"></label>
+          </div>
+          <label>عنوان<input id="blockTitle" type="text" placeholder="مثلاً مرخصی آرایشگر"></label>
+          <label>توضیحات<input id="blockReason" type="text" placeholder="اختیاری"></label>
+          <div class="form-actions"><button id="saveBlockBtn" class="primary-btn" type="submit">ثبت بازه</button><button id="cancelEditBtn" class="ghost-btn" type="button" hidden>لغو ویرایش</button></div>
+          <div id="availabilityMessage" class="form-message" hidden></div>
+        </form>
+        <div id="availabilityList" class="block-list"></div>
+      </div>
+    </section>
+
+    <section id="messagesSection" class="manager-section customer-only" hidden>
+      <button class="section-head blue" type="button"><span>پیام‌های سالن</span><b>⌄</b></button>
+      <div class="section-body"><div id="customerMessages" class="reservation-list"></div></div>
+    </section>
+
+    <section id="accountSection" class="manager-section open">
+      <button class="section-head gold" type="button"><span>اطلاعات حساب</span><b>⌄</b></button>
+      <div class="section-body"><div id="accountGrid" class="account-grid"></div></div>
+    </section>
+  </main>
+
+  <div id="profileLoader" class="profile-loader"><div class="loader-spinner"></div><span>در حال دریافت اطلاعات...</span></div>
+
+  <script type="module" src="script.js"></script>
+  <script type="module" src="profile.js"></script>
+</body>
+</html>
