@@ -74,7 +74,19 @@ const TABLES = {
 
     userProfiles: "user_profiles",
 
-    clubMembers: "club_members"
+    clubMembers: "club_members",
+
+    barberServices: "barber_services",
+
+    barberWorkingHours: "barber_working_hours",
+
+    availabilityBlocks: "availability_blocks",
+
+    customerGiftHistory: "customer_gift_history",
+
+    customerMessages: "customer_messages",
+
+    loyaltyPointHistory: "loyalty_point_history"
 
 };
 
@@ -1419,7 +1431,7 @@ async function createReservation(
         // ==================================
 
         if (
-            error.code === "23505"
+            error.code === "23505" || error.code === "23P01"
         ) {
 
             const conflictError =
@@ -1798,6 +1810,59 @@ async function markReservationNoShow(
 }
 
 
+
+// ==========================================
+// Barber-specific booking configuration
+// ==========================================
+
+async function getBarberWorkingHours(barberId, weekday = null) {
+    if (!barberId) return [];
+    let query = supabase
+        .from(TABLES.barberWorkingHours)
+        .select("id, barber_id, weekday, start_time, end_time, active")
+        .eq("barber_id", barberId)
+        .eq("active", true);
+    if (weekday !== null && weekday !== undefined) {
+        query = query.eq("weekday", Number(weekday));
+    }
+    const { data, error } = await query.order("weekday").order("start_time");
+    if (error) {
+        console.error("getBarberWorkingHours error:", error);
+        throw error;
+    }
+    return data || [];
+}
+
+async function getBarberServices(barberId) {
+    if (!barberId) return [];
+    const { data, error } = await supabase
+        .from(TABLES.barberServices)
+        .select("id, barber_id, service_id, active")
+        .eq("barber_id", barberId)
+        .eq("active", true);
+    if (error) {
+        console.error("getBarberServices error:", error);
+        throw error;
+    }
+    return data || [];
+}
+
+async function getAvailabilityBlocks(barberId, date) {
+    if (!date) return [];
+    let query = supabase
+        .from(TABLES.availabilityBlocks)
+        .select("id, barber_id, block_date, start_time, end_time, block_type, title, reason, active")
+        .eq("block_date", date)
+        .eq("active", true);
+    if (barberId) query = query.or(`barber_id.eq.${barberId},barber_id.is.null`);
+    const { data, error } = await query;
+    if (error) {
+        console.error("getAvailabilityBlocks error:", error);
+        throw error;
+    }
+    return data || [];
+}
+
 // ==========================================
 // Export
 // ==========================================
@@ -1872,6 +1937,12 @@ export {
     // ======================================
 
     getBookingSettings,
+
+    getBarberWorkingHours,
+
+    getBarberServices,
+
+    getAvailabilityBlocks,
 
 
     // ======================================
