@@ -1,1917 +1,218 @@
-// ==========================================
-// Salon Mojezeh
-// supabase.js
-// Main Supabase Database + Authentication Layer
-// ==========================================
-
 "use strict";
+/* =====================================================
+   supabase.js — لایه دسترسی به دادهٔ سالن معجزه
+   همه صفحات از همین توابع استفاده می‌کنند.
+   ===================================================== */
 
-import {
-    createClient
-} from
-"https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-
-
-// ==========================================
-// Supabase Configuration
-// ==========================================
-
-const SUPABASE_URL =
-    "https://erfzhyvraenceykiwlci.supabase.co";
-
-
-const SUPABASE_PUBLISHABLE_KEY =
-    "sb_publishable_uRbq30GBNHcXwGrinzhx1Q_5-egxs5_";
-
-
-// ==========================================
-// Supabase Client
-// ==========================================
-
-const supabase = createClient(
-
-    SUPABASE_URL,
-
-    SUPABASE_PUBLISHABLE_KEY,
-
-    {
-
-        auth: {
-
-            persistSession: true,
-
-            autoRefreshToken: true,
-
-            detectSessionInUrl: true
-
-        }
-
-    }
-
-);
-
-
-// ==========================================
-// Table Names
-// ==========================================
+const SUPABASE_URL = "https://erfzhyvraenceykiwlci.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_uRbq30GBNHcXwGrinzhx1Q_5-egxs5_";
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+window.sb = sb;
 
 const TABLES = {
-
-    // Reservation System
-
-    barbers: "barbers",
-
-    services: "services",
-
-    customers: "customers",
-
-    reservations: "reservations",
-
-    bookingSettings: "booking_settings",
-
-
-    // Authentication / Profile System
-
-    userProfiles: "user_profiles",
-
-    clubMembers: "club_members"
-
+  reservations: "reservations",
+  barbers: "barbers",
+  services: "services",
+  customers: "customers",
+  availability_blocks: "availability_blocks",
+  user_profiles: "user_profiles",
+  booking_settings: "booking_settings"
 };
+window.TABLES = TABLES;
 
-
-// ==========================================
-// Reservation Status
-// ==========================================
-
-const RESERVATION_STATUS = {
-
-    RESERVED: "reserved",
-
-    CANCELLED: "cancelled",
-
-    COMPLETED: "completed",
-
-    NO_SHOW: "no_show"
-
+/* ---------- ابزارهای مشترک ---------- */
+const NormPhone = v => {
+  let p = String(v || "").replace(/\D/g, "");
+  if (p.startsWith("98")) p = "0" + p.slice(2);
+  if (p.length === 10 && p.startsWith("9")) p = "0" + p;
+  return p;
 };
+window.NormPhone = NormPhone;
 
+const TodayStr = (off = 0) => {
+  const d = new Date();
+  d.setDate(d.getDate() + off);
+  return d.toLocaleDateString("sv-SE");
+};
+window.TodayStr = TodayStr;
 
-// ==========================================
-// Phone Helpers
-// ==========================================
+const DateFa = s => {
+  if (!s) return "—";
+  try { return new Date(s + "T00:00:00").toLocaleDateString("fa-IR"); }
+  catch { return s; }
+};
+window.DateFa = DateFa;
 
+const HHmm = t => String(t || "").slice(0, 5);
+window.HHmm = HHmm;
 
-// ==========================================
-// Convert Persian / Arabic Digits To English
-// ==========================================
-
-function normalizeDigits(value = "") {
-
-    return String(value)
-
-        .replace(
-            /[۰-۹]/g,
-            digit =>
-                String(
-                    "۰۱۲۳۴۵۶۷۸۹"
-                        .indexOf(digit)
-                )
-        )
-
-        .replace(
-            /[٠-٩]/g,
-            digit =>
-                String(
-                    "٠١٢٣٤٥٦٧٨٩"
-                        .indexOf(digit)
-                )
-        );
-
+/* ---------- تنظیمات سالن ---------- */
+async function getBookingSettings() {
+  try {
+    const { data } = await sb.from(TABLES.booking_settings).select("*").limit(1).maybeSingle();
+    return Object.assign(
+      { opening_time: "09:00", closing_time: "21:00", slot_interval: 30, booking_days_ahead: 30 },
+      data || {}
+    );
+  } catch {
+    return { opening_time: "09:00", closing_time: "21:00", slot_interval: 30, booking_days_ahead: 30 };
+  }
 }
+window.getBookingSettings = getBookingSettings;
 
-
-// ==========================================
-// Normalize Iranian Phone
-// Local Format
-//
-// Example:
-// 09388000000
-// ==========================================
-
-function normalizePhoneLocal(phone = "") {
-
-    let value =
-        normalizeDigits(phone)
-            .trim()
-            .replace(/[^\d+]/g, "");
-
-
-    // 0098xxxxxxxxxx
-
-    if (
-        value.startsWith("0098")
-    ) {
-
-        value =
-            "0" +
-            value.substring(4);
-
-    }
-
-
-    // +98xxxxxxxxxx
-
-    else if (
-        value.startsWith("+98")
-    ) {
-
-        value =
-            "0" +
-            value.substring(3);
-
-    }
-
-
-    // 98xxxxxxxxxx
-
-    else if (
-        value.startsWith("98") &&
-        !value.startsWith("980")
-    ) {
-
-        value =
-            "0" +
-            value.substring(2);
-
-    }
-
-
-    // 9xxxxxxxxxx
-
-    else if (
-        value.startsWith("9") &&
-        value.length === 10
-    ) {
-
-        value =
-            "0" +
-            value;
-
-    }
-
-
-    return value;
-
+/* ---------- خدمات و آرایشگران ---------- */
+async function getServices(activeOnly = true) {
+  let q = sb.from(TABLES.services).select("*").order("id");
+  const { data, error } = await q;
+  if (error) return [];
+  return activeOnly ? (data || []).filter(s => s.active !== false) : (data || []);
 }
+window.getServices = getServices;
 
-
-// ==========================================
-// Normalize Iranian Phone
-// E.164 Format
-//
-// Example:
-// +989388000000
-// ==========================================
-
-function normalizePhoneE164(phone = "") {
-
-    const localPhone =
-        normalizePhoneLocal(phone);
-
-
-    if (
-        localPhone.startsWith("09") &&
-        localPhone.length === 11
-    ) {
-
-        return (
-            "+98" +
-            localPhone.substring(1)
-        );
-
-    }
-
-
-    return localPhone;
-
+async function getServiceByKey(key) {
+  const { data } = await sb.from(TABLES.services).select("*").eq("service_key", key).maybeSingle();
+  return data;
 }
+window.getServiceByKey = getServiceByKey;
 
-
-// ==========================================
-// Authentication
-// ==========================================
-
-
-// ==========================================
-// Sign In
-//
-// Supports:
-// - Email + Password
-// - Phone + Password
-// ==========================================
-
-async function signIn(
-    identifier,
-    password
-) {
-
-    const value =
-        String(identifier || "")
-            .trim();
-
-
-    if (
-        !value ||
-        !password
-    ) {
-
-        throw new Error(
-            "اطلاعات ورود ناقص است."
-        );
-
-    }
-
-
-    let credentials;
-
-
-    // ======================================
-    // Email Login
-    // ======================================
-
-    if (
-        value.includes("@")
-    ) {
-
-        credentials = {
-
-            email:
-                value.toLowerCase(),
-
-            password
-
-        };
-
-    }
-
-
-    // ======================================
-    // Phone Login
-    // ======================================
-
-    else {
-
-        const phone =
-            normalizePhoneE164(value);
-
-
-        credentials = {
-
-            phone,
-
-            password
-
-        };
-
-    }
-
-
-    const {
-
-        data,
-        error
-
-    } =
-        await supabase.auth
-            .signInWithPassword(
-                credentials
-            );
-
-
-    if (error) {
-
-        console.error(
-            "signIn error:",
-            error
-        );
-
-        throw error;
-
-    }
-
-
-    return data;
-
+async function getBarbers(activeOnly = true) {
+  const { data, error } = await sb.from(TABLES.barbers).select("*").order("id");
+  if (error) return [];
+  return activeOnly ? (data || []).filter(b => b.active !== false) : (data || []);
 }
+window.getBarbers = getBarbers;
 
-
-// ==========================================
-// Register Customer
-//
-// Phone = Login Identifier
-// Email = Stored In User Metadata
-// ==========================================
-
-async function signUpCustomer({
-
-    firstName = "",
-
-    lastName = "",
-
-    phone = "",
-
-    email = "",
-
-    password = ""
-
-} = {}) {
-
-
-    const normalizedPhone =
-        normalizePhoneE164(phone);
-
-
-    const normalizedEmail =
-        String(email || "")
-            .trim()
-            .toLowerCase();
-
-
-    if (
-        !normalizedPhone
-    ) {
-
-        throw new Error(
-            "شماره موبایل وارد نشده است."
-        );
-
-    }
-
-
-    if (
-        !normalizedEmail
-    ) {
-
-        throw new Error(
-            "ایمیل وارد نشده است."
-        );
-
-    }
-
-
-    if (
-        !password
-    ) {
-
-        throw new Error(
-            "رمز عبور وارد نشده است."
-        );
-
-    }
-
-
-    // ======================================
-    // Supabase Phone Authentication
-    // ======================================
-
-    const {
-
-        data,
-        error
-
-    } =
-        await supabase.auth
-            .signUp({
-
-                phone:
-                    normalizedPhone,
-
-                password,
-
-                options: {
-
-                    data: {
-
-                        first_name:
-                            firstName.trim(),
-
-                        last_name:
-                            lastName.trim(),
-
-                        email:
-                            normalizedEmail,
-
-                        full_name:
-                            `${firstName} ${lastName}`
-                                .trim(),
-
-                        role:
-                            "customer"
-
-                    }
-
-                }
-
-            });
-
-
-    if (error) {
-
-        console.error(
-            "signUpCustomer error:",
-            error
-        );
-
-        throw error;
-
-    }
-
-
-    return data;
-
+/* ---------- حساب کاربری ---------- */
+async function signUpCustomer({ name, phone, password, birthDate }) {
+  const p = NormPhone(phone);
+  const email = p + "@salon-mojezeh.ir";
+  const { data, error } = await sb.auth.signUp({
+    email, password,
+    options: { data: { name, phone: p, birth_date: birthDate || null } }
+  });
+  return { data, error };
 }
+window.signUpCustomer = signUpCustomer;
 
-
-// ==========================================
-// Sign Out
-// ==========================================
-
-async function signOutUser() {
-
-    const {
-
-        error
-
-    } = await supabase.auth.signOut();
-
-
-    if (error) {
-
-        console.error(
-            "signOutUser error:",
-            error
-        );
-
-        throw error;
-
-    }
-
-
-    return true;
-
+async function signInCustomer(phone, password) {
+  const p = NormPhone(phone);
+  return await sb.auth.signInWithPassword({ email: p + "@salon-mojezeh.ir", password });
 }
+window.signInCustomer = signInCustomer;
 
-
-// ==========================================
-// Get Current Auth User
-// ==========================================
+async function signOutUser() { await sb.auth.signOut(); }
+window.signOutUser = signOutUser;
 
 async function getCurrentUser() {
-
-    const {
-
-        data,
-        error
-
-    } = await supabase.auth.getUser();
-
-
-    if (error) {
-
-        console.error(
-            "getCurrentUser error:",
-            error
-        );
-
-        return null;
-
-    }
-
-
-    return data.user || null;
-
+  const { data } = await sb.auth.getUser();
+  return data ? data.user : null;
 }
+window.getCurrentUser = getCurrentUser;
 
-
-// ==========================================
-// Get Current User Profile
-// ==========================================
-
-async function getCurrentUserProfile() {
-
-    const user =
-        await getCurrentUser();
-
-
-    if (!user) {
-
-        return null;
-
-    }
-
-
-    const {
-
-        data,
-        error
-
-    } = await supabase
-
-        .from(
-            TABLES.userProfiles
-        )
-
-        .select(`
-            id,
-            role,
-            is_admin,
-            barber_id,
-            customer_id,
-            active,
-            created_at,
-            updated_at
-        `)
-
-        .eq(
-            "id",
-            user.id
-        )
-
-        .maybeSingle();
-
-
-    if (error) {
-
-        console.error(
-            "getCurrentUserProfile error:",
-            error
-        );
-
-        throw error;
-
-    }
-
-
-    if (!data) {
-
-        return null;
-
-    }
-
-
-    return {
-
-        ...data,
-
-        user
-
-    };
-
+async function getUserProfile(userId) {
+  let r = await sb.from(TABLES.user_profiles).select("*").eq("user_id", userId).maybeSingle();
+  if (!r.data) r = await sb.from(TABLES.user_profiles).select("*").eq("auth_id", userId).maybeSingle();
+  return r.data;
 }
+window.getUserProfile = getUserProfile;
 
-
-// ==========================================
-// Get Current Profile
-// Login Compatible Function
-// ==========================================
-
-async function getCurrentProfile() {
-
-    const user =
-        await getCurrentUser();
-
-
-    if (!user) {
-
-        return {
-
-            user: null,
-
-            profile: null
-
-        };
-
-    }
-
-
-    const profile =
-        await getCurrentUserProfile();
-
-
-    return {
-
-        user,
-
-        profile
-
-    };
-
+/* ---------- مشتریان ---------- */
+async function getCustomerByPhone(phone) {
+  const { data } = await sb.from(TABLES.customers).select("*").eq("phone", NormPhone(phone)).maybeSingle();
+  return data;
 }
+window.getCustomerByPhone = getCustomerByPhone;
 
-
-// ==========================================
-// Get Current Barber
-// ==========================================
-
-async function getCurrentBarber() {
-
-    const profile =
-        await getCurrentUserProfile();
-
-
-    if (
-
-        !profile ||
-
-        !profile.barber_id
-
-    ) {
-
-        return null;
-
-    }
-
-
-    const {
-
-        data,
-        error
-
-    } = await supabase
-
-        .from(
-            TABLES.barbers
-        )
-
-        .select("*")
-
-        .eq(
-            "id",
-            profile.barber_id
-        )
-
-        .maybeSingle();
-
-
-    if (error) {
-
-        console.error(
-            "getCurrentBarber error:",
-            error
-        );
-
-        throw error;
-
-    }
-
-
-    return data || null;
-
+async function getAllCustomers() {
+  const { data } = await sb.from(TABLES.customers).select("*").order("name");
+  return data || [];
 }
+window.getAllCustomers = getAllCustomers;
 
-
-// ==========================================
-// Get Current Customer
-// ==========================================
-
-async function getCurrentCustomer() {
-
-    const profile =
-        await getCurrentUserProfile();
-
-
-    if (
-
-        !profile ||
-
-        !profile.customer_id
-
-    ) {
-
-        return null;
-
-    }
-
-
-    const {
-
-        data,
-        error
-
-    } = await supabase
-
-        .from(
-            TABLES.customers
-        )
-
-        .select("*")
-
-        .eq(
-            "id",
-            profile.customer_id
-        )
-
-        .maybeSingle();
-
-
-    if (error) {
-
-        console.error(
-            "getCurrentCustomer error:",
-            error
-        );
-
-        throw error;
-
-    }
-
-
-    return data || null;
-
+async function createCustomer(payload) {
+  return await sb.from(TABLES.customers).insert(payload).select().single();
 }
+window.createCustomer = createCustomer;
 
-
-// ==========================================
-// Get Active Barbers
-// ==========================================
-
-async function getBarbers() {
-
-    const {
-
-        data,
-        error
-
-    } = await supabase
-
-        .from(
-            TABLES.barbers
-        )
-
-        .select(`
-            id,
-            name,
-            role,
-            image_url,
-            active,
-            created_at
-        `)
-
-        .eq(
-            "active",
-            true
-        )
-
-        .order(
-            "created_at",
-            {
-
-                ascending: true
-
-            }
-        );
-
-
-    if (error) {
-
-        console.error(
-            "getBarbers error:",
-            error
-        );
-
-        throw error;
-
-    }
-
-
-    return data || [];
-
+async function updateCustomer(id, patch) {
+  return await sb.from(TABLES.customers).update(patch).eq("id", id);
 }
+window.updateCustomer = updateCustomer;
 
-
-// ==========================================
-// Get Active Services
-// ==========================================
-
-async function getServices() {
-
-    const {
-
-        data,
-        error
-
-    } = await supabase
-
-        .from(
-            TABLES.services
-        )
-
-        .select(`
-            id,
-            service_key,
-            name,
-            duration,
-            image_url,
-            active,
-            created_at
-        `)
-
-        .eq(
-            "active",
-            true
-        )
-
-        .order(
-            "created_at",
-            {
-
-                ascending: true
-
-            }
-        );
-
-
-    if (error) {
-
-        console.error(
-            "getServices error:",
-            error
-        );
-
-        throw error;
-
-    }
-
-
-    return data || [];
-
+async function updateCustomerByPhone(phone, patch) {
+  return await sb.from(TABLES.customers).update(patch).eq("phone", NormPhone(phone));
 }
+window.updateCustomerByPhone = updateCustomerByPhone;
 
-
-// ==========================================
-// Get Booking Settings
-// ==========================================
-
-async function getBookingSettings() {
-
-    const {
-
-        data,
-        error
-
-    } = await supabase
-
-        .from(
-            TABLES.bookingSettings
-        )
-
-        .select(`
-            id,
-            opening_time,
-            closing_time,
-            slot_interval,
-            booking_days_ahead,
-            active
-        `)
-
-        .eq(
-            "active",
-            true
-        )
-
-        .limit(1)
-
-        .maybeSingle();
-
-
-    if (error) {
-
-        console.error(
-            "getBookingSettings error:",
-            error
-        );
-
-        throw error;
-
-    }
-
-
-    // ======================================
-    // Default Settings
-    // ======================================
-
-    if (!data) {
-
-        return {
-
-            opening_time:
-                "09:00:00",
-
-            closing_time:
-                "21:00:00",
-
-            slot_interval:
-                30,
-
-            booking_days_ahead:
-                30,
-
-            active:
-                true
-
-        };
-
-    }
-
-
-    return data;
-
+/* ---------- رزروها ---------- */
+async function createReservation(payload) {
+  return await sb.from(TABLES.reservations).insert(payload).select().single();
 }
+window.createReservation = createReservation;
 
-
-// ==========================================
-// Get Customer By Phone
-// Supports Multiple Iranian Formats
-// ==========================================
-
-async function getCustomerByPhone(
-    phone
-) {
-
-    const rawPhone =
-        normalizeDigits(phone)
-            .trim();
-
-
-    const localPhone =
-        normalizePhoneLocal(phone);
-
-
-    const e164Phone =
-        normalizePhoneE164(phone);
-
-
-    const variants =
-        [
-            rawPhone,
-            localPhone,
-            e164Phone
-        ]
-
-        .filter(Boolean)
-
-        .filter(
-            (
-                value,
-                index,
-                array
-            ) =>
-                array.indexOf(value)
-                === index
-        );
-
-
-    const {
-
-        data,
-        error
-
-    } = await supabase
-
-        .from(
-            TABLES.customers
-        )
-
-        .select("*")
-
-        .in(
-            "phone",
-            variants
-        )
-
-        .limit(1);
-
-
-    if (error) {
-
-        console.error(
-            "getCustomerByPhone error:",
-            error
-        );
-
-        throw error;
-
-    }
-
-
-    return data?.[0] || null;
-
+async function getReservationsByPhone(phone) {
+  const { data, error } = await sb.from(TABLES.reservations)
+    .select("*").eq("phone", NormPhone(phone)).order("date").order("time");
+  return error ? [] : (data || []);
 }
+window.getReservationsByPhone = getReservationsByPhone;
 
-
-// ==========================================
-// Get Customer By ID
-// ==========================================
-
-async function getCustomerById(
-    customerId
-) {
-
-    if (!customerId) {
-
-        return null;
-
-    }
-
-
-    const {
-
-        data,
-        error
-
-    } = await supabase
-
-        .from(
-            TABLES.customers
-        )
-
-        .select("*")
-
-        .eq(
-            "id",
-            customerId
-        )
-
-        .maybeSingle();
-
-
-    if (error) {
-
-        console.error(
-            "getCustomerById error:",
-            error
-        );
-
-        throw error;
-
-    }
-
-
-    return data || null;
-
+async function getReservationsByDate(date) {
+  const { data, error } = await sb.from(TABLES.reservations).select("*").eq("date", date).order("time");
+  return error ? [] : (data || []);
 }
+window.getReservationsByDate = getReservationsByDate;
 
-
-// ==========================================
-// Create Or Update Customer
-// ==========================================
-
-async function saveCustomer(
-    customerData
-) {
-
-
-    const normalizedPhone =
-        normalizePhoneLocal(
-            customerData.phone
-        );
-
-
-    const existingCustomer =
-        await getCustomerByPhone(
-            normalizedPhone
-        );
-
-
-    // ======================================
-    // New Customer
-    // ======================================
-
-    if (!existingCustomer) {
-
-        const {
-
-            data,
-            error
-
-        } = await supabase
-
-            .from(
-                TABLES.customers
-            )
-
-            .insert({
-
-                first_name:
-                    customerData.firstName,
-
-                last_name:
-                    customerData.lastName,
-
-                phone:
-                    normalizedPhone,
-
-                visit_count:
-                    0,
-
-                favorite_model:
-                    "",
-
-                free_gift:
-                    false,
-
-                note:
-                    "",
-
-                last_visit:
-                    customerData.date || null,
-
-                last_barber_id:
-                    customerData.barberId || null,
-
-                last_barber_name:
-                    customerData.barberName || null,
-
-                last_service:
-                    customerData.service || null
-
-            })
-
-            .select("id")
-
-            .single();
-
-
-        if (error) {
-
-            console.error(
-                "Create customer error:",
-                error
-            );
-
-            throw error;
-
-        }
-
-
-        return data.id;
-
-    }
-
-
-    // ======================================
-    // Existing Customer
-    // ======================================
-
-    const {
-
-        data,
-        error
-
-    } = await supabase
-
-        .from(
-            TABLES.customers
-        )
-
-        .update({
-
-            first_name:
-                customerData.firstName,
-
-            last_name:
-                customerData.lastName,
-
-            last_visit:
-                customerData.date || null,
-
-            last_barber_id:
-                customerData.barberId || null,
-
-            last_barber_name:
-                customerData.barberName || null,
-
-            last_service:
-                customerData.service || null,
-
-            updated_at:
-                new Date().toISOString()
-
-        })
-
-        .eq(
-            "id",
-            existingCustomer.id
-        )
-
-        .select("id")
-
-        .single();
-
-
-    if (error) {
-
-        console.error(
-            "Update customer error:",
-            error
-        );
-
-        throw error;
-
-    }
-
-
-    return data.id;
-
+async function setReservationStatus(id, status) {
+  return await sb.from(TABLES.reservations).update({ status }).eq("id", id);
 }
+window.setReservationStatus = setReservationStatus;
 
-
-// ==========================================
-// Get Reservations Of Barber And Date
-// ==========================================
-
-async function getBarberDayReservations(
-
-    barberId,
-
-    date
-
-) {
-
-    const {
-
-        data,
-        error
-
-    } = await supabase
-
-        .from(
-            TABLES.reservations
-        )
-
-        .select(`
-            id,
-            time,
-            service_duration,
-            status
-        `)
-
-        .eq(
-            "barber_id",
-            barberId
-        )
-
-        .eq(
-            "date",
-            date
-        )
-
-        .eq(
-            "status",
-            RESERVATION_STATUS.RESERVED
-        );
-
-
-    if (error) {
-
-        console.error(
-            "getBarberDayReservations error:",
-            error
-        );
-
-        throw error;
-
-    }
-
-
-    return data || [];
-
+async function cancelReservation(id) {
+  return await setReservationStatus(id, "cancelled");
 }
+window.cancelReservation = cancelReservation;
 
-
-// ==========================================
-// Create Reservation
-// ==========================================
-
-async function createReservation(
-    reservationData
-) {
-
-    const payload = {
-
-        customer_id:
-            reservationData.customerId,
-
-        first_name:
-            reservationData.firstName,
-
-        last_name:
-            reservationData.lastName,
-
-        phone:
-            reservationData.phone,
-
-        barber_id:
-            reservationData.barberId,
-
-        barber_name:
-            reservationData.barberName,
-
-        service_id:
-            reservationData.serviceId,
-
-        service:
-            reservationData.service,
-
-        service_duration:
-            Number(
-                reservationData.serviceDuration
-            ),
-
-        date:
-            reservationData.date,
-
-        display_date:
-            reservationData.displayDate,
-
-        time:
-            reservationData.time,
-
-        status:
-            RESERVATION_STATUS.RESERVED,
-
-        source:
-            "website"
-
-    };
-
-
-    const {
-
-        data,
-        error
-
-    } = await supabase
-
-        .from(
-            TABLES.reservations
-        )
-
-        .insert(
-            payload
-        )
-
-        .select("id")
-
-        .single();
-
-
-    if (error) {
-
-        console.error(
-            "createReservation error:",
-            error
-        );
-
-
-        // ==================================
-        // Duplicate / Conflict
-        // ==================================
-
-        if (
-            error.code === "23505"
-        ) {
-
-            const conflictError =
-                new Error(
-                    "این ساعت قبلاً رزرو شده است."
-                );
-
-
-            conflictError.code =
-                "reservation-conflict";
-
-
-            throw conflictError;
-
-        }
-
-
-        throw error;
-
-    }
-
-
-    return data.id;
-
+async function editReservation(id, patch) {
+  /* ثبت نسخهٔ اصلی فقط در اولین ویرایش */
+  const { data: cur } = await sb.from(TABLES.reservations).select("date,time,original_date").eq("id", id).maybeSingle();
+  const full = Object.assign({}, patch);
+  if (cur && !cur.original_date) {
+    full.original_date = cur.date;
+    full.original_time = HHmm(cur.time);
+  }
+  return await sb.from(TABLES.reservations).update(full).eq("id", id);
 }
+window.editReservation = editReservation;
 
-
-// ==========================================
-// Get All Reservations
-// ==========================================
-
-async function getReservations({
-
-    startDate = null,
-
-    endDate = null,
-
-    barberId = null,
-
-    customerId = null,
-
-    status = null
-
-} = {}) {
-
-
-    let query =
-        supabase
-
-            .from(
-                TABLES.reservations
-            )
-
-            .select("*");
-
-
-    // ======================================
-    // Start Date
-    // ======================================
-
-    if (startDate) {
-
-        query =
-            query.gte(
-                "date",
-                startDate
-            );
-
-    }
-
-
-    // ======================================
-    // End Date
-    // ======================================
-
-    if (endDate) {
-
-        query =
-            query.lte(
-                "date",
-                endDate
-            );
-
-    }
-
-
-    // ======================================
-    // Barber
-    // ======================================
-
-    if (barberId) {
-
-        query =
-            query.eq(
-                "barber_id",
-                barberId
-            );
-
-    }
-
-
-    // ======================================
-    // Customer
-    // ======================================
-
-    if (customerId) {
-
-        query =
-            query.eq(
-                "customer_id",
-                customerId
-            );
-
-    }
-
-
-    // ======================================
-    // Status
-    // ======================================
-
-    if (status) {
-
-        query =
-            query.eq(
-                "status",
-                status
-            );
-
-    }
-
-
-    const {
-
-        data,
-        error
-
-    } = await query
-
-        .order(
-            "date",
-            {
-
-                ascending: true
-
-            }
-        )
-
-        .order(
-            "time",
-            {
-
-                ascending: true
-
-            }
-        );
-
-
-    if (error) {
-
-        console.error(
-            "getReservations error:",
-            error
-        );
-
-        throw error;
-
-    }
-
-
-    return data || [];
-
+/* ---------- بازه‌های بسته (تعطیلی/مرخصی) ---------- */
+async function getAvailabilityBlocks(date, barberId) {
+  let q = sb.from(TABLES.availability_blocks).select("*").eq("block_date", date).eq("active", true);
+  if (barberId) q = q.or(`barber_id.is.null,barber_id.eq.${barberId}`);
+  else q = q.is("barber_id", null);
+  const { data, error } = await q;
+  return error ? { data: [], error } : { data: data || [], error: null };
 }
+window.getAvailabilityBlocks = getAvailabilityBlocks;
 
-
-// ==========================================
-// Get Reservations Of Current Customer
-// ==========================================
-
-async function getCurrentCustomerReservations() {
-
-    const customer =
-        await getCurrentCustomer();
-
-
-    if (!customer) {
-
-        return [];
-
-    }
-
-
-    return await getReservations({
-
-        customerId:
-            customer.id
-
-    });
-
+async function getAllAvailabilityBlocks() {
+  const { data, error } = await sb.from(TABLES.availability_blocks)
+    .select("*").gte("block_date", TodayStr(0)).order("block_date");
+  return error ? { data: [], error } : { data: data || [], error: null };
 }
+window.getAllAvailabilityBlocks = getAllAvailabilityBlocks;
 
-
-// ==========================================
-// Get Reservations Of Current Barber
-// ==========================================
-
-async function getCurrentBarberReservations() {
-
-    const barber =
-        await getCurrentBarber();
-
-
-    if (!barber) {
-
-        return [];
-
-    }
-
-
-    return await getReservations({
-
-        barberId:
-            barber.id
-
-    });
-
+async function createAvailabilityBlock(payload) {
+  return await sb.from(TABLES.availability_blocks).insert(payload).select().single();
 }
+window.createAvailabilityBlock = createAvailabilityBlock;
 
-
-// ==========================================
-// Cancel Reservation
-// ==========================================
-
-async function cancelReservation(
-    reservationId
-) {
-
-    const {
-
-        error
-
-    } = await supabase
-
-        .from(
-            TABLES.reservations
-        )
-
-        .update({
-
-            status:
-                RESERVATION_STATUS.CANCELLED,
-
-            cancelled_at:
-                new Date().toISOString()
-
-        })
-
-        .eq(
-            "id",
-            reservationId
-        );
-
-
-    if (error) {
-
-        console.error(
-            "cancelReservation error:",
-            error
-        );
-
-        throw error;
-
-    }
-
-
-    return true;
-
+async function deleteAvailabilityBlock(id) {
+  return await sb.from(TABLES.availability_blocks).delete().eq("id", id);
 }
+window.deleteAvailabilityBlock = deleteAvailabilityBlock;
 
-
-// ==========================================
-// Complete Reservation
-// ==========================================
-
-async function completeReservation(
-    reservationId
-) {
-
-    const {
-
-        error
-
-    } = await supabase
-
-        .from(
-            TABLES.reservations
-        )
-
-        .update({
-
-            status:
-                RESERVATION_STATUS.COMPLETED,
-
-            completed_at:
-                new Date().toISOString()
-
-        })
-
-        .eq(
-            "id",
-            reservationId
-        );
-
-
-    if (error) {
-
-        console.error(
-            "completeReservation error:",
-            error
-        );
-
-        throw error;
-
-    }
-
-
-    return true;
-
+async function toggleAvailabilityBlock(id, active) {
+  return await sb.from(TABLES.availability_blocks).update({ active }).eq("id", id);
 }
-
-
-// ==========================================
-// Mark Reservation No Show
-// ==========================================
-
-async function markReservationNoShow(
-    reservationId
-) {
-
-    const {
-
-        error
-
-    } = await supabase
-
-        .from(
-            TABLES.reservations
-        )
-
-        .update({
-
-            status:
-                RESERVATION_STATUS.NO_SHOW
-
-        })
-
-        .eq(
-            "id",
-            reservationId
-        );
-
-
-    if (error) {
-
-        console.error(
-            "markReservationNoShow error:",
-            error
-        );
-
-        throw error;
-
-    }
-
-
-    return true;
-
-}
-
-
-// ==========================================
-// Export
-// ==========================================
-
-export {
-
-
-    // ======================================
-    // Supabase
-    // ======================================
-
-    supabase,
-
-
-    // ======================================
-    // Constants
-    // ======================================
-
-    TABLES,
-
-    RESERVATION_STATUS,
-
-
-    // ======================================
-    // Authentication
-    // ======================================
-
-    signIn,
-
-    signUpCustomer,
-
-    signOutUser,
-
-    getCurrentUser,
-
-    getCurrentUserProfile,
-
-    getCurrentProfile,
-
-    getCurrentBarber,
-
-    getCurrentCustomer,
-
-
-    // ======================================
-    // Phone Helpers
-    // ======================================
-
-    normalizeDigits,
-
-    normalizePhoneLocal,
-
-    normalizePhoneE164,
-
-
-    // ======================================
-    // Barbers
-    // ======================================
-
-    getBarbers,
-
-
-    // ======================================
-    // Services
-    // ======================================
-
-    getServices,
-
-
-    // ======================================
-    // Booking Settings
-    // ======================================
-
-    getBookingSettings,
-
-
-    // ======================================
-    // Customers
-    // ======================================
-
-    getCustomerByPhone,
-
-    getCustomerById,
-
-    saveCustomer,
-
-
-    // ======================================
-    // Reservations
-    // ======================================
-
-    getBarberDayReservations,
-
-    createReservation,
-
-    getReservations,
-
-    getCurrentCustomerReservations,
-
-    getCurrentBarberReservations,
-
-    cancelReservation,
-
-    completeReservation,
-
-    markReservationNoShow
-
-};
-
-
-// ==========================================
-// Ready
-// ==========================================
-
-console.log(
-    "Salon Mojezeh Supabase system ready."
-);
+window.toggleAvailabilityBlock = toggleAvailabilityBlock;

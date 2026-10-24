@@ -1,101 +1,66 @@
-import { supabase, getCurrentUser, normalizePhoneE164, normalizePhoneLocal } from "./supabase.js";
+"use strict";
+/* ===== signup.js — ثبت‌نام مشتری ===== */
 
-const $ = (s) => document.querySelector(s);
-const form = $("#signupForm");
-const submit = $("#signupBtn");
-const message = $("#signupMessage");
+const $ = id => document.getElementById(id);
+const fa = n => String(n).replace(/[0-9]/g, d => "۰۱۲۳۴۵۶۷۸۹"[d]);
 
-function digits(v = "") {
-  return String(v).replace(/[۰-۹]/g, d => "۰۱۲۳۴۵۶۷۸۹".indexOf(d)).replace(/[٠-٩]/g, d => "٠١٢٣٤٥٦٧٨٩".indexOf(d));
+function applyTheme() {
+  const dark = localStorage.getItem("theme") === "dark";
+  document.body.classList.toggle("dark", dark);
+  $("btnTheme").textContent = dark ? "☀️" : "🌙";
 }
-function show(text, type = "error") {
-  message.hidden = false;
-  message.className = `form-message ${type}`;
-  message.textContent = text;
-}
-function clearMessage() {
-  message.hidden = true;
-  message.textContent = "";
-}
-function validIranPhone(value) {
-  const p = digits(value).replace(/[\s-]/g, "");
-  return /^(09\d{9}|\+989\d{9}|00989\d{9})$/.test(p);
+function toggleTheme() {
+  const dark = document.body.classList.toggle("dark");
+  localStorage.setItem("theme", dark ? "dark" : "light");
+  $("btnTheme").textContent = dark ? "☀️" : "🌙";
 }
 
-(async () => {
-  try {
-    if (await getCurrentUser()) location.replace("profile.html");
-  } catch {}
-})();
+function showMsg(text, ok) {
+  const m = $("msg");
+  m.textContent = text;
+  m.className = "msg " + (ok ? "ok" : "err");
+}
 
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  clearMessage();
+document.addEventListener("DOMContentLoaded", () => {
+  applyTheme();
+  $("btnTheme").onclick = toggleTheme;
 
-  const firstName = $("#firstName").value.trim();
-  const lastName = $("#lastName").value.trim();
-  const rawPhone = digits($("#phone").value.trim()).replace(/[\s-]/g, "");
-  const email = $("#email").value.trim().toLowerCase();
-  const birthDate = $("#birthDate").value || null;
-  const password = $("#password").value;
-  const password2 = $("#password2").value;
+  /* اگر قبلاً وارد شده، برو پروفایل */
+  getCurrentUser().then(u => { if (u) location.href = "profile.html"; });
 
-  if (!firstName || !lastName) return show("نام و نام خانوادگی را کامل کنید.");
-  if (!validIranPhone(rawPhone)) return show("شماره موبایل معتبر ایرانی وارد کنید.");
-  if (email && !/^\S+@\S+\.\S+$/.test(email)) return show("ایمیل معتبر وارد کنید.");
-  if (!birthDate) return show("تاریخ تولد را برای فعال شدن هدیه تولد وارد کنید.");
-  if (password.length < 8) return show("رمز عبور باید حداقل ۸ کاراکتر باشد.");
-  if (password !== password2) return show("تکرار رمز عبور با رمز عبور یکسان نیست.");
-  if (!$("#terms").checked) return show("پذیرش قوانین الزامی است.");
+  $("formSignup").onsubmit = async e => {
+    e.preventDefault();
+    const name = $("suName").value.trim();
+    const phone = NormPhone($("suPhone").value);
+    const birth = $("suBirth").value || null;
+    const pass = $("suPass").value, pass2 = $("suPass2").value;
 
-  submit.disabled = true;
-  submit.querySelector("span:first-child").textContent = "در حال ایجاد حساب...";
-  submit.querySelector(".btn-loader").hidden = false;
+    if (!/^09\d{9}$/.test(phone)) return showMsg("شماره موبایل معتبر نیست (۰۹xxxxxxxxx)", false);
+    if (pass.length < 6) return showMsg("رمز عبور باید حداقل ۶ کاراکتر باشد", false);
+    if (pass !== pass2) return showMsg("رمز عبور و تکرار آن یکسان نیستند", false);
 
-  try {
-    const phoneE164 = normalizePhoneE164(rawPhone);
-    const phoneLocal = normalizePhoneLocal(rawPhone);
-
-    const payload = {
-      first_name: firstName,
-      last_name: lastName,
-      phone_local: phoneLocal,
-      birth_date: birthDate
-    };
-
-    const signupInput = email
-      ? { email, password, options: { data: payload } }
-      : { phone: phoneE164, password, options: { data: payload } };
-
-    const { data, error } = await supabase.auth.signUp(signupInput);
-    if (error) throw error;
-
-    if (data?.session && data?.user) {
-      /* اگر trigger حساب مشتری را ساخته باشد، تاریخ تولد را هم بلافاصله همگام می‌کنیم. */
-      try {
-        const { data: profile } = await supabase
-          .from("user_profiles")
-          .select("customer_id")
-          .eq("id", data.user.id)
-          .maybeSingle();
-
-        if (profile?.customer_id && birthDate) {
-          await supabase.from("customers").update({ birth_date: birthDate }).eq("id", profile.customer_id);
-        }
-      } catch {}
-
-      show("حساب با موفقیت ساخته شد.", "success");
-      setTimeout(() => location.replace("profile.html"), 600);
-    } else {
-      show("ثبت‌نام انجام شد. اگر تأیید حساب فعال باشد، مرحله تأیید را انجام بده و سپس وارد حساب شو.", "success");
+    $("btnSubmit").disabled = true;
+    const { error } = await signUpCustomer({ name, phone, password: pass, birthDate: birth });
+    if (error) {
+      $("btnSubmit").disabled = false;
+      if (String(error.message).includes("already registered") || String(error.message).includes("already exists"))
+        return showMsg("این شماره قبلاً ثبت‌نام کرده است؛ وارد شوید.", false);
+      return showMsg("خطا در ثبت‌نام: " + error.message, false);
     }
-  } catch (err) {
-    let text = err?.message || "ثبت‌نام انجام نشد.";
-    if (/already registered|already exists|duplicate/i.test(text)) text = "این شماره یا ایمیل قبلاً ثبت شده است.";
-    show(text);
-  } finally {
-    submit.disabled = false;
-    submit.querySelector("span:first-child").textContent = "ایجاد حساب";
-    submit.querySelector(".btn-loader").hidden = true;
-  }
+
+    /* همگام‌سازی جدول مشتریان */
+    try {
+      const { error: cerr } = await createCustomer({
+        name, phone, birth_date: birth,
+        club_points: 0, visit_count: 0, free_gift: false
+      });
+      if (cerr && cerr.code === "23505") {
+        /* مشتری از قبل بوده — فقط تاریخ تولد را به‌روز کن */
+        await updateCustomerByPhone(phone, birth ? { birth_date: birth } : {});
+      }
+    } catch { /* جدول مشتریان مانع ثبت‌نام نمی‌شود */ }
+
+    showMsg("ثبت‌نام انجام شد ✓ در حال انتقال…", true);
+    setTimeout(() => location.href = "profile.html", 1200);
+  };
 });
